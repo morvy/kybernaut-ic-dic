@@ -106,6 +106,7 @@ function woolab_icdic_init() {
 		add_action( 'init', 'woolab_icdic_set_vat_exempt_for_customer', 10, 1 );
 		add_action( 'woocommerce_checkout_update_order_review', 'woolab_icdic_validate_vat_exempt_for_company', 10, 1 );
 		add_action( 'woocommerce_checkout_update_order_meta', 'woolab_icdic_save_order_metadata' );
+		add_action( 'woocommerce_checkout_update_order_meta', 'woolab_icdic_add_vat_exemption_comment_to_order', 20, 1 );
 		add_action( 'manage_shop_order_posts_custom_column', 'woolab_icdic_show_check_failed_notice_on_orders_table', 20, 2 ); // HPOS not enabled.
 		add_action( 'woocommerce_shop_order_list_table_custom_column', 'woolab_icdic_show_check_failed_notice_on_orders_table_hpos', 10, 2 ); // HPOS alternative of "manage_shop_order_posts_custom_column" above.
 		add_action( 'woocommerce_admin_order_data_after_billing_address', 'woolab_icdic_show_check_failed_notice_on_order_edit' );

@@ -863,3 +863,105 @@ function woolab_icdic_plugin_action_links( $links ) {
 
 	return array_merge( $action_links, $links );
 }
+
+/**
+ * Adds a comment to the order if VAT exemption was applied for a company.
+ *
+ * @param int $order_id The ID of the order.
+ */
+function woolab_icdic_add_vat_exemption_comment_to_order( $order_id ) {
+	$order = wc_get_order( $order_id );
+
+	if ( ! $order instanceof WC_Order ) {
+		return;
+	}
+
+	$is_company = ! empty( $order->get_billing_company() );
+	$is_vat_exempt = $order->get_is_vat_exempt();
+
+	if ( $is_company && $is_vat_exempt ) {
+		$vat_comment_data = array();
+
+		$vat_comment_data['order_id'] = $order->get_id();
+
+		$order_uuid = $order->get_meta('_order_uuid');
+		if (empty($order_uuid)) {
+			$order_uuid = wp_generate_uuid4();
+			$order->update_meta_data('_order_uuid', $order_uuid);
+		}
+		$vat_comment_data['order_uuid'] = $order_uuid;
+
+		$vat_comment_data['customer_ip_address'] = $order->get_customer_ip_address();
+
+		$vat_comment_data['company_name'] = $order->get_billing_company();
+		$vat_comment_data['business_id'] = $order->get_meta('_billing_ic');
+		$billing_country = $order->get_billing_country();
+		$vat_number = ($billing_country === 'SK') ? $order->get_meta('_billing_dic_dph') : $order->get_meta('_billing_dic');
+		$vat_comment_data['vat_number'] = $vat_number;
+		$vat_comment_data['billing_address_1'] = $order->get_billing_address_1();
+		$vat_comment_data['billing_address_2'] = $order->get_billing_address_2();
+		$vat_comment_data['billing_city'] = $order->get_billing_city();
+		$vat_comment_data['billing_postcode'] = $order->get_billing_postcode();
+		$vat_comment_data['billing_country'] = $billing_country;
+
+		$vat_comment_data['order_date'] = $order->get_date_created() ? $order->get_date_created()->format('Y-m-d H:i:s') : 'N/A';
+
+		$vat_comment_data['vies_result'] = 'N/A';
+		$vat_comment_data['vies_details'] = '';
+
+		if (!empty($vat_number)) {
+			$validator = new Validator();
+			try {
+				$vies_response = $validator->validateVatNumber( $vat_number );
+				if ($vies_response) {
+					$vat_comment_data['vies_result'] = __('Valid', 'woolab-ic-dic');
+				} else {
+					$vat_comment_data['vies_result'] = __('Invalid', 'woolab-ic-dic');
+				}
+			} catch (ViesException $e) {
+				$vat_comment_data['vies_result'] = __('Error', 'woolab-ic-dic');
+				$vat_comment_data['vies_details'] = $e->getMessage();
+				$logger = Logger::getInstance();
+				$logger->log(sprintf('VIES Check for order comment (Order ID: %s, VAT: %s) failed: %s', $order_id, $vat_number, $e->getMessage()));
+			} catch (\Exception $e) {
+				$vat_comment_data['vies_result'] = __('Error during VIES check', 'woolab-ic-dic');
+				$vat_comment_data['vies_details'] = $e->getMessage();
+				$logger = Logger::getInstance();
+				$logger->log(sprintf('Generic error during VIES Check for order comment (Order ID: %s, VAT: %s): %s', $order_id, $vat_number, $e->getMessage()));
+			}
+		}
+
+		$order->save_meta_data(); // Save meta data if changed (e.g. _order_uuid)
+
+		$html_table = '<h3>' . __('VAT Exemption Details', 'woolab-ic-dic') . '</h3>';
+		$html_table .= '<table style="width: 100%; border-collapse: collapse;">';
+
+		$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('Order ID', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($vat_comment_data['order_id']) . '</td></tr>';
+		$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('Order UUID', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($vat_comment_data['order_uuid']) . '</td></tr>';
+		$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('Order Date', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($vat_comment_data['order_date']) . '</td></tr>';
+		$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('Customer IP Address', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($vat_comment_data['customer_ip_address']) . '</td></tr>';
+		$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('Company Name', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($vat_comment_data['company_name']) . '</td></tr>';
+		$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('Business ID', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($vat_comment_data['business_id']) . '</td></tr>';
+		$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('VAT Number', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($vat_comment_data['vat_number']) . '</td></tr>';
+
+		$address_parts = array_filter([
+			$vat_comment_data['billing_address_1'],
+			$vat_comment_data['billing_address_2'],
+			$vat_comment_data['billing_city'],
+			$vat_comment_data['billing_postcode'],
+			WC()->countries->countries[$vat_comment_data['billing_country']] ?? $vat_comment_data['billing_country']
+		]);
+		$full_address = implode(', ', $address_parts);
+		$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('Billing Address', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($full_address) . '</td></tr>';
+
+		$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('VIES Validation Result', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($vat_comment_data['vies_result']) . '</td></tr>';
+
+		if (!empty($vat_comment_data['vies_details'])) {
+			$html_table .= '<tr style="border-bottom: 1px solid #eee;"><td style="padding: 5px; vertical-align: top; font-weight: bold;">' . __('VIES Details', 'woolab-ic-dic') . ':</td><td style="padding: 5px; vertical-align: top;">' . esc_html($vat_comment_data['vies_details']) . '</td></tr>';
+		}
+
+		$html_table .= '</table>';
+
+		$order->add_order_note($html_table, false); // false for private admin note
+	}
+}

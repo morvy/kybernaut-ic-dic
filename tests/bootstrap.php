@@ -13,5 +13,7 @@ require_once __DIR__ . '/WPMock/wp-functions-mock.php';
 WP_Mock::setUsePatchwork(false);
 WP_Mock::bootstrap();
 
-require_once dirname(__DIR__) . '/includes/ares.php';
-require_once dirname(__DIR__) . '/includes/logger.php';
+require_once dirname(__DIR__) . '/includes/helpers.php'; // Contains woolab_icdic_get_vat_number_country_code
+require_once dirname(__DIR__) . '/includes/logger.php'; // Already there in original, kept for explicitness
+require_once dirname(__DIR__) . '/includes/filters-actions.php'; // Contains the function to test
+require_once dirname(__DIR__) . '/includes/ares.php'; // Was in original, kept
