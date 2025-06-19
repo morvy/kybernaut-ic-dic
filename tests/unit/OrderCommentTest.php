@@ -63,32 +63,15 @@ class OrderCommentTest extends TestCase {
         $wc_mock->countries = $countries_mock;
         WP_Mock::userFunction('WC', ['return' => $wc_mock]);
 
-        // Mock HTTP functions only if they might be called - no expectations
-        WP_Mock::userFunction('wp_remote_get', [
-            'return' => [
-                'response' => ['code' => 200],
-                'body' => '{"valid": true}'
-            ]
-        ]);
-        WP_Mock::userFunction('wp_remote_retrieve_response_code', [
-            'return' => 200
-        ]);
-        WP_Mock::userFunction('wp_remote_retrieve_body', [
-            'return' => '{"valid": true}'
-        ]);
-        WP_Mock::userFunction('is_wp_error', [
-            'return' => false
-        ]);
-
         // Mock Logger getInstance static method differently
         $logger_instance_mock = \Mockery::mock(); 
         $logger_instance_mock->shouldReceive('log')->zeroOrMoreTimes();
         
-        // Try to avoid the :: in function names by creating a simpler mock
-        // We'll just let the logger work without mocking the static method
+        // We don't mock HTTP functions since the Validator class is mocked directly
     }
 
     public function tearDown(): void {
+        \Mockery::close();
         WP_Mock::tearDown();
     }
 
