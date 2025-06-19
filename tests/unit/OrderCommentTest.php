@@ -63,23 +63,27 @@ class OrderCommentTest extends TestCase {
         $wc_mock->countries = $countries_mock;
         WP_Mock::userFunction('WC', ['return' => $wc_mock]);
 
-        // Mock wp_remote_get for VAT validation HTTP requests
+        // Mock wp_remote_get for VAT validation HTTP requests - flexible for CI/local differences
         WP_Mock::userFunction('wp_remote_get', [
             'return' => [
                 'response' => ['code' => 200],
                 'body' => '{"valid": true}'
-            ]
+            ],
+            'times' => '0+'  // Allow zero or more calls
         ]);
 
         // Additional WordPress functions that might be called in CI
         WP_Mock::userFunction('wp_remote_retrieve_response_code', [
-            'return' => 200
+            'return' => 200,
+            'times' => '0+'
         ]);
         WP_Mock::userFunction('wp_remote_retrieve_body', [
-            'return' => '{"valid": true}'
+            'return' => '{"valid": true}',
+            'times' => '0+'
         ]);
         WP_Mock::userFunction('is_wp_error', [
-            'return' => false
+            'return' => false,
+            'times' => '0+'
         ]);
 
         // Mock Logger getInstance static method differently
