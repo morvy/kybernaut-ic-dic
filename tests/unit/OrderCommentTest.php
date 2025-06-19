@@ -13,6 +13,16 @@ use WP_Mock;
  */
 class OrderCommentTest extends TestCase {
 
+    public static function setUpBeforeClass(): void {
+        // Ensure scoped dependencies are loaded
+        if (file_exists(__DIR__ . '/../../deps/scoper-autoload.php')) {
+            require_once __DIR__ . '/../../deps/scoper-autoload.php';
+        }
+        if (file_exists(__DIR__ . '/../../deps/autoload.php')) {
+            require_once __DIR__ . '/../../deps/autoload.php';
+        }
+    }
+
     public function setUp(): void {
         WP_Mock::setUp();
         WP_Mock::userFunction('__', [
@@ -49,7 +59,7 @@ class OrderCommentTest extends TestCase {
         WP_Mock::userFunction('wp_remote_get', [
             'return' => [
                 'response' => ['code' => 200],
-                'body' => 'OK'
+                'body' => '{"valid": true}'
             ]
         ]);
 

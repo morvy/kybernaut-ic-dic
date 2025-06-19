@@ -12,6 +12,9 @@ require_once __DIR__ . '/WPMock/wp-functions-mock.php';
 if (file_exists(__DIR__ . '/../deps/scoper-autoload.php')) {
     require_once __DIR__ . '/../deps/scoper-autoload.php';
 }
+if (file_exists(__DIR__ . '/../deps/autoload.php')) {
+    require_once __DIR__ . '/../deps/autoload.php';
+}
 
 // Mock WooCommerce classes that might be needed
 if (!class_exists('WC_Order')) {
