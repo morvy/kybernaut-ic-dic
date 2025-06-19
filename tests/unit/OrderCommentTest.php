@@ -17,13 +17,13 @@ class OrderCommentTest extends TestCase {
     public function setUp(): void {
         WP_Mock::setUp();
         WP_Mock::userFunction('__', [
-            'return' => function(\$text, \$domain) {
-                return \$text;
+            'return' => function($text, $domain) {
+                return $text;
             }
         ]);
         WP_Mock::userFunction('esc_html', [
-            'return' => function(\$text) {
-                return \$text;
+            'return' => function($text) {
+                return $text;
             }
         ]);
         // Default mock for wp_generate_uuid4. Specific tests can add expectations like once() or never().
