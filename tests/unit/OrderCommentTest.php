@@ -52,7 +52,7 @@ class OrderCommentTest extends TestCase {
                 return $defaults;
             }
         ]);
-        // Default mock for wp_generate_uuid4. Specific tests can add expectations like once() or never().
+        // Default mock for wp_generate_uuid4 - individual tests can override
         WP_Mock::userFunction('wp_generate_uuid4', [
             'return' => 'test-uuid-1234'
         ]);
@@ -63,27 +63,21 @@ class OrderCommentTest extends TestCase {
         $wc_mock->countries = $countries_mock;
         WP_Mock::userFunction('WC', ['return' => $wc_mock]);
 
-        // Mock wp_remote_get for VAT validation HTTP requests - flexible for CI/local differences
+        // Mock HTTP functions only if they might be called - no expectations
         WP_Mock::userFunction('wp_remote_get', [
             'return' => [
                 'response' => ['code' => 200],
                 'body' => '{"valid": true}'
-            ],
-            'times' => '0+'  // Allow zero or more calls
+            ]
         ]);
-
-        // Additional WordPress functions that might be called in CI
         WP_Mock::userFunction('wp_remote_retrieve_response_code', [
-            'return' => 200,
-            'times' => '0+'
+            'return' => 200
         ]);
         WP_Mock::userFunction('wp_remote_retrieve_body', [
-            'return' => '{"valid": true}',
-            'times' => '0+'
+            'return' => '{"valid": true}'
         ]);
         WP_Mock::userFunction('is_wp_error', [
-            'return' => false,
-            'times' => '0+'
+            'return' => false
         ]);
 
         // Mock Logger getInstance static method differently
