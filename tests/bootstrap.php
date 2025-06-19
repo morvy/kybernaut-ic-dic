@@ -8,6 +8,16 @@ use WP_Mock;
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/WPMock/wp-functions-mock.php';
 
+// Load dependencies autoloader if it exists
+if (file_exists(__DIR__ . '/../deps/scoper-autoload.php')) {
+    require_once __DIR__ . '/../deps/scoper-autoload.php';
+}
+
+// Mock WooCommerce classes that might be needed
+if (!class_exists('WC_Order')) {
+    class WC_Order {}
+}
+
 // Now call the bootstrap method of WP Mock.
 // https://wp-mock.gitbook.io/documentation/getting-started/introduction
 WP_Mock::setUsePatchwork(false);
