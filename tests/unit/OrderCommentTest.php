@@ -45,6 +45,14 @@ class OrderCommentTest extends TestCase {
         $wc_mock->countries = $countries_mock;
         WP_Mock::userFunction('WC', ['return' => $wc_mock]);
 
+        // Mock wp_remote_get for VAT validation HTTP requests
+        WP_Mock::userFunction('wp_remote_get', [
+            'return' => [
+                'response' => ['code' => 200],
+                'body' => 'OK'
+            ]
+        ]);
+
         // Mock Logger getInstance static method differently
         $logger_instance_mock = \Mockery::mock(); 
         $logger_instance_mock->shouldReceive('log')->zeroOrMoreTimes();
@@ -231,12 +239,10 @@ class OrderCommentTest extends TestCase {
     }
 
     public function viesScenariosProvider() {
-        // Real FQCN for ViesException in the scoped namespace
-        $vies_exception_fqcn = 'KybernautIcDicDeps\Ibericode\Vat\Vies\ViesException';
         return [
             'VAT Valid' => ['CZ12345678', true, 'Valid', ''],
             'VAT Invalid' => ['CZ87654321', false, 'Invalid', ''],
-            'VIES Exception' => ['CZ00000000', new $vies_exception_fqcn('VIES service unavailable'), 'Error', 'VIES service unavailable'],
+            'VIES Exception' => ['CZ00000000', 'exception', 'Error', 'VIES service unavailable'],
         ];
     }
 
@@ -263,10 +269,12 @@ class OrderCommentTest extends TestCase {
         // Create mock for the scoped Validator class using overload
         $validatorMock = \Mockery::mock('overload:KybernautIcDicDeps\Ibericode\Vat\Validator');
 
-        // Check if response is an exception
-        $vies_exception_fqcn = 'KybernautIcDicDeps\Ibericode\Vat\Vies\ViesException';
-        if ($vies_validator_response instanceof $vies_exception_fqcn) {
-            $validatorMock->shouldReceive('validateVatNumber')->with($vat_number)->andThrow($vies_validator_response)->once();
+        // Check if response is an exception (using string marker)
+        if ($vies_validator_response === 'exception') {
+            // Create the exception here where the class is available
+            $vies_exception_fqcn = 'KybernautIcDicDeps\Ibericode\Vat\Vies\ViesException';
+            $exception = new $vies_exception_fqcn($expected_vies_details_text);
+            $validatorMock->shouldReceive('validateVatNumber')->with($vat_number)->andThrow($exception)->once();
         } else {
             $validatorMock->shouldReceive('validateVatNumber')->with($vat_number)->andReturn($vies_validator_response)->once();
         }
