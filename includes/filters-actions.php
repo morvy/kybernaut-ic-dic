@@ -2,10 +2,8 @@
 
 // If this file is called directly, abort.
 
-use KybernautIcDic\Logger;
 use KybernautIcDicDeps\Ibericode\Vat\Countries;
 use KybernautIcDicDeps\Ibericode\Vat\Validator;
-use KybernautIcDicDeps\Ibericode\Vat\Vies\ViesException;
 
 if ( ! defined( 'WPINC' ) ) {
 	die;
@@ -167,8 +165,9 @@ function woolab_icdic_checkout_posted_data( $data ) {
 
 /**
  * Build the VIES verification closure shared by the checkout-validation and
- * VAT-exemption hooks. Keeps the ibericode Validator/ViesException behind a seam
- * and collapses validation into the four-state string the pure modules consume
+ * VAT-exemption hooks. Keeps the format check (ibericode Validator) and VIES
+ * (includes/vies.php) behind a seam and collapses validation into the four-state
+ * string the pure modules consume
  * ('valid'|'bad_format'|'invalid'|'unverifiable').
  *
  * $log_message is the sprintf format logged (with the VAT number) when VIES is
@@ -188,8 +187,7 @@ function woolab_icdic_make_vies_verifier( $log_message ) {
 		}
 
 		// Slovak numbers: the Finančná správa list first (includes/financna-sprava.php).
-		// VIES only confirms what the list does not have yet, and only when enabled —
-		// without SoapClient it cannot run at all.
+		// VIES only confirms what the list does not have yet, and only when enabled.
 		if ( woolab_icdic_sk_check() && 'SK' === woolab_icdic_get_vat_number_country_code( $vat ) ) {
 			$row = woolab_icdic_sk_find( 'dph', $vat );
 			if ( $row ) {
@@ -202,8 +200,8 @@ function woolab_icdic_make_vies_verifier( $log_message ) {
 
 		// A definitive VIES result (valid/invalid) is stable, so cache it. This
 		// matters most for woolab_icdic_set_vat_exempt_for_customer(), which runs
-		// on init on every front-end page load and would otherwise issue a fresh
-		// synchronous SOAP request each time. Outages ('unverifiable') are never
+		// on every cart and checkout page load and would otherwise issue a fresh
+		// synchronous VIES request each time. Outages ('unverifiable') are never
 		// cached so the next request can retry.
 		$cache_key = 'woolab_icdic_vies_' . md5( $vat );
 		$cached    = get_transient( $cache_key );
@@ -211,19 +209,16 @@ function woolab_icdic_make_vies_verifier( $log_message ) {
 			return $cached;
 		}
 
-		try {
-			$state = $validator->validateVatNumber( $vat ) ? 'valid' : 'invalid';
-			$ttl   = apply_filters( 'woolab_icdic_vies_cache_ttl', DAY_IN_SECONDS, $vat, $state );
+		$state = woolab_icdic_vies_rest( $vat, $log_message );
+
+		if ( 'unverifiable' !== $state ) {
+			$ttl = apply_filters( 'woolab_icdic_vies_cache_ttl', DAY_IN_SECONDS, $vat, $state );
 			if ( $ttl > 0 ) {
 				set_transient( $cache_key, $state, $ttl );
 			}
-			return $state;
-		} catch ( ViesException $exception ) {
-			$logger = Logger::getInstance();
-			$logger->log( sprintf( $log_message, $vat ) );
-			$logger->log( $exception );
-			return 'unverifiable';
 		}
+
+		return $state;
 	};
 }
 

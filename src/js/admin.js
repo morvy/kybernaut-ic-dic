@@ -15,11 +15,6 @@
             return $( document.getElementById( 'woolab_icdic_settings[' + key + ']' ) );
         }
 
-        var vies_check = field( 'vies_check' );
-        if ( vies_check.length && ! woolab.soap ) {
-            vies_check.prop( 'disabled', true ).prop( 'checked', false );
-        }
-
         function update() {
             $.each( requires, function ( option, checks ) {
                 var on = checks.some( function ( key ) {

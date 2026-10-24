@@ -63,6 +63,7 @@ function woolab_icdic_init() {
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/options.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/labels.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/ares.php');
+	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/vies.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/financna-sprava.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/helpers.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/validation.php');
@@ -287,11 +288,6 @@ function woolab_icdic_sk_fill() {
 }
 
 function woolab_icdic_vies_check() {
-
-	if ( ! class_exists('SoapClient') ) {
-		return false;
-	}
-
 	$option = 'yes' === woolab_icdic_setting( 'vies_check' );
 	return apply_filters( 'woolab_icdic_vies_check', $option );
 
@@ -375,10 +371,6 @@ function woolab_icdic_admin_scripts( $hook ) {
 	}
 	if ( 'woocommerce_page_wc-settings' === $hook && isset( $_GET['tab'] ) && 'woolab_icdic' === $_GET['tab'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only picks the screen.
 		wp_enqueue_script( 'woolab-ic-dic-admin', WOOLAB_IC_DIC_URL . 'assets/js/admin'.$suffix.'.js', array('jquery'), WOOLAB_IC_DIC_VERSION );
-		wp_localize_script( 'woolab-ic-dic-admin', 'woolab', array(
-			'ajaxurl' => admin_url( 'admin-ajax.php' ),
-			'soap' => class_exists('SoapClient'),
-		));
 	}
 }
 

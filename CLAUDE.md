@@ -68,7 +68,7 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
 **Dependencies:**
 - Uses `wpify/scoper` to namespace third-party dependencies (prefix: `KybernautIcDicDeps`)
 - Scoped dependencies are in `deps/` directory
-- Main dependency: `ibericode/vat` for VIES validation
+- Main dependency: `ibericode/vat` for VAT number formats and EU countries (VIES itself is called over REST, `includes/vies.php`)
 
 ### Key Architectural Patterns
 
@@ -84,7 +84,7 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
 - **Slovak IC**: Finančná správa lists when `woolab_icdic_sk_check` is on (an IČO not listed is accepted, without autofill), otherwise the 8-digit modulo-11 check
 - **Slovak DIC**: Required when IC is present, mathematical validation, then looked up in the lists and matched to the IČO
 - **Slovak DIC DPH (VAT)**: Finančná správa list first, EU VIES for what the list lacks; must match DIC with SK prefix unless the lists tie both to the same IČO (VAT groups)
-- **EU VAT numbers**: VIES validation via `ibericode/vat` library
+- **EU VAT numbers**: VIES REST API (`includes/vies.php`); `ibericode/vat` only for the number formats and the EU country list
 
 **ARES Integration:**
 - New REST API endpoint (since 2024): `https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/{ico}`
@@ -136,7 +136,6 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
 
 ### Known Limitations
 
-- VIES validation requires PHP `SoapClient` extension
 - Fluid Checkout compatibility exists but not loaded globally (must be manually included)
 
 ## Common Development Patterns

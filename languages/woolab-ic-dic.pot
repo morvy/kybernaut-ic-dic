@@ -16,31 +16,31 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: woolab-ic-dic.php:170
+#: woolab-ic-dic.php:191
 msgid "Business ID is invalid."
 msgstr ""
 
-#: woolab-ic-dic.php:171, woolab-ic-dic.php:341, includes/filters-actions.php:326
+#: woolab-ic-dic.php:192, woolab-ic-dic.php:384, includes/filters-actions.php:322
 msgid "Unexpected error occurred. Try it again."
 msgstr ""
 
-#: woolab-ic-dic.php:172
+#: woolab-ic-dic.php:193
 msgid "Information loaded succesfully from ARES."
 msgstr ""
 
-#: woolab-ic-dic.php:173
+#: woolab-ic-dic.php:194
 msgid "Validating data in ARES."
 msgstr ""
 
-#: woolab-ic-dic.php:174
+#: woolab-ic-dic.php:195
 msgid "Information loaded succesfully from Finančná správa."
 msgstr ""
 
-#: woolab-ic-dic.php:175
+#: woolab-ic-dic.php:196
 msgid "Validating data in Finančná správa."
 msgstr ""
 
-#: woolab-ic-dic.php:176
+#: woolab-ic-dic.php:197
 msgid "Clear company details"
 msgstr ""
 
@@ -64,7 +64,7 @@ msgstr ""
 msgid "An error occured while connecting to ARES, try it again later."
 msgstr ""
 
-#: includes/blocks.php:230, includes/filters-actions.php:75
+#: includes/blocks.php:241, includes/filters-actions.php:74
 msgid "Buying as a company"
 msgstr ""
 
@@ -72,7 +72,7 @@ msgstr ""
 msgid "IČO DIČ"
 msgstr ""
 
-#: includes/class-woolab-icdic-settings-page.php:22, includes/settings.php:263
+#: includes/class-woolab-icdic-settings-page.php:22, includes/settings.php:259
 msgid "Validation"
 msgstr ""
 
@@ -84,95 +84,95 @@ msgstr ""
 msgid "Finančná správa"
 msgstr ""
 
-#: includes/filters-actions.php:20
+#: includes/filters-actions.php:18
 msgid "View GitHub"
 msgstr ""
 
-#: includes/filters-actions.php:20
+#: includes/filters-actions.php:18
 msgid "GitHub"
 msgstr ""
 
-#: includes/filters-actions.php:21, includes/filters-actions.php:21
+#: includes/filters-actions.php:19, includes/filters-actions.php:19
 msgid "Write a Review"
 msgstr ""
 
-#: includes/filters-actions.php:316, includes/filters-actions.php:319
+#: includes/filters-actions.php:312, includes/filters-actions.php:315
 msgid "Enter a valid Business ID"
 msgstr ""
 
-#: includes/filters-actions.php:342
+#: includes/filters-actions.php:338
 msgid "%s is not corresponding to Finančná správa."
 msgid_plural "%s are not corresponding to Finančná správa."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/filters-actions.php:344
+#: includes/filters-actions.php:340
 msgid "%s is not corresponding to ARES."
 msgid_plural "%s are not corresponding to ARES."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:350
+#: includes/filters-actions.php:346
 msgctxt "field label"
 msgid "The billing country does not correspond to the country of the %s."
 msgstr ""
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:354
+#: includes/filters-actions.php:350
 msgctxt "field label"
 msgid "The shipping country does not correspond to the country of the %s."
 msgstr ""
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:358
+#: includes/filters-actions.php:354
 msgctxt "field label"
 msgid "%s has not a correct format."
 msgstr ""
 
 #. translators: %s: field label, e.g. "VAT ID"
 #. translators: %s: field label, e.g. "Tax ID"
-#: includes/filters-actions.php:364, includes/filters-actions.php:372
+#: includes/filters-actions.php:360, includes/filters-actions.php:368
 msgctxt "field label"
 msgid "Enter a valid %s."
 msgstr ""
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:368
+#: includes/filters-actions.php:364
 msgctxt "field label"
 msgid "Could not validate %s."
 msgstr ""
 
 #. translators: 1: Tax ID label, 2: VAT ID label
-#: includes/filters-actions.php:376
+#: includes/filters-actions.php:372
 msgid "%1$s or %2$s is not valid."
 msgstr ""
 
-#: includes/filters-actions.php:379
+#: includes/filters-actions.php:375
 msgid "Tax ID does not belong to the entered Business ID."
 msgstr ""
 
-#: includes/filters-actions.php:382
+#: includes/filters-actions.php:378
 msgid "Could not validate Tax ID."
 msgstr ""
 
-#: includes/filters-actions.php:844, includes/filters-actions.php:872, includes/filters-actions.php:896, includes/filters-actions.php:933
+#: includes/filters-actions.php:876, includes/filters-actions.php:904, includes/filters-actions.php:928, includes/filters-actions.php:965
 msgid "Verification of VAT number has failed."
 msgstr ""
 
-#: includes/filters-actions.php:895, includes/filters-actions.php:932
+#: includes/filters-actions.php:927, includes/filters-actions.php:964
 msgid "Caution!"
 msgstr ""
 
-#: includes/filters-actions.php:897, includes/filters-actions.php:934
+#: includes/filters-actions.php:929, includes/filters-actions.php:966
 msgid "Please, make sure the VAT number is valid before processing the order."
 msgstr ""
 
-#: includes/filters-actions.php:949
+#: includes/filters-actions.php:981
 msgid "View Kybernaut IČO DIČ settings"
 msgstr ""
 
-#: includes/filters-actions.php:949
+#: includes/filters-actions.php:981
 msgid "Settings"
 msgstr ""
 
@@ -180,11 +180,11 @@ msgstr ""
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists are missing or older than a week, so those numbers cannot be validated. The import runs daily through WP-Cron (or run \"wp woolab-icdic sk-import\"); failures are logged in WooCommerce → Status → Logs."
 msgstr ""
 
-#: includes/financna-sprava.php:94, includes/settings.php:120
+#: includes/financna-sprava.php:94, includes/settings.php:117
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists cannot be imported, the zip, xmlreader and pdo_sqlite PHP extensions are required (ask your hosting)."
 msgstr ""
 
-#: includes/financna-sprava.php:96, includes/settings.php:118
+#: includes/financna-sprava.php:96, includes/settings.php:115
 msgid "Import status"
 msgstr ""
 
@@ -226,7 +226,7 @@ msgid "%s (enter only if you are a VAT payer)"
 msgstr ""
 
 #. translators: %s: field label, e.g. "Business ID"
-#: includes/labels.php:136
+#: includes/labels.php:140
 msgctxt "label before a value"
 msgid "%s: "
 msgstr ""
@@ -280,203 +280,199 @@ msgid "Enable validation of VAT number in EU database VIES."
 msgstr ""
 
 #: includes/settings.php:104
-msgid "To enable this feature, turn on Soap Client (ask your hosting)."
-msgstr ""
-
-#: includes/settings.php:107
 msgid "Enable VAT exemption for valid EU VAT numbers"
 msgstr ""
 
-#: includes/settings.php:109
+#: includes/settings.php:106
 msgid "To enable this feature, turn on taxes in your store."
 msgstr ""
 
-#: includes/settings.php:113
+#: includes/settings.php:110
 msgid "To enable this feature, set your base country to one of the EU VAT countries."
 msgstr ""
 
-#: includes/settings.php:117
+#: includes/settings.php:114
 msgid "Check Business ID, DIČ and IČ DPH in the Finančná správa lists, downloaded daily (about 70 MB) into a SQLite file in the uploads folder (about 190 MB). Business IDs not in the lists yet (new, or not registered for tax) are accepted without autofill. IČ DPH is checked in VIES only when the lists do not have it."
 msgstr ""
 
-#: includes/settings.php:125
+#: includes/settings.php:122
 msgid "Czech Republic"
 msgstr ""
 
-#: includes/settings.php:127
+#: includes/settings.php:124
 msgid "CZ: Validate Business ID in ARES"
 msgstr ""
 
-#: includes/settings.php:128
+#: includes/settings.php:125
 msgid "Enable validation of Business ID in Czech database ARES."
 msgstr ""
 
-#: includes/settings.php:134
+#: includes/settings.php:131
 msgid "CZ: Validate and autofill based on ARES"
 msgstr ""
 
-#: includes/settings.php:135
+#: includes/settings.php:132
 msgid "Enable company name search, and autofill and validation for Company, VAT number, Address, City, and Postcode fields based on Czech database ARES. Requires checked the option above."
 msgstr ""
 
-#: includes/settings.php:142
+#: includes/settings.php:139
 msgid "Slovakia"
 msgstr ""
 
-#: includes/settings.php:144
+#: includes/settings.php:141
 msgid "SK: Validate in Finančná správa"
 msgstr ""
 
-#: includes/settings.php:152
+#: includes/settings.php:149
 msgid "SK: Validate and autofill based on Finančná správa"
 msgstr ""
 
-#: includes/settings.php:153
+#: includes/settings.php:150
 msgid "Enable company name search, and autofill and validation for Company, DIČ, IČ DPH, Address, City, and Postcode fields. Requires checked the option above."
 msgstr ""
 
-#: includes/settings.php:159
+#: includes/settings.php:156
 msgid "SK: Disable DIČ / IČ DPH match check"
 msgstr ""
 
-#: includes/settings.php:160
+#: includes/settings.php:157
 msgid "Disable validation that IČ DPH must equal \"SK\" + DIČ. Some non-profit organizations have IČ DPH that does not match their DIČ."
 msgstr ""
 
-#: includes/settings.php:167
+#: includes/settings.php:164
 msgid "European Union"
 msgstr ""
 
-#: includes/settings.php:169
+#: includes/settings.php:166
 msgid "EU: Validate VAT number in VIES"
 msgstr ""
 
-#: includes/settings.php:177
+#: includes/settings.php:173
 msgid "Business ID only where companies have one"
 msgstr ""
 
-#: includes/settings.php:178
+#: includes/settings.php:174
 msgid "Hide the Business ID field for billing countries other than Slovakia and the Czech Republic, whose companies have no IČO. The list can be changed with the woolab_icdic_ic_countries filter."
 msgstr ""
 
-#: includes/settings.php:184
+#: includes/settings.php:180
 msgid "EU: VAT exempt"
 msgstr ""
 
-#: includes/settings.php:215
+#: includes/settings.php:211
 msgid "Leave empty to follow the theme."
 msgstr ""
 
-#: includes/settings.php:218
+#: includes/settings.php:214
 msgid "Status icons"
 msgstr ""
 
-#: includes/settings.php:218
+#: includes/settings.php:214
 msgid "The padlock on the company name and Business ID after an autofill, and the checkmark on the other filled-in fields."
 msgstr ""
 
-#: includes/settings.php:219
+#: includes/settings.php:215
 msgid "Verified"
 msgstr ""
 
-#: includes/settings.php:219
+#: includes/settings.php:215
 msgid "Padlock and checkmark. Leave empty for the WooCommerce success colour."
 msgstr ""
 
-#: includes/settings.php:220
+#: includes/settings.php:216
 msgid "Clear"
 msgstr ""
 
-#: includes/settings.php:220
+#: includes/settings.php:216
 msgid "The X the padlock turns into. Leave empty for the WooCommerce error colour."
 msgstr ""
 
-#: includes/settings.php:223
+#: includes/settings.php:219
 msgid "Company name suggestions"
 msgstr ""
 
-#: includes/settings.php:223
+#: includes/settings.php:219
 msgid "By default the list takes its colours from the company field."
 msgstr ""
 
-#: includes/settings.php:224
+#: includes/settings.php:220
 msgid "Background"
 msgstr ""
 
-#: includes/settings.php:225
+#: includes/settings.php:221
 msgid "Text"
 msgstr ""
 
-#: includes/settings.php:226
+#: includes/settings.php:222
 msgid "Border"
 msgstr ""
 
-#: includes/settings.php:227
+#: includes/settings.php:223
 msgid "Highlighted suggestion"
 msgstr ""
 
-#: includes/settings.php:227
+#: includes/settings.php:223
 msgid "Leave empty for a tint of the text colour."
 msgstr ""
 
-#: includes/settings.php:239
+#: includes/settings.php:235
 msgid "Finančná správa lists"
 msgstr ""
 
-#: includes/settings.php:239
+#: includes/settings.php:235
 msgid "The DIČ and IČ DPH lists the Slovak checks run against, imported daily."
 msgstr ""
 
 #. translators: 1: date and time, 2: time span, e.g. "3 hours"
-#: includes/settings.php:254
+#: includes/settings.php:250
 msgid "%1$s (%2$s ago)"
 msgstr ""
 
 #. translators: %s: link to the Validation settings
-#: includes/settings.php:262
+#: includes/settings.php:258
 msgid "Off. Enable \"SK: Validate in Finančná správa\" in %s."
 msgstr ""
 
-#: includes/settings.php:266
+#: includes/settings.php:262
 msgid "Up to date"
 msgstr ""
 
-#: includes/settings.php:268
+#: includes/settings.php:264
 msgid "Older than a week: Slovak numbers are checked in VIES only, or let through when \"ignore when the check fails\" is on."
 msgstr ""
 
-#: includes/settings.php:270
+#: includes/settings.php:266
 msgid "Not imported yet"
 msgstr ""
 
-#: includes/settings.php:273
+#: includes/settings.php:269
 msgid "Status"
 msgstr ""
 
 #. translators: 1: number of DIČ, 2: number of IČ DPH
-#: includes/settings.php:278
+#: includes/settings.php:274
 msgid "%1$s DIČ, %2$s IČ DPH"
 msgstr ""
 
-#: includes/settings.php:280
+#: includes/settings.php:276
 msgid "The file is missing, the next import creates it again."
 msgstr ""
 
-#: includes/settings.php:290
+#: includes/settings.php:286
 msgid "Not scheduled, it is scheduled again on the next page load."
 msgstr ""
 
 #. translators: %s: date and time
-#: includes/settings.php:293
+#: includes/settings.php:289
 msgid "%s, overdue: WP-Cron has not run since. It runs on page visits, or set up a server cron job for wp-cron.php."
 msgstr ""
 
 #. translators: %s: link to WooCommerce → Status → Logs
-#: includes/settings.php:309
+#: includes/settings.php:305
 msgid "Every import is logged in %s."
 msgstr ""
 
-#: includes/settings.php:310
+#: includes/settings.php:306
 msgid "WooCommerce → Status → Logs"
 msgstr ""
 

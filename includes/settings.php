@@ -100,9 +100,6 @@ function woolab_icdic_settings_general() {
 function woolab_icdic_settings_validation() {
 
 	$vies_desc = __( 'Enable validation of VAT number in EU database VIES.', 'woolab-ic-dic' );
-	if ( ! class_exists( 'SoapClient' ) ) {
-		$vies_desc = '<span style="color:#ca4a1f">' . __( 'To enable this feature, turn on Soap Client (ask your hosting).', 'woolab-ic-dic' ) . '</span> ' . $vies_desc;
-	}
 
 	$vat_desc = __( 'Enable VAT exemption for valid EU VAT numbers', 'woolab-ic-dic' );
 	if ( ! wc_tax_enabled() ) {
@@ -171,7 +168,6 @@ function woolab_icdic_settings_validation() {
 			'id'       => woolab_icdic_settings_id( 'vies_check' ),
 			'default'  => 'yes',
 			'type'     => 'checkbox',
-			'disabled' => ! class_exists( 'SoapClient' ),
 		),
 		array(
 			'title'   => __( 'Business ID only where companies have one', 'woolab-ic-dic' ),

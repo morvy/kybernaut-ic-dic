@@ -52,7 +52,8 @@ Requires WooCommerce 11.0, WordPress 6.9 and PHP 8.1. For older stacks use the 1
 * Woo iDoklad, Woo Doprava, Woo GoPay etc. by [Toret](https://toret.cz/obchod/ref/106/) (affiliate link)
 
 === Requirements ===
-* SoapClient PHP library for VIES validation (ask your hosting)
+* WooCommerce 11.0 or newer, PHP 8.1 or newer
+* For the Slovak Finančná správa check: the zip, xmlreader and pdo_sqlite (with FTS5) PHP extensions, and about 190 MB in the uploads folder
 
 === Credits ===
 
@@ -165,6 +166,7 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 * Fix: the VAT exemption on page load never applied, and "Buying as a company" was not pre-ticked for a customer with a stored company: the billing country and company were read with `get_meta()`, which returns nothing for core customer properties.
 * Fix: Slovak and Czech translations: "IČ DPH" used for the DIČ field, trailing spaces in the field labels, "IČ DIČ" for "IČO DIČ", typos.
 * Performance: scripts load only where they are used: the block checkout script through WooCommerce's Checkout block integration (settings via `wcSettings`), the classic one on the checkout form only (not on the order-received or pay pages), deferred in the footer; the order screen script only on order screens. The classic checkout no longer adds another set of IČO handlers, and another lookup per keystroke, every time the country changes.
+* Tweak: VAT numbers are checked through the VIES REST API instead of SOAP, so the PHP SoapClient extension is no longer needed ("turn on Soap Client" is gone from the settings). ibericode/vat is still used for the number formats.
 * Feature: **company name search** in the classic and block checkout. Typing at least 3 letters of the company name lists matching subjects from ARES (CZ) or the Finančná správa lists (SK); picking one fills the IČO and the rest is autofilled. Enabled together with the autofill options.
 * Feature: bundled Slovak and Czech translations, loaded on top of the wordpress.org language packs so new strings are translated before the packs catch up.
 * Tweak: postcodes are compared without spaces when checking autofilled data.
