@@ -157,6 +157,7 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 * Feature: **company name search** in the classic and block checkout. Typing at least 3 letters of the company name lists matching subjects from ARES (CZ) or the Finančná správa lists (SK); picking one fills the IČO and the rest is autofilled. Enabled together with the autofill options.
 * Feature: bundled Slovak and Czech translations, loaded on top of the wordpress.org language packs so new strings are translated before the packs catch up.
 * Tweak: postcodes are compared without spaces when checking autofilled data.
+* Tweak: the settings moved from WooCommerce → Settings → General to their own tab, WooCommerce → Settings → IČO DIČ, with General, Validation, Appearance and Finančná správa sections. The Finančná správa section shows the import status (last import, row counts, database size, next run, last error, PHP extensions); Appearance sets the colours of the status icons and of the company name suggestions.
 * Tweak: settings are stored in one autoloaded option, `woolab_icdic_settings`, instead of ten. They are migrated automatically; the old options are kept, unused, so a downgrade to 1.11 still finds them. They will be removed in the next release. `woolab_icdic_get_option()` is deprecated, use `woolab_icdic_setting()`.
 * Tweak: `uninstall.php` removes the plugin settings (including the 1.x options) and the Slovak lists.
 

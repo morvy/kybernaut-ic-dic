@@ -146,6 +146,7 @@ function woolab_icdic_enqueue_scripts() {
 		// Lookup spinner and the suggestion list.
 		if ( woolab_icdic_ares_check() || woolab_icdic_sk_check() ) {
 			wp_enqueue_style( 'woolab-icdic-lookup-css', WOOLAB_IC_DIC_URL . 'assets/css/lookup.css', array(), WOOLAB_IC_DIC_VERSION );
+			wp_add_inline_style( 'woolab-icdic-lookup-css', woolab_icdic_lookup_colors_css() );
 		}
 
 		// Company name suggestions, wherever a register autofills (woolab_icdic_search_ajax()).
@@ -188,6 +189,23 @@ function woolab_icdic_enqueue_scripts() {
 			wp_enqueue_style( 'woolab-icdic-public-css', WOOLAB_IC_DIC_URL . 'assets/css/style.css', null, WOOLAB_IC_DIC_VERSION );
 		}
 	}
+}
+
+/**
+ * The colours set in Settings → IČO DIČ → Appearance, as the custom properties
+ * lookup.css reads. Empty when none is set.
+ */
+function woolab_icdic_lookup_colors_css() {
+	$properties = array();
+
+	foreach ( array( 'color_ok' => 'ok', 'color_clear' => 'clear', 'color_list_bg' => 'list-bg', 'color_list_text' => 'list-text', 'color_list_border' => 'list-border', 'color_list_highlight' => 'list-highlight' ) as $key => $property ) {
+		$color = sanitize_hex_color( woolab_icdic_setting( $key ) );
+		if ( $color ) {
+			$properties[] = '--woolab-ic-dic-color-' . $property . ':' . $color;
+		}
+	}
+
+	return $properties ? ':root{' . implode( ';', $properties ) . '}' : '';
 }
 
 function woolab_icdic_ares_check() {

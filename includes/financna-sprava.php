@@ -93,24 +93,78 @@ function woolab_icdic_sk_admin_notice() {
 		? __( 'Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists are missing or older than a week, so those numbers cannot be validated. The import runs daily through WP-Cron (or run "wp woolab-icdic sk-import"); failures are logged in WooCommerce → Status → Logs.', 'woolab-ic-dic' )
 		: __( 'Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists cannot be imported, the zip, xmlreader and pdo_sqlite PHP extensions are required (ask your hosting).', 'woolab-ic-dic' );
 
-	printf( '<div class="notice notice-warning"><p>%s</p></div>', esc_html( $message ) );
+	printf( '<div class="notice notice-warning"><p>%s <a href="%s">%s</a></p></div>', esc_html( $message ), esc_url( woolab_icdic_settings_url( 'financna_sprava' ) ), esc_html__( 'Import status', 'woolab-ic-dic' ) );
 }
 
-function woolab_icdic_sk_import_supported() {
-	static $supported = null;
+/**
+ * What the import needs from PHP.
+ *
+ * @return array<string,bool> PHP extension => available.
+ */
+function woolab_icdic_sk_requirements() {
+	static $requirements = null;
 
-	if ( null === $supported ) {
-		$supported = class_exists( 'ZipArchive' ) && class_exists( 'XMLReader' ) && class_exists( 'PDO' ) && in_array( 'sqlite', PDO::getAvailableDrivers(), true );
+	if ( null === $requirements ) {
+		$sqlite       = class_exists( 'PDO' ) && in_array( 'sqlite', PDO::getAvailableDrivers(), true );
+		$requirements = array(
+			'zip'        => class_exists( 'ZipArchive' ),
+			'xmlreader'  => class_exists( 'XMLReader' ),
+			'pdo_sqlite' => $sqlite,
+			// The name search needs SQLite's full-text search, part of nearly every build.
+			'FTS5'       => false,
+		);
 
-		// The name search needs SQLite's full-text search, part of nearly every build.
-		try {
-			$supported = $supported && false !== ( new PDO( 'sqlite::memory:' ) )->exec( 'CREATE VIRTUAL TABLE t USING fts5(a)' );
-		} catch ( PDOException $e ) {
-			$supported = false;
+		if ( $sqlite ) {
+			try {
+				$requirements['FTS5'] = false !== ( new PDO( 'sqlite::memory:' ) )->exec( 'CREATE VIRTUAL TABLE t USING fts5(a)' );
+			} catch ( PDOException $e ) {
+				$requirements['FTS5'] = false;
+			}
 		}
 	}
 
-	return $supported;
+	return $requirements;
+}
+
+function woolab_icdic_sk_import_supported() {
+	return ! in_array( false, woolab_icdic_sk_requirements(), true );
+}
+
+/**
+ * Log an import error and remember it for the status in the settings
+ * (woolab_icdic_sk_status()).
+ *
+ * @param string|null $message Null reads the last one back.
+ * @return string|null
+ */
+function woolab_icdic_sk_import_error( $message = null ) {
+	static $last = null;
+
+	if ( null !== $message ) {
+		$last = $message;
+		Logger::getInstance()->logError( $message );
+	}
+
+	return $last;
+}
+
+/**
+ * The lists as the settings show them.
+ *
+ * @return array{updated:array|false, failed:array|false, next:int|false, file_size:int|false, fresh:bool}
+ */
+function woolab_icdic_sk_status() {
+	$updated = get_option( 'woolab_icdic_sk_updated' );
+	$updated = is_array( $updated ) && ! empty( $updated['file'] ) ? $updated : false;
+	$path    = $updated ? woolab_icdic_sk_dir() . '/' . $updated['file'] : '';
+
+	return array(
+		'updated'   => $updated,
+		'failed'    => get_option( 'woolab_icdic_sk_failed' ),
+		'next'      => wp_next_scheduled( 'woolab_icdic_sk_import' ),
+		'file_size' => $path && is_readable( $path ) ? filesize( $path ) : false,
+		'fresh'     => woolab_icdic_sk_lists_fresh(),
+	);
 }
 
 /**
@@ -120,17 +174,33 @@ function woolab_icdic_sk_import_supported() {
  * @return array|false Imported row counts keyed 'dic' and 'dph', or false.
  */
 function woolab_icdic_sk_import() {
+	$counts = woolab_icdic_sk_import_locked();
+
+	// A failed attempt is shown in the settings until the next successful one.
+	if ( $counts ) {
+		delete_option( 'woolab_icdic_sk_failed' );
+	} else {
+		update_option( 'woolab_icdic_sk_failed', array( 'time' => time(), 'error' => (string) woolab_icdic_sk_import_error() ), false );
+	}
+
+	return $counts;
+}
+
+/**
+ * @return array|false
+ */
+function woolab_icdic_sk_import_locked() {
 	$logger = Logger::getInstance();
 
 	if ( ! woolab_icdic_sk_import_supported() ) {
-		$logger->logError( 'Finančná správa lists import needs the zip, xmlreader and pdo_sqlite PHP extensions.' );
+		woolab_icdic_sk_import_error( 'Finančná správa lists import needs the zip, xmlreader and pdo_sqlite (with FTS5) PHP extensions.' );
 		return false;
 	}
 
 	$dir = woolab_icdic_sk_dir();
 
 	if ( ! wp_mkdir_p( $dir ) ) {
-		$logger->logError( 'Finančná správa lists import could not create ' . $dir );
+		woolab_icdic_sk_import_error( 'Finančná správa lists import could not create ' . $dir );
 		return false;
 	}
 
@@ -143,7 +213,7 @@ function woolab_icdic_sk_import() {
 	// lock when a crashed run's process ends.
 	$lock = fopen( $dir . '/import.lock', 'c' );
 	if ( ! $lock || ! flock( $lock, LOCK_EX | LOCK_NB ) ) {
-		$logger->logError( 'Finančná správa lists import skipped: another import is running.' );
+		woolab_icdic_sk_import_error( 'Finančná správa lists import skipped: another import is running.' );
 		return false;
 	}
 
@@ -152,7 +222,7 @@ function woolab_icdic_sk_import() {
 	try {
 		$counts = woolab_icdic_sk_import_run( $dir . '/' . $file );
 	} catch ( Throwable $e ) {
-		$logger->logError( 'Finančná správa lists import failed: ' . $e->getMessage() );
+		woolab_icdic_sk_import_error( 'Finančná správa lists import failed: ' . $e->getMessage() );
 		$counts = false;
 	}
 
@@ -180,7 +250,6 @@ function woolab_icdic_sk_import() {
  * @return array|false
  */
 function woolab_icdic_sk_import_run( $path ) {
-	$logger = Logger::getInstance();
 
 	require_once ABSPATH . 'wp-admin/includes/file.php';
 
@@ -202,7 +271,7 @@ function woolab_icdic_sk_import_run( $path ) {
 		$file = download_url( $list['url'], 600 );
 
 		if ( is_wp_error( $file ) ) {
-			$logger->logError( sprintf( 'Finančná správa lists import could not download %s: %s', $list['url'], $file->get_error_message() ) );
+			woolab_icdic_sk_import_error( sprintf( 'Finančná správa lists import could not download %s: %s', $list['url'], $file->get_error_message() ) );
 			return false;
 		}
 
@@ -213,7 +282,7 @@ function woolab_icdic_sk_import_run( $path ) {
 		$count = $read ? (int) $db->query( 'SELECT COUNT(*) FROM n WHERE kind = ' . (int) $list['kind'] )->fetchColumn() : 0;
 
 		if ( $count < $list['min'] ) {
-			$logger->logError( sprintf( 'Finančná správa lists import stopped: %s gave %d rows, expected at least %d.', $list['entry'], $count, $list['min'] ) );
+			woolab_icdic_sk_import_error( sprintf( 'Finančná správa lists import stopped: %s gave %d rows, expected at least %d.', $list['entry'], $count, $list['min'] ) );
 			return false;
 		}
 

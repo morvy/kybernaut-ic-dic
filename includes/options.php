@@ -38,6 +38,13 @@ function woolab_icdic_settings_schema() {
 		'disable_dic_dph_match' => array( 'woolab_icdic_disable_dic_dicdph_match', 'no' ),
 		'toggle'                => array( 'woolab_icdic_toggle_switch', 'no' ),
 		'country_ontop'         => array( 'woolab_icdic_country_switch', 'no' ),
+		// Appearance (lookup.css); empty follows the theme and WooCommerce.
+		'color_ok'              => array( null, '' ),
+		'color_clear'           => array( null, '' ),
+		'color_list_bg'         => array( null, '' ),
+		'color_list_text'       => array( null, '' ),
+		'color_list_border'     => array( null, '' ),
+		'color_list_highlight'  => array( null, '' ),
 	);
 }
 
