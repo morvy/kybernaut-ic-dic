@@ -4,10 +4,11 @@
  * shippable product, cash on delivery and the block checkout WooCommerce creates.
  */
 
-// The point of these tests is the oldest supported stack: fail the boot rather
-// than pass on whatever Playground resolved "latest" to.
-if ( ! str_starts_with( get_bloginfo( 'version' ), '6.7' ) || ! str_starts_with( WC_VERSION, '10.0.' ) ) {
-	throw new RuntimeException( 'Expected WordPress 6.7 and WooCommerce 10.0, got ' . get_bloginfo( 'version' ) . ' / ' . WC_VERSION );
+// The stack tests/e2e/stack.js asked for: fail the boot rather than test on
+// whatever Playground resolved instead.
+$woolab_e2e_wp = get_bloginfo( 'version' );
+if ( ( WOOLAB_E2E_WP !== $woolab_e2e_wp && ! str_starts_with( $woolab_e2e_wp, WOOLAB_E2E_WP . '.' ) ) || WOOLAB_E2E_WC !== WC_VERSION ) {
+	throw new RuntimeException( 'Expected WordPress ' . WOOLAB_E2E_WP . ' and WooCommerce ' . WOOLAB_E2E_WC . ', got ' . $woolab_e2e_wp . ' / ' . WC_VERSION );
 }
 
 update_option( 'woocommerce_default_country', 'SK' );

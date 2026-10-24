@@ -1,6 +1,12 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  # The e2e "latest" stack follows WooCommerce releases, not pushes.
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
 
 jobs:
   test:
@@ -37,8 +43,14 @@ jobs:
         run: composer lint:rector
 
   e2e:
-    name: Block checkout on WordPress 6.7 + WooCommerce 10.0 (Playground)
+    name: Block checkout, ${{ matrix.stack }} stack (Playground)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # min: the plugin header's minimums; latest: newest WooCommerce on the
+        # WordPress it requires (tests/e2e/stack.js).
+        stack: [min, latest]
 
     steps:
       - uses: actions/checkout@v5
@@ -60,10 +72,10 @@ jobs:
       - run: npx playwright install --with-deps chromium
 
       # Calls ARES and VIES live, like the checkout does.
-      - run: npm run test:e2e
+      - run: npm run test:e2e:${{ matrix.stack }}
 
       - uses: actions/upload-artifact@v5
         if: failure()
         with:
-          name: playwright-results
+          name: playwright-results-${{ matrix.stack }}
           path: test-results

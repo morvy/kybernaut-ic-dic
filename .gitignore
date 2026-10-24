@@ -8,3 +8,4 @@ deps
 .phpunit.result.cache
 test-results
 playwright-report
+tests/e2e/.blueprint.json

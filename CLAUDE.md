@@ -39,12 +39,16 @@ vendor/bin/phpunit --testsuite Unit
 
 The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions without requiring a full WordPress installation.
 
-End-to-end tests run the block checkout in WordPress Playground on the oldest
-supported stack (WordPress 6.7, WooCommerce 10.0, PHP 8.1; pinned in
-`tests/e2e/blueprint.json`, which also checks them), with live ARES and VIES:
+End-to-end tests run the block checkout in WordPress Playground with live ARES and
+VIES, on two stacks that `tests/e2e/stack.js` resolves into `tests/e2e/.blueprint.json`
+(`setup.php` fails the boot if Playground serves anything else):
+- `min`: the plugin header's minimums (WC requires at least → its newest patch,
+  Requires at least, Requires PHP);
+- `latest`: the newest WooCommerce from WordPress.org, on the WordPress version it
+  requires, PHP 8.4. CI also runs it weekly.
 ```bash
 npx playwright install chromium   # once
-npm run test:e2e                  # boots Playground on :9411, tests/e2e/checkout.spec.js
+npm run test:e2e                  # both; or test:e2e:min / test:e2e:latest (port 9411)
 ```
 
 ### Static analysis

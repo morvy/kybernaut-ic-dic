@@ -19,7 +19,9 @@
   },
   "scripts": {
     "test": "js",
-    "test:e2e": "playwright test -c tests/e2e/playwright.config.js"
+    "test:e2e": "npm run test:e2e:min && npm run test:e2e:latest",
+    "test:e2e:min": "node tests/e2e/stack.js min && playwright test -c tests/e2e/playwright.config.js",
+    "test:e2e:latest": "node tests/e2e/stack.js latest && playwright test -c tests/e2e/playwright.config.js"
   },
   "repository": {
     "type": "git",
