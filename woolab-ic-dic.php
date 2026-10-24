@@ -58,6 +58,7 @@ function woolab_icdic_init() {
 
 	// Load additional sources
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/ares.php');
+	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/financna-sprava.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/helpers.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/validation.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/filters-actions.php');
@@ -123,6 +124,10 @@ function woolab_icdic_init() {
 
 add_action( 'plugins_loaded', 'woolab_icdic_init' );
 
+register_deactivation_hook( __FILE__, function () {
+	wp_clear_scheduled_hook( 'woolab_icdic_sk_import' );
+} );
+
 function woolab_icdic_enqueue_scripts() {
 	$suffix = SCRIPT_DEBUG ? '' : '.min';
 	if( is_checkout() ){
@@ -145,8 +150,12 @@ function woolab_icdic_enqueue_scripts() {
 			'l18n_error' => __('Unexpected error occurred. Try it again.', 'woolab-ic-dic'),
 			'l18n_ok' => __('Information loaded succesfully from ARES.', 'woolab-ic-dic'),
 			'l18n_validating' => __('Validating data in ARES.', 'woolab-ic-dic'),
+			'l18n_ok_sk' => __('Information loaded succesfully from Finančná správa.', 'woolab-ic-dic'),
+			'l18n_validating_sk' => __('Validating data in Finančná správa.', 'woolab-ic-dic'),
 			'ares_check' => woolab_icdic_ares_check(),
 			'ares_fill' => woolab_icdic_ares_fill(),
+			'sk_check' => woolab_icdic_sk_check(),
+			'sk_fill' => woolab_icdic_sk_fill(),
 			'ignore_check_fail' => woolab_icdic_ignore_check_fail(),
 			'fields' => array(
 				'ic'      => 'kybernaut/ic',
@@ -171,6 +180,16 @@ function woolab_icdic_ares_check() {
 function woolab_icdic_ares_fill() {
 	$option = woolab_icdic_get_option( 'woolab_icdic_ares_fill', 'no' );
 	return apply_filters( 'woolab_icdic_ares_fill', $option );
+}
+
+function woolab_icdic_sk_check() {
+	$option = woolab_icdic_get_option( 'woolab_icdic_sk_check', 'no' );
+	return apply_filters( 'woolab_icdic_sk_check', $option );
+}
+
+function woolab_icdic_sk_fill() {
+	$option = woolab_icdic_get_option( 'woolab_icdic_sk_fill', 'no' );
+	return apply_filters( 'woolab_icdic_sk_fill', $option );
 }
 
 function woolab_icdic_vies_check() {
@@ -267,6 +286,11 @@ function woolab_icdic_ares_ajax(){
 	check_ajax_referer( 'woolab_icdic_ares', 'nonce' );
 
 	$ico = isset( $_REQUEST['ico'] ) ? wc_clean( wp_unslash( $_REQUEST['ico'] ) ) : '';
+	$country = isset( $_REQUEST['country'] ) ? wc_clean( wp_unslash( $_REQUEST['country'] ) ) : 'CZ';
+
+	if ( 'SK' === $country ) {
+		wp_send_json( woolab_icdic_sk_check() ? woolab_icdic_sk_lookup( $ico ) : array( 'error' => __( 'Unexpected error occurred. Try it again.', 'woolab-ic-dic' ) ) );
+	}
 
 	wp_send_json( woolab_icdic_ares( $ico ) );
 };

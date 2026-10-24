@@ -165,6 +165,19 @@ function woolab_icdic_make_vies_verifier( $log_message ) {
 			return 'bad_format';
 		}
 
+		// Slovak numbers: the Finančná správa list first (includes/financna-sprava.php).
+		// VIES only confirms what the list does not have yet, and only when enabled —
+		// without SoapClient it cannot run at all.
+		if ( woolab_icdic_sk_check() && 'SK' === woolab_icdic_get_vat_number_country_code( $vat ) ) {
+			$row = woolab_icdic_sk_find( 'dph', $vat );
+			if ( $row ) {
+				return 'valid';
+			}
+			if ( ! woolab_icdic_vies_check() ) {
+				return false === $row ? 'unverifiable' : 'invalid';
+			}
+		}
+
 		// A definitive VIES result (valid/invalid) is stable, so cache it. This
 		// matters most for woolab_icdic_set_vat_exempt_for_customer(), which runs
 		// on init on every front-end page load and would otherwise issue a fresh
@@ -227,6 +240,8 @@ function woolab_icdic_checkout_field_process() {
 		'ares_check'            => (bool) woolab_icdic_ares_check(),
 		'ares_fill'             => (bool) woolab_icdic_ares_fill(),
 		'vies_check'            => (bool) woolab_icdic_vies_check(),
+		'sk_check'              => (bool) woolab_icdic_sk_check(),
+		'sk_fill'               => (bool) woolab_icdic_sk_fill(),
 		'ignore_check_fail'     => (bool) woolab_icdic_ignore_check_fail(),
 		'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
 		'require_sk_ic_and_dic' => (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', true ),
@@ -239,6 +254,8 @@ function woolab_icdic_checkout_field_process() {
 		'verify_vat'            => $verify_vat,
 		// Raw woolab_icdic_ares() result (or falsy) — passed as a callable directly.
 		'lookup_ares'           => 'woolab_icdic_ares',
+		'lookup_sk_ico'         => 'woolab_icdic_sk_lookup',
+		'lookup_sk'             => 'woolab_icdic_sk_find',
 	);
 
 	$result = woolab_icdic_validate_checkout( $input );
@@ -283,6 +300,7 @@ function woolab_icdic_checkout_error_message( array $error ) {
 			return __( 'Unexpected error occurred. Try it again.', 'woolab-ic-dic' );
 
 		case 'ares_mismatch':
+		case 'sk_mismatch':
 			$labels = array(
 				'tax_id'   => __( 'Tax ID', 'woolab-ic-dic' ),
 				'company'  => __( 'Company', 'woocommerce' ),
@@ -293,6 +311,9 @@ function woolab_icdic_checkout_error_message( array $error ) {
 			$missing_fields = array();
 			foreach ( $error['data']['fields'] as $field ) {
 				$missing_fields[] = $labels[ $field ];
+			}
+			if ( 'sk_mismatch' === $error['code'] ) {
+				return sprintf( _n( '%s is not corresponding to Finančná správa.', '%s are not corresponding to Finančná správa.', count( $missing_fields ), 'woolab-ic-dic' ), wc_format_list_of_items( $missing_fields ) );
 			}
 			return sprintf( _n( '%s is not corresponding to ARES.', '%s are not corresponding to ARES.', count( $missing_fields ), 'woolab-ic-dic' ), wc_format_list_of_items( $missing_fields ) );
 
@@ -320,6 +341,12 @@ function woolab_icdic_checkout_error_message( array $error ) {
 
 		case 'dic_dph_mismatch':
 			return __( 'Tax ID or VAT number is not valid.', 'woolab-ic-dic' );
+
+		case 'dic_ico_mismatch':
+			return __( 'Tax ID does not belong to the entered Business ID.', 'woolab-ic-dic' );
+
+		case 'sk_unverifiable':
+			return __( 'Could not validate Tax ID.', 'woolab-ic-dic' );
 	}
 
 	return '';

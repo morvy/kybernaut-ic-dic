@@ -48,6 +48,7 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
 - `includes/` - Core functionality organized by responsibility:
   - `filters-actions.php` - Main business logic for checkout fields, validation, and order processing
   - `ares.php` - Czech ARES registry API integration for Business ID verification
+  - `financna-sprava.php` - Slovak Finančná správa DIČ / IČ DPH lists: daily WP-Cron import into a SQLite file in uploads, local IČO / DIČ / IČ DPH lookups
   - `helpers.php` - Mathematical validation functions for IC/DIC/RC numbers
   - `settings.php` - WooCommerce settings integration
   - `logger.php` - Custom logging implementation
@@ -79,9 +80,9 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
 **Validation Strategy:**
 - **Czech IC (Business ID)**: Mathematical validation via `woolab_icdic_verify_ic()` + optional ARES check
 - **Czech DIC (Tax ID)**: Can be either RC (birth number) or IC-based, validated mathematically
-- **Slovak IC**: Mathematical validation only (8-digit modulo-11 check)
-- **Slovak DIC**: Required when IC is present, mathematical validation
-- **Slovak DIC DPH (VAT)**: EU VIES validation, must match DIC with SK prefix
+- **Slovak IC**: Finančná správa lists when `woolab_icdic_sk_check` is on (an IČO not listed is accepted, without autofill), otherwise the 8-digit modulo-11 check
+- **Slovak DIC**: Required when IC is present, mathematical validation, then looked up in the lists and matched to the IČO
+- **Slovak DIC DPH (VAT)**: Finančná správa list first, EU VIES for what the list lacks; must match DIC with SK prefix unless the lists tie both to the same IČO (VAT groups)
 - **EU VAT numbers**: VIES validation via `ibericode/vat` library
 
 **ARES Integration:**

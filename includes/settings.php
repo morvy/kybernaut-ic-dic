@@ -53,6 +53,26 @@ function woolab_icdic_icdic_general_settings($settings) {
         'default' => 'no',
         'type'    => 'checkbox',
     );
+    $sk_updated = get_option( 'woolab_icdic_sk_updated' );
+    $sk_status  = is_array( $sk_updated )
+        /* translators: 1: date and time, 2: number of DIČ, 3: number of IČ DPH */
+        ? sprintf( __( 'Lists last imported %1$s (%2$s DIČ, %3$s IČ DPH).', 'woolab-ic-dic' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $sk_updated['time'] ), number_format_i18n( $sk_updated['counts']['dic'] ), number_format_i18n( $sk_updated['counts']['dph'] ) )
+        : __( 'Lists not imported yet; the first import runs on the next WP-Cron run after enabling (or run "wp woolab-icdic sk-import").', 'woolab-ic-dic' );
+    $settings[] = array(
+        'title'   => __( 'SK: Validate in Finančná správa', 'woolab-ic-dic' ),
+        'desc'    => __( 'Check Business ID, DIČ and IČ DPH in the Finančná správa lists, downloaded daily (about 70 MB) into a SQLite file in the uploads folder (about 190 MB). Business IDs not in the lists yet (new, or not registered for tax) are accepted without autofill. IČ DPH is checked in VIES only when the lists do not have it.', 'woolab-ic-dic' ) . '<br>' . $sk_status . '<br>' . __( 'Source: Finančná správa SR.', 'woolab-ic-dic' ),
+        'id'      => 'woolab_icdic_sk_check',
+        'default' => 'no',
+        'type'    => 'checkbox',
+        'disabled' => ! woolab_icdic_sk_import_supported(),
+    );
+    $settings[] = array(
+        'title'   => __( 'SK: Validate and autofill based on Finančná správa', 'woolab-ic-dic' ),
+        'desc'    => __( 'Enable autofill and validation for Company, DIČ, IČ DPH, Address, City, and Postcode fields. Requires checked the option above.', 'woolab-ic-dic' ),
+        'id'      => 'woolab_icdic_sk_fill',
+        'default' => 'no',
+        'type'    => 'checkbox',
+    );
     $settings[] = array(
         'title'   => __( 'EU: Validate VAT number in VIES', 'woolab-ic-dic' ),
         'desc'    => $vies_desc,
@@ -70,8 +90,8 @@ function woolab_icdic_icdic_general_settings($settings) {
         'disabled' => $vat_check_disabled,
     );
 	$settings[] = array(
-		'title'   => __( 'Ignore when ARES or VIES check fails for technical reasons', 'woolab-ic-dic' ),
-		'desc'    => __( 'Allow the creation of an order if the verification of the Business ID in ARES or the VAT number in the European VIES database fails for technical reasons.', 'woolab-ic-dic' ),
+		'title'   => __( 'Ignore when ARES, Finančná správa or VIES check fails for technical reasons', 'woolab-ic-dic' ),
+		'desc'    => __( 'Allow the creation of an order if the verification of the Business ID in ARES or Finančná správa, or the VAT number in the European VIES database fails for technical reasons.', 'woolab-ic-dic' ),
 		'id'      => 'woolab_icdic_ignore_check_fail',
 		'default' => 'no',
 		'type'    => 'checkbox',

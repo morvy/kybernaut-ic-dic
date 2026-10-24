@@ -28,6 +28,8 @@ if ( ! defined( 'WPINC' ) ) {
  *     @type bool        ares_check
  *     @type bool        ares_fill
  *     @type bool        vies_check
+ *     @type bool        sk_check           Optional. Check SK numbers in the Finančná správa lists.
+ *     @type bool        sk_fill            Optional. Compare the SK company and address with those lists.
  *     @type bool        ignore_check_fail
  *     @type bool        check_country_match
  *     @type bool        require_sk_ic_and_dic
@@ -38,6 +40,8 @@ if ( ! defined( 'WPINC' ) ) {
  *     @type bool        country_in_eu      Resolved from ibericode Countries::isCountryCodeInEU().
  *     @type callable    verify_vat         fn(string $vat): string 'valid'|'bad_format'|'invalid'|'unverifiable'
  *     @type callable    lookup_ares        fn(string $ico): array   raw woolab_icdic_ares() result (or falsy)
+ *     @type callable    lookup_sk_ico      Optional. fn(string $ico): array, woolab_icdic_sk_lookup() — same shape as lookup_ares.
+ *     @type callable    lookup_sk          Optional. fn(string $list, string $number): array|null|false, woolab_icdic_sk_find().
  * }
  *
  * @return array {
@@ -51,6 +55,8 @@ function woolab_icdic_validate_checkout( array $input ) {
 
 	$errors                 = array();
 	$vat_check_fail_ignored = false;
+	$sk_check               = ! empty( $input['sk_check'] );
+	$sk_dic                 = null;
 
 	// Remove white spaces (matches the original preg_replace cleaning).
 	$ico     = preg_replace( '/\s+/', '', $input['ic'] );
@@ -75,57 +81,64 @@ function woolab_icdic_validate_checkout( array $input ) {
 
 	if ( $input['ic'] ) {
 
-		// CZ
-		if ( $country == 'CZ' ) {
+		// CZ is checked in ARES, SK in the Slovak lists. Both lookups return the same shape.
+		$registry = null;
+		if ( $country == 'CZ' && $input['ares_check'] ) {
+			$registry = array( 'lookup' => $input['lookup_ares'], 'fill' => $input['ares_fill'], 'mismatch' => 'ares_mismatch' );
+		} elseif ( $country == 'SK' && $sk_check ) {
+			$registry = array( 'lookup' => $input['lookup_sk_ico'], 'fill' => ! empty( $input['sk_fill'] ), 'mismatch' => 'sk_mismatch' );
+		}
 
-			// ARES Check Enabled
-			if ( $input['ares_check'] ) {
+		if ( $registry ) {
 
-				$ares = $input['lookup_ares']( $ico );
-				if ( $ares ) {
-					if ( $ares['error'] ) {
-						$is_internal_error = ( ! empty( $ares['internal_error'] ) );
+			$ares = $registry['lookup']( $ico );
+			if ( $ares ) {
+				if ( ! empty( $ares['unlisted'] ) ) {
+					// Not in the Slovak lists yet (new, or not registered for tax): the
+					// lookup checked the format, there is nothing to compare.
+				} elseif ( $ares['error'] ) {
+					$is_internal_error = ( ! empty( $ares['internal_error'] ) );
 
-						if ( $is_internal_error && $input['ignore_check_fail'] ) {
-							$vat_check_fail_ignored = true;
-						} else {
-							$errors[] = array( 'code' => 'invalid_business_id', 'data' => array( 'ares_message' => $ares['error'] ) );
-						}
-					} elseif ( $input['ares_fill'] ) {
-						$missing_fields = array();
-						if ( $input['dic_present'] && $input['dic'] != $ares['dic'] ) {
-							$missing_fields[] = 'tax_id';
-						}
-						if ( $input['company'] != $ares['spolecnost'] ) {
-							$missing_fields[] = 'company';
-						}
-						if ( $input['postcode'] != $ares['psc'] ) {
-							$missing_fields[] = 'postcode';
-						}
-						if ( $input['city'] != $ares['mesto'] ) {
-							$missing_fields[] = 'city';
-						}
-						if ( $input['address_1'] != $ares['adresa'] ) {
-							$missing_fields[] = 'address';
-						}
-						if ( $missing_fields ) {
-							$errors[] = array( 'code' => 'ares_mismatch', 'data' => array( 'fields' => $missing_fields ) );
-						}
-					}
-				} else {
-					if ( $input['ignore_check_fail'] ) {
+					if ( $is_internal_error && $input['ignore_check_fail'] ) {
 						$vat_check_fail_ignored = true;
 					} else {
-						$errors[] = array( 'code' => 'ares_unexpected' );
+						$errors[] = array( 'code' => 'invalid_business_id', 'data' => array( 'ares_message' => $ares['error'] ) );
+					}
+				} elseif ( $registry['fill'] ) {
+					$missing_fields = array();
+					// A null DIČ means the Slovak lists are unavailable, not that there is none.
+					if ( $input['dic_present'] && $ares['dic'] !== null && $input['dic'] != $ares['dic'] ) {
+						$missing_fields[] = 'tax_id';
+					}
+					if ( $input['company'] != $ares['spolecnost'] ) {
+						$missing_fields[] = 'company';
+					}
+					if ( str_replace( ' ', '', $input['postcode'] ) != str_replace( ' ', '', $ares['psc'] ) ) {
+						$missing_fields[] = 'postcode';
+					}
+					if ( $input['city'] != $ares['mesto'] ) {
+						$missing_fields[] = 'city';
+					}
+					if ( $input['address_1'] != $ares['adresa'] ) {
+						$missing_fields[] = 'address';
+					}
+					if ( $missing_fields ) {
+						$errors[] = array( 'code' => $registry['mismatch'], 'data' => array( 'fields' => $missing_fields ) );
 					}
 				}
-
-			// ARES Check Disabled
-			} elseif ( ! woolab_icdic_verify_ic( $ico ) ) {
-				$errors[] = array( 'code' => 'invalid_business_id' );
+			} else {
+				if ( $input['ignore_check_fail'] ) {
+					$vat_check_fail_ignored = true;
+				} else {
+					$errors[] = array( 'code' => 'ares_unexpected' );
+				}
 			}
 
-		// SK
+		// Registry check disabled
+		} elseif ( $country == 'CZ' ) {
+			if ( ! woolab_icdic_verify_ic( $ico ) ) {
+				$errors[] = array( 'code' => 'invalid_business_id' );
+			}
 		} elseif ( $country == 'SK' ) {
 			if ( $ico ) {
 				if ( ! woolab_icdic_verify_ic( $ico ) ) {
@@ -182,6 +195,19 @@ function woolab_icdic_validate_checkout( array $input ) {
 				} elseif ( $country == 'SK' ) {
 					if ( ! woolab_icdic_verify_dic_sk( $dic ) ) {
 						$errors[] = array( 'code' => 'invalid_tax_id_sk' );
+					} elseif ( $sk_check ) {
+						$sk_dic = $input['lookup_sk']( 'dic', $dic );
+						if ( false === $sk_dic ) {
+							if ( $input['ignore_check_fail'] ) {
+								$vat_check_fail_ignored = true;
+							} else {
+								$errors[] = array( 'code' => 'sk_unverifiable' );
+							}
+						} elseif ( null === $sk_dic ) {
+							$errors[] = array( 'code' => 'invalid_tax_id_sk' );
+						} elseif ( woolab_icdic_sk_ico_differs( $sk_dic, $ico ) ) {
+							$errors[] = array( 'code' => 'dic_ico_mismatch' );
+						}
 					}
 				}
 			}
@@ -206,8 +232,9 @@ function woolab_icdic_validate_checkout( array $input ) {
 		}
 
 		// Verify IC DPH
-		// If Validate in VIES
-		if ( $input['vies_check'] ) {
+		// If Validate in VIES. With sk_check, verify_vat looks in the Slovak list first
+		// and asks VIES only if enabled (woolab_icdic_make_vies_verifier()).
+		if ( $input['vies_check'] || $sk_check ) {
 
 			$state = $input['verify_vat']( $dic_dph );
 
@@ -231,9 +258,19 @@ function woolab_icdic_validate_checkout( array $input ) {
 
 		}
 
+		$sk_dph = $sk_check ? $input['lookup_sk']( 'dph', $dic_dph ) : null;
+
+		// Same opt-out as the "SK" + DIČ rule: a VAT group's IČ DPH is listed under
+		// one member's IČO only.
+		if ( $input['check_dic_dph_match'] && $sk_dph && woolab_icdic_sk_ico_differs( $sk_dph, $ico ) ) {
+			$errors[] = array( 'code' => 'dic_dph_mismatch' );
+
 		// IC DPH has to match to Tax ID number without SK
-		if ( $input['check_dic_dph_match'] && $dic_dph && $dic ) {
-			if ( $dic != substr( $dic_dph, 2 ) ) {
+		} elseif ( $input['check_dic_dph_match'] && $dic_dph && $dic ) {
+			// Unless the lists tie both to the same IČO: VAT groups and some
+			// non-profits have an IČ DPH that is not "SK" + DIČ.
+			$linked = $sk_dph && $sk_dic && '' !== $sk_dph['ico'] && $sk_dph['ico'] === $sk_dic['ico'];
+			if ( $dic != substr( $dic_dph, 2 ) && ! $linked ) {
 				$errors[] = array( 'code' => 'dic_dph_mismatch' );
 			}
 		}
@@ -243,6 +280,18 @@ function woolab_icdic_validate_checkout( array $input ) {
 		'errors'             => $errors,
 		'check_fail_ignored' => $vat_check_fail_ignored,
 	);
+}
+
+/**
+ * Whether a Slovak list row belongs to another IČO than the one entered. Rows
+ * without an IČO, or no IČO entered, never count as a mismatch.
+ *
+ * @param array  $row ['ico' => string] from woolab_icdic_sk_find().
+ * @param string $ico Entered Business ID, whitespace stripped.
+ * @return bool
+ */
+function woolab_icdic_sk_ico_differs( array $row, $ico ) {
+	return '' !== $row['ico'] && '' !== $ico && $row['ico'] !== str_pad( $ico, 8, '0', STR_PAD_LEFT );
 }
 
 /**

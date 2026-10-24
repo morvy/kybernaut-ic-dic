@@ -56,10 +56,20 @@
         $('#billing_dic, #billing_dic_dph').on('input', validateFields);
     });
 
+    /** ARES for CZ, the Slovak lists for SK */
+    function registry_check() {
+        var country = $("#billing_country").val();
+        return country === 'CZ' && woolab.ares_check || country === 'SK' && woolab.sk_check;
+    }
+
+    function registry_fill() {
+        return $("#billing_country").val() === 'SK' ? woolab.sk_fill : woolab.ares_fill;
+    }
+
     /** Show/Hide logic for woolab-ic-dic fields */
     function based_on_country() {
 
-        if (woolab.ares_fill) {
+        if (woolab.ares_fill || woolab.sk_fill) {
             clear_validation();
         }
 
@@ -80,7 +90,9 @@
                 $("#billing_dic_dph_field").slideUp();
                 $("#billing_dic_field > label").removeClass("woolab-ic-dic-required");
         }
-        if (woolab.ares_check) {
+        if (woolab.ares_check || woolab.sk_check) {
+            // The country decides the register, so look the same IČO up again.
+            last_ico_value = '';
             enable_ares_check();
         }
         $("#billing_company_field").slideDown();
@@ -149,6 +161,7 @@
     function ares_remove_disabled_from_input() {
         $('#billing_company').removeAttr("readonly");
         $('#billing_dic').removeAttr("readonly");
+        $('#billing_dic_dph').removeAttr("readonly");
         $('#billing_postcode').removeAttr("readonly");
         $('#billing_city').removeAttr("readonly");
         $('#billing_address_1').removeAttr("readonly");
@@ -156,10 +169,11 @@
 
     function ares_check( ico ) {
 
-        // Only if country is CZ.
-        if ( $("#billing_country").val() !== 'CZ' ) {
+        if ( ! registry_check() ) {
             return;
         }
+
+        var sk = $("#billing_country").val() === 'SK';
 
         var value = ico.val();
         if ( value !== last_ico_value ) {
@@ -178,11 +192,12 @@
                     data: {
                         action: "ajaxAres",
                         'ico' : value,
+                        'country' : sk ? 'SK' : 'CZ',
                         'nonce' : woolab.nonce,
                     },
                     beforeSend: function() {
                         ico_class.addClass( 'kbnt-validating' );
-                        ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+woolab.l18n_validating+'</span>' );
+                        ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+( sk ? woolab.l18n_validating_sk : woolab.l18n_validating )+'</span>' );
                     },
                     success: function ( data ) {
                         ico_class.removeClass( 'kbnt-validating' );
@@ -193,12 +208,23 @@
                                 data = JSON.parse( data );
                             }
 
-                            if ( data.error == false ) {
+                            if ( data.unlisted ) {
+
+                                // Not in the Slovak lists yet: accepted, filled in by hand, so
+                                // drop what an earlier lookup filled in.
+                                $('.woolab-ic-dic-tip').remove();
+                                if ( registry_fill() && $('#billing_company').is('[readonly]') ) {
+                                    $('#billing_company, #billing_dic, #billing_dic_dph, #billing_postcode, #billing_city, #billing_address_1').val('');
+                                }
+                                ares_remove_disabled_from_input();
+                                ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+data.error+'</span>' );
+
+                            } else if ( data.error == false ) {
 
                                 $('.woolab-ic-dic-tip').remove();
                                 woolab_add_class_ok( ico_class );
 
-                                if ( woolab.ares_fill ) {
+                                if ( registry_fill() ) {
 
                                     // Compatibility with Fluid Checkout for WooCommerce – Lite
                                     // https://wordpress.org/support/topic/compatibility-with-kybernaut-ico-dic-plugin/
@@ -239,11 +265,17 @@
 
                                     // Update values
                                     $('#billing_company').val(data.spolecnost).attr('readonly', true);
-                                    $('#billing_dic').val(data.dic).attr('readonly', true);
+                                    // Slovak lists: null when unknown, leave the field to the shopper.
+                                    if ( ! sk || data.dic ) {
+                                        $('#billing_dic').val(data.dic).attr('readonly', true);
+                                    }
+                                    if ( sk && data.dic_dph ) {
+                                        $('#billing_dic_dph').val(data.dic_dph).attr('readonly', true);
+                                    }
                                     $('#billing_address_1').val(data.adresa).attr('readonly', true);
                                     $('#billing_postcode').val(data.psc).attr('readonly', true);
                                     $('#billing_city').val(data.mesto).attr('readonly', true);
-                                    ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+woolab.l18n_ok+'</span>' );
+                                    ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+( sk ? woolab.l18n_ok_sk : woolab.l18n_ok )+'</span>' );
 
                                     // Trigger the checkout update
                                     $('body').trigger('update_checkout');
@@ -298,10 +330,11 @@
 
     function ares_error ( ico_class ) {
 
-        if ( woolab.ares_fill ) {
+        if ( registry_fill() ) {
             if ( ! woolab.ignore_check_fail ) {
                 $('#billing_company').val('');
                 $('#billing_dic').val('');
+                $('#billing_dic_dph').val('');
                 $('#billing_postcode').val('');
                 $('#billing_city').val('');
                 $('#billing_address_1').val('');

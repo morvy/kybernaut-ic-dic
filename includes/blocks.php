@@ -442,6 +442,8 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 			'ares_check'            => (bool) woolab_icdic_ares_check(),
 			'ares_fill'             => (bool) woolab_icdic_ares_fill(),
 			'vies_check'            => (bool) woolab_icdic_vies_check(),
+			'sk_check'              => (bool) woolab_icdic_sk_check(),
+			'sk_fill'               => (bool) woolab_icdic_sk_fill(),
 			'ignore_check_fail'     => (bool) woolab_icdic_ignore_check_fail(),
 			'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
 			'require_sk_ic_and_dic' => (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', true ),
@@ -449,6 +451,8 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 			'country_in_eu'         => $countries->isCountryCodeInEU( $country ),
 			'verify_vat'            => woolab_icdic_make_vies_verifier( 'Could not validate VAT number: %s, returned the following exception:' ),
 			'lookup_ares'           => 'woolab_icdic_ares',
+			'lookup_sk_ico'         => 'woolab_icdic_sk_lookup',
+			'lookup_sk'             => 'woolab_icdic_sk_find',
 		)
 	);
 

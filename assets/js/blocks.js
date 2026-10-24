@@ -6,7 +6,7 @@
  * public.js drives the classic checkout through jQuery and #billing_* selectors,
  * none of which exist in the block checkout. This does the same two jobs against the
  * WooCommerce Blocks data stores instead: check the Business ID as it is typed, and
- * fill the address from ARES.
+ * fill the address from ARES (CZ) or the Finančná správa lists (SK).
  *
  * Everything else the classic script does is handled elsewhere here: showing and
  * hiding the fields is a `hidden` rule WooCommerce evaluates itself (includes/blocks.php),
@@ -24,6 +24,7 @@
   var VALIDATION = wc.wcBlocksData.VALIDATION_STORE_KEY;
   var IC = woolab.fields.ic;
   var DIC = woolab.fields.dic;
+  var DIC_DPH = woolab.fields.dic_dph;
   var COMPANY = woolab.fields.company;
   var lastIco = null;
   function debounce(fn, wait) {
@@ -81,14 +82,14 @@
     var customer = wp.data.select(CART).getCustomerData();
     return customer && customer.billingAddress ? customer.billingAddress.country : '';
   }
-  function lookupAres(ico) {
+  function lookupAres(ico, country) {
     return fetch(woolab.ajaxurl, {
       method: 'POST',
       credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: 'action=ajaxAres&ico=' + encodeURIComponent(ico) + '&nonce=' + encodeURIComponent(woolab.nonce)
+      body: 'action=ajaxAres&ico=' + encodeURIComponent(ico) + '&country=' + encodeURIComponent(country) + '&nonce=' + encodeURIComponent(woolab.nonce)
     }).then(function (response) {
       return response.json();
     });
@@ -117,6 +118,11 @@
     if (ares.dic) {
       fields[DIC] = ares.dic;
     }
+
+    // Finančná správa lists only; null when the subject has none.
+    if (ares.dic_dph) {
+      fields[DIC_DPH] = ares.dic_dph;
+    }
     if (wp.data.select(CHECKOUT).getUseShippingAsBilling()) {
       wp.data.dispatch(CART).setShippingAddress(address);
     } else {
@@ -131,20 +137,31 @@
       setError(null);
       return;
     }
-    if (!verifyIc(ico)) {
+
+    // ARES is the Czech register, the Finančná správa lists the Slovak
+    // one (includes/financna-sprava.php).
+    var country = billingCountry();
+    var sk = country === 'SK' && woolab.sk_check;
+    var enabled = country === 'CZ' && woolab.ares_check || sk;
+
+    // The Slovak lists hold real IČOs that fail the checksum, so they decide those.
+    if (sk ? !/^\d{8}$/.test(ico) : !verifyIc(ico)) {
       setError(woolab.l18n_not_valid);
       return;
     }
     setError(null);
-
-    // ARES is the Czech register; the Slovak ones have no public lookup, which
-    // is why ares_check() is only ever consulted for CZ.
-    if (billingCountry() !== 'CZ' || !woolab.ares_check) {
+    if (!enabled) {
       return;
     }
-    lookupAres(ico).then(function (ares) {
+    lookupAres(ico, country).then(function (ares) {
       if (!ares) {
         setError(woolab.l18n_not_valid);
+        return;
+      }
+
+      // Not in the Slovak lists yet: accepted, nothing to fill.
+      if (ares.unlisted) {
+        setError(null);
         return;
       }
       if (ares.error) {
@@ -156,7 +173,7 @@
         return;
       }
       setError(null);
-      if (woolab.ares_fill) {
+      if (country === 'SK' ? woolab.sk_fill : woolab.ares_fill) {
         fillAddress(ares);
       }
     })["catch"](function () {
