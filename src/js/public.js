@@ -23,6 +23,21 @@
             });
         });
 
+        /** Look the IČO up as it is typed; ares_check() decides whether a register applies */
+        if ( woolab.ares_check || woolab.sk_check ) {
+            $( document.body ).on( 'focusin', '#billing_ic', function () {
+                last_ico_value = $(this).val();
+            });
+            // Delegated, and the field read again: Fluid Checkout for WooCommerce - Lite
+            // re-renders it.
+            $( document.body ).on( 'input', '#billing_ic', debounce( function () {
+                var ico = $('#billing_ic');
+                if ( ico.val() !== last_ico_value ) {
+                    ares_check( ico );
+                }
+            }, 500 ) );
+        }
+
         /** On init, check if the toggle is present or is set to "on" and run the hiding logic */
         var $fieldToggle = $('#billing_iscomp');
         if ( ! $fieldToggle.length || $fieldToggle.prop("checked") ) {
@@ -70,6 +85,8 @@
         /** Company name suggestions: picking one looks its IČO up like a typed one */
         if ( window.woolabSuggest ) {
             woolabSuggest({
+                ajaxurl: woolab.ajaxurl,
+                nonce: woolab.nonce,
                 selector: '#billing_company',
                 country: function () {
                     return $("#billing_country").val();
@@ -247,20 +264,13 @@
         selector.addClass( 'kbnt-wrong' ).addClass( 'woocommerce-invalid' ).removeClass( 'woocommerce-validated' );
     }
 
+    /**
+     * Check the IČO now. The typing handlers are bound once, when the page loads:
+     * this runs on every country change, and binding them here stacked one more
+     * set of handlers, and one more request per keystroke, each time.
+     */
     function enable_ares_check() {
-
-        var ico = $('#billing_ic');
-        ares_check( ico );
-        $( document.body ).on('focusin', '#billing_ic', function() {
-            last_ico_value = $('#billing_ic').val();
-        });
-        var validateBillingIC = debounce(function () {
-            var ico = $('#billing_ic'); // Because of Fluid Checkout for WooCommerce - Lite compatibility
-            if (ico.val() !== last_ico_value) {
-                ares_check(ico);
-            }
-        }, 500); // 500ms debounce delay
-        $('#billing_ic').on('input', validateBillingIC);
+        ares_check( $('#billing_ic') );
     }
 
     function ares_remove_disabled_from_input() {

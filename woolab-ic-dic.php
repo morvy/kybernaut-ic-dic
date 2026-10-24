@@ -106,6 +106,8 @@ function woolab_icdic_init() {
 	// Cart & Checkout Blocks. The classic hooks above never fire there; see
 	// includes/blocks.php for what each of these stands in for.
 	add_action( 'woocommerce_init', 'woolab_icdic_blocks_register_fields' );
+	add_action( 'woocommerce_blocks_checkout_block_registration', 'woolab_icdic_blocks_register_integration' );
+	add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', 'woolab_icdic_enqueue_lookup_style' );
 	add_filter( 'rest_pre_dispatch', 'woolab_icdic_blocks_remember_request', 10, 3 );
 	add_action( 'woocommerce_blocks_validate_location_order_fields', 'woolab_icdic_blocks_validate', 10, 2 );
 	add_action( 'woocommerce_store_api_checkout_update_order_from_request', 'woolab_icdic_blocks_update_order', 10, 2 );
@@ -137,66 +139,108 @@ register_deactivation_hook( __FILE__, function () {
 	wp_clear_scheduled_hook( 'woolab_icdic_sk_import' );
 } );
 
-function woolab_icdic_enqueue_scripts() {
+/**
+ * The lookup spinner, status icons and suggestion list (lookup.css), with the
+ * colours from Settings → IČO DIČ → Appearance. Shared by both checkouts.
+ */
+function woolab_icdic_enqueue_lookup_style() {
+	if ( woolab_icdic_ares_check() || woolab_icdic_sk_check() ) {
+		wp_enqueue_style( 'woolab-icdic-lookup-css', WOOLAB_IC_DIC_URL . 'assets/css/lookup.css', array(), WOOLAB_IC_DIC_VERSION );
+		wp_add_inline_style( 'woolab-icdic-lookup-css', woolab_icdic_lookup_colors_css() );
+	}
+}
+
+/**
+ * Whether the company name search runs: wherever a register also autofills
+ * (woolab_icdic_search_ajax()).
+ */
+function woolab_icdic_suggest_enabled() {
+	return woolab_icdic_ares_check() && woolab_icdic_ares_fill() || woolab_icdic_sk_check() && woolab_icdic_sk_fill();
+}
+
+/**
+ * Register suggest.js, shared by both checkout scripts, when the search runs.
+ *
+ * @return string[] The handle as a dependency, or none.
+ */
+function woolab_icdic_register_suggest_script() {
+	if ( ! woolab_icdic_suggest_enabled() ) {
+		return array();
+	}
+
 	$suffix = SCRIPT_DEBUG ? '' : '.min';
-	if( is_checkout() ){
+	wp_register_script( 'woolab-icdic-suggest-js', WOOLAB_IC_DIC_URL . 'assets/js/suggest' . $suffix . '.js', array(), WOOLAB_IC_DIC_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
 
-		// The block checkout has none of the #billing_* markup public.js drives, so
-		// it gets its own script against the Blocks data stores. Same handle, so the
-		// localized settings below serve both.
-		$blocks = woolab_icdic_blocks_checkout();
+	return array( 'woolab-icdic-suggest-js' );
+}
 
-		// Lookup spinner and the suggestion list.
-		if ( woolab_icdic_ares_check() || woolab_icdic_sk_check() ) {
-			wp_enqueue_style( 'woolab-icdic-lookup-css', WOOLAB_IC_DIC_URL . 'assets/css/lookup.css', array(), WOOLAB_IC_DIC_VERSION );
-			wp_add_inline_style( 'woolab-icdic-lookup-css', woolab_icdic_lookup_colors_css() );
-		}
+/**
+ * Settings the checkout scripts read: public.js as window.woolab, blocks.js as
+ * wcSettings 'woolab-ic-dic_data' (includes/class-woolab-icdic-blocks-integration.php).
+ *
+ * @param bool $blocks For the block checkout.
+ * @return array
+ */
+function woolab_icdic_script_data( $blocks ) {
+	$data = array(
+		'ajaxurl'            => admin_url( 'admin-ajax.php' ),
+		'nonce'              => wp_create_nonce( 'woolab_icdic_ares' ),
+		'l18n_not_valid'     => __( 'Business ID is invalid.', 'woolab-ic-dic' ),
+		'l18n_error'         => __( 'Unexpected error occurred. Try it again.', 'woolab-ic-dic' ),
+		'l18n_ok'            => __( 'Information loaded succesfully from ARES.', 'woolab-ic-dic' ),
+		'l18n_validating'    => __( 'Validating data in ARES.', 'woolab-ic-dic' ),
+		'l18n_ok_sk'         => __( 'Information loaded succesfully from Finančná správa.', 'woolab-ic-dic' ),
+		'l18n_validating_sk' => __( 'Validating data in Finančná správa.', 'woolab-ic-dic' ),
+		'l18n_clear'         => __( 'Clear company details', 'woolab-ic-dic' ),
+		'ares_check'         => woolab_icdic_ares_check(),
+		'ares_fill'          => woolab_icdic_ares_fill(),
+		'sk_check'           => woolab_icdic_sk_check(),
+		'sk_fill'            => woolab_icdic_sk_fill(),
+		'ignore_check_fail'  => woolab_icdic_ignore_check_fail(),
+	);
 
-		// Company name suggestions, wherever a register autofills (woolab_icdic_search_ajax()).
-		$suggest = woolab_icdic_ares_check() && woolab_icdic_ares_fill() || woolab_icdic_sk_check() && woolab_icdic_sk_fill();
-		if ( $suggest ) {
-			wp_register_script( 'woolab-icdic-suggest-js', WOOLAB_IC_DIC_URL . 'assets/js/suggest'.$suffix.'.js', array(), WOOLAB_IC_DIC_VERSION );
-		}
+	if ( $blocks ) {
+		$data['fields'] = array(
+			'ic'      => 'kybernaut/ic',
+			// Country => field: the DIČ field is one per label (includes/blocks.php).
+			'dic'     => woolab_icdic_blocks_dic_fields(),
+			'dic_dph' => 'kybernaut/dic-dph',
+			// Empty when the company name stays a normal address field, so ARES
+			// autofill knows where to put it.
+			'company' => woolab_icdic_blocks_owns_company() ? 'kybernaut/company' : '',
+		);
+	} else {
+		// Field labels by billing country (includes/labels.php); the block fields
+		// carry theirs.
+		$data['labels']       = woolab_icdic_labels_by_country();
+		$data['placeholders'] = woolab_icdic_labels_by_country( false );
+		// Countries the Business ID is shown for, null for all.
+		$data['ic_countries'] = woolab_icdic_ic_countries();
+	}
 
-		if ( $blocks ) {
-			wp_enqueue_script( 'woolab-icdic-public-js', WOOLAB_IC_DIC_URL . 'assets/js/blocks'.$suffix.'.js', array_merge( array( 'wp-data', 'wc-blocks-data-store' ), $suggest ? array( 'woolab-icdic-suggest-js' ) : array() ), WOOLAB_IC_DIC_VERSION, true );
-		} else {
-			wp_enqueue_script( 'woolab-icdic-public-js', WOOLAB_IC_DIC_URL . 'assets/js/public'.$suffix.'.js', array_merge( array( 'jquery' ), $suggest ? array( 'woolab-icdic-suggest-js' ) : array() ), WOOLAB_IC_DIC_VERSION );
-		}
+	return $data;
+}
 
-		wp_localize_script( 'woolab-icdic-public-js', 'woolab', array(
-			'ajaxurl' => admin_url( 'admin-ajax.php' ),
-			'nonce' => wp_create_nonce( 'woolab_icdic_ares' ),
-			'l18n_not_valid' => __('Business ID is invalid.', 'woolab-ic-dic'),
-			'l18n_error' => __('Unexpected error occurred. Try it again.', 'woolab-ic-dic'),
-			'l18n_ok' => __('Information loaded succesfully from ARES.', 'woolab-ic-dic'),
-			'l18n_validating' => __('Validating data in ARES.', 'woolab-ic-dic'),
-			'l18n_ok_sk' => __('Information loaded succesfully from Finančná správa.', 'woolab-ic-dic'),
-			'l18n_validating_sk' => __('Validating data in Finančná správa.', 'woolab-ic-dic'),
-			'l18n_clear' => __('Clear company details', 'woolab-ic-dic'),
-			'ares_check' => woolab_icdic_ares_check(),
-			'ares_fill' => woolab_icdic_ares_fill(),
-			'sk_check' => woolab_icdic_sk_check(),
-			'sk_fill' => woolab_icdic_sk_fill(),
-			'ignore_check_fail' => woolab_icdic_ignore_check_fail(),
-			// Field labels by billing country (includes/labels.php).
-			'labels' => woolab_icdic_labels_by_country(),
-			'placeholders' => woolab_icdic_labels_by_country( false ),
-			// Countries the Business ID is shown for, null for all.
-			'ic_countries' => woolab_icdic_ic_countries(),
-			'fields' => array(
-				'ic'      => 'kybernaut/ic',
-				// Country => field: the DIČ field is one per label (includes/blocks.php).
-				'dic'     => woolab_icdic_blocks_dic_fields(),
-				'dic_dph' => 'kybernaut/dic-dph',
-				// Empty when the company name stays a normal address field, so ARES
-				// autofill knows where to put it.
-				'company' => woolab_icdic_blocks_owns_company() ? 'kybernaut/company' : '',
-			),
-		));
-		if ( ! $blocks && woolab_icdic_toggle_enabled() ) {
-			wp_enqueue_style( 'woolab-icdic-public-css', WOOLAB_IC_DIC_URL . 'assets/css/style.css', null, WOOLAB_IC_DIC_VERSION );
-		}
+/**
+ * The classic checkout's script and styles. Only on the checkout form itself: the
+ * block checkout loads blocks.js through its integration, and the order-received
+ * and pay pages need neither.
+ */
+function woolab_icdic_enqueue_scripts() {
+	if ( ! is_checkout() || is_wc_endpoint_url() || woolab_icdic_blocks_checkout() ) {
+		return;
+	}
+
+	$suffix = SCRIPT_DEBUG ? '' : '.min';
+
+	woolab_icdic_enqueue_lookup_style();
+
+	wp_enqueue_script( 'woolab-icdic-public-js', WOOLAB_IC_DIC_URL . 'assets/js/public' . $suffix . '.js', array_merge( array( 'jquery' ), woolab_icdic_register_suggest_script() ), WOOLAB_IC_DIC_VERSION, array( 'in_footer' => true, 'strategy' => 'defer' ) );
+	wp_localize_script( 'woolab-icdic-public-js', 'woolab', woolab_icdic_script_data( false ) );
+
+	// In the head: it hides the toggled fields before the page paints.
+	if ( woolab_icdic_toggle_enabled() ) {
+		wp_enqueue_style( 'woolab-icdic-public-css', WOOLAB_IC_DIC_URL . 'assets/css/style.css', array(), WOOLAB_IC_DIC_VERSION );
 	}
 }
 
@@ -315,11 +359,12 @@ function woolab_icdic_get_option( $name, $default = 'yes' ) {
 function woolab_icdic_admin_scripts( $hook ) {
 	$suffix = SCRIPT_DEBUG ? '' : '.min';
 
-	// Order edit screen: legacy CPT uses post(-new).php, HPOS uses the
-	// wc-orders admin page (hook 'woocommerce_page_wc-orders'). Without the
-	// HPOS hook the country-based show/hide JS never loads, so the SK-only
-	// "VAT reg. no." field stayed visible on CZ orders under HPOS.
-	if ( 'post.php' === $hook || 'post-new.php' === $hook || 'woocommerce_page_wc-orders' === $hook ) {
+	// Order screens only: 'shop_order' for the legacy post type, the wc-orders page
+	// under HPOS (wc_get_page_screen_id()). Without the HPOS one the country-based
+	// show/hide JS never loads, so the SK-only IČ DPH field stayed visible on CZ
+	// orders under HPOS.
+	$screen = get_current_screen();
+	if ( $screen && in_array( $screen->id, array( 'shop_order', wc_get_page_screen_id( 'shop-order' ) ), true ) ) {
 		wp_enqueue_style( 'woolab-ic-dic-admin', WOOLAB_IC_DIC_URL . 'assets/css/admin.css', array(), WOOLAB_IC_DIC_VERSION );
 		wp_enqueue_script( 'woolab-ic-dic-admin-edit', WOOLAB_IC_DIC_URL . 'assets/js/admin-edit'.$suffix.'.js', array('jquery'), WOOLAB_IC_DIC_VERSION );
 	}

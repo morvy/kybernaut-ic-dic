@@ -149,6 +149,17 @@ function woolab_icdic_blocks_country_rule( array $countries ) {
 }
 
 /**
+ * Load blocks.js with the Checkout block, wherever it renders, through
+ * WooCommerce's integration registry (includes/class-woolab-icdic-blocks-integration.php).
+ *
+ * @param Automattic\WooCommerce\Blocks\Integrations\IntegrationRegistry $registry
+ */
+function woolab_icdic_blocks_register_integration( $registry ) {
+	require_once __DIR__ . '/class-woolab-icdic-blocks-integration.php';
+	$registry->register( new Woolab_Icdic_Blocks_Integration() );
+}
+
+/**
  * Whether the company name belongs to this plugin's own section.
  *
  * With the toggle enabled, woolab_icdic_checkout_fields() puts billing_company in

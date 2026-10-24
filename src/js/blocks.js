@@ -15,9 +15,16 @@
  *
  * @since 2.0.0
  */
-( function ( wp, wc, woolab ) {
+( function ( wp, wc ) {
 
-	if ( ! wp || ! wp.data || ! wc || ! wc.wcBlocksData || ! woolab || ! woolab.fields ) {
+	if ( ! wp || ! wp.data || ! wc || ! wc.wcBlocksData || ! wc.wcSettings ) {
+		return;
+	}
+
+	// Woolab_Icdic_Blocks_Integration::get_script_data()
+	var woolab = wc.wcSettings.getSetting( 'woolab-ic-dic_data', null );
+
+	if ( ! woolab || ! woolab.fields ) {
 		return;
 	}
 
@@ -231,6 +238,8 @@
 	// looks it up like a typed one.
 	if ( window.woolabSuggest ) {
 		window.woolabSuggest( {
+			ajaxurl: woolab.ajaxurl,
+			nonce: woolab.nonce,
 			selector: COMPANY ? '[id$="' + COMPANY.replace( '/', '-' ) + '"]' : '#billing-company, #shipping-company',
 			country: billingCountry,
 			enabled: function ( country ) {
@@ -244,6 +253,7 @@
 		} );
 	}
 
+	// Scoped to the checkout store: the cart store changes far more often.
 	wp.data.subscribe( function () {
 		var fields = wp.data.select( CHECKOUT ).getAdditionalFields() || {};
 		var ico = String( fields[ IC ] || '' ).replace( /\s+/g, '' );
@@ -254,6 +264,6 @@
 
 		lastIco = ico;
 		checkLater( ico );
-	} );
+	}, CHECKOUT );
 
-}( window.wp, window.wc, window.woolab ) );
+}( window.wp, window.wc ) );

@@ -7,7 +7,7 @@
  * (woolab_icdic_search_ajax()); picking one hands its IČO to the caller, whose IČO
  * lookup then fills the company, tax IDs and address as if the IČO had been typed.
  *
- * Loaded before the script that calls it, so it only reads `woolab` when used.
+ * Loaded before the script that calls it, which passes its endpoint and nonce.
  *
  * @since 2.0.0
  */
@@ -118,13 +118,13 @@ window.woolabSuggest = function (options) {
     }
     var id = ++request;
     busy(el, true);
-    fetch(woolab.ajaxurl, {
+    fetch(options.ajaxurl, {
       method: 'POST',
       credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: 'action=woolab_icdic_search&name=' + encodeURIComponent(name) + '&country=' + encodeURIComponent(country) + '&nonce=' + encodeURIComponent(woolab.nonce)
+      body: 'action=woolab_icdic_search&name=' + encodeURIComponent(name) + '&country=' + encodeURIComponent(country) + '&nonce=' + encodeURIComponent(options.nonce)
     }).then(function (response) {
       return response.json();
     }).then(function (data) {
