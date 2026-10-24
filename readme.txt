@@ -1,10 +1,12 @@
 ﻿=== Kybernaut IČO DIČ ===
 Contributors: vyskoczilova
 Tags: DIČ, IČO, IČ, IČ DPH, VAT number
-Requires at least: 4.6
-Tested up to: 7.0.3
-Stable tag: 1.11.2
-Requires PHP: 7.3
+Requires at least: 6.9
+Tested up to: 7.1
+Stable tag: 2.0.0
+Requires PHP: 8.1
+WC requires at least: 11.0
+WC tested up to: 11.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://www.paypal.me/KarolinaVyskocilova
@@ -15,9 +17,9 @@ Adds Company & VAT numbers (IČO & DIČ & IČ DPH) to WooCommerce billing fields
 
 Adds Company & VAT numbers (IČO & DIČ & IČ DPH) to WooCommerce billing fields and verifies if data are correct. Verification is based either on ARES and VIES database or only on mathematics. When billing to Czech republic, you can autofill fields Company, VAT number, Address, City, and Postcode based on IČO.
 
-The plugin doesn't support block checkout. [Use shortcode checkout instead or "Classic checkout block".] (https://kybernaut.cz/clanky/jak-vratit-starou-woocommerce-pokladnu-misto-noveho-bloku/)
+Works with both the block Checkout and the classic (shortcode) one. In the block checkout the fields are registered through WooCommerce's Additional Checkout Fields API and appear in their own section, revealed by the "Buying as a company" toggle; the values are stored in the same `_billing_ic` / `_billing_dic` / `_billing_dic_dph` order meta as before, so invoicing plugins and exports need no change.
 
-Supports both PHP 7.3+ (soon to be abandoned) & PHP 8.0+.
+Requires WooCommerce 11.0, WordPress 6.9 and PHP 8.1. For older stacks use the 1.11.x branch.
 
 === Main functionality ===
 
@@ -29,7 +31,7 @@ Supports both PHP 7.3+ (soon to be abandoned) & PHP 8.0+.
 * for EU countries as billing country
     * VIES DIČ validation
 * VAT exempt feature
-* adds fields to IČO & DIČ & IČ DPH WooCommerce frontend: Checkout and My Account page
+* adds fields to IČO & DIČ & IČ DPH WooCommerce frontend: Checkout (block and classic) and My Account page
 * allows edits from administration (backend):
   * `Users -> Joe Doe (Edit) -> Billing address of the customer`
   * `E-shop-WooCommerce -> Orders-> Order (show(edit)) -> Billing Information (edit)`
@@ -106,6 +108,14 @@ You can use this snippet to update customers data when you edit an order, just a
 
 `add_filter( 'woolab_icdic_update_user_meta', '__return_true' );`
 
+= I want to make the company name and Business ID (IČO) required for companies. =
+
+Every Czech and Slovak business entity has a Business ID, so you can require the company name and IČO from customers buying as a company, just add this to your functions.php
+
+`add_filter( 'woolab_icdic_required_ic_for_company', '__return_true' );`
+
+With the "Buying as a company" toggle enabled, both Company and IČO are required once the toggle is checked, and the toggle is pre-checked only for customers with a stored IČO. With the toggle disabled, a filled-in Company field is what makes the customer a company, so IČO is required once it is filled in. Works in both the classic checkout and the Checkout block, where the fields also lose their "(optional)" label, so `woolab_icdic_fake_required` is not needed there.
+
 = How can I report security bugs? =
 
 You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/woolab-ic-dic)
@@ -127,6 +137,20 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 
 
 == Changelog ==
+
+= 2.0.0 (2026-09-01) =
+
+**Breaking:** requires WooCommerce 11.0, WordPress 6.9 and PHP 8.1. Older stacks stay on 1.11.x.
+
+* Feature: full support for the **Cart & Checkout Blocks**. IČO, DIČ and IČ DPH are registered through WooCommerce's Additional Checkout Fields API and rendered in their own section; the "Buying as a company" toggle and the SK-only IČ DPH field are conditional rules WooCommerce evaluates in the browser. Validation reuses the same code path as the classic checkout, so both behave identically, and ARES and VIES keep their result caches.
+* Tweak: on the front-end order details (thank-you page, My Account → order) IČO, DIČ and IČ DPH are printed as their own block, `p.woolab-ic-dic-customer-details`, under the billing address instead of as address lines, so a theme can style them. E-mails, the admin order screen and invoices keep them in the address.
+* Feature: new opt-in filter `woolab_icdic_required_ic_for_company` makes the company name and IČO required for a company — both when "Buying as a company" is checked, or, with the toggle disabled, IČO when the company name is filled in. Enforced in the classic checkout and, as conditional `required` rules, in the Checkout block (browser and Store API). With the filter on, the toggle is pre-checked only for a customer with a stored IČO.
+* Feature: the values are mirrored onto the existing `_billing_ic` / `_billing_dic` / `_billing_dic_dph` order meta, so invoicing plugins, exports and the admin screens keep working unchanged.
+* Fix: `{billing_ic}`, `{billing_dic}` and `{billing_dic_dph}` no longer print literally in the block checkout's address preview. The Checkout block hands the address formats to JavaScript, which substitutes from a fixed token table, so the tokens are dropped from that one payload and kept everywhere PHP renders an address.
+* Removed: the WooCommerce 2.7 fallbacks (`woocommerce_found_customer_details` and direct `$order->billing_*` property access).
+* Removed: `woolab_icdic_add_after_company()`. Field order comes from the `priority` key WooCommerce has honoured since 3.5.1.
+* Removed: the "this plugin has settings now" admin notice and its `woolab_icdic_notice_settings` option. The option is left in the database; delete it if you want to be tidy.
+* Removed: the self-deactivation guard for a missing WooCommerce. The `Requires Plugins` header lets WordPress enforce that.
 
 = 1.11.2 (2026-08-07) =
 

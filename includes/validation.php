@@ -32,6 +32,9 @@ if ( ! defined( 'WPINC' ) ) {
  *     @type bool        check_country_match
  *     @type bool        require_sk_ic_and_dic
  *     @type bool        check_dic_dph_match
+ *     @type bool        require_ic_for_company Optional. A company must enter its name and a Business ID.
+ *     @type bool        toggle_enabled     Optional. Whether the "Buying as a company" toggle is on.
+ *     @type bool        iscomp             Optional. Whether "Buying as a company" is checked.
  *     @type bool        country_in_eu      Resolved from ibericode Countries::isCountryCodeInEU().
  *     @type callable    verify_vat         fn(string $vat): string 'valid'|'bad_format'|'invalid'|'unverifiable'
  *     @type callable    lookup_ares        fn(string $ico): array   raw woolab_icdic_ares() result (or falsy)
@@ -54,7 +57,22 @@ function woolab_icdic_validate_checkout( array $input ) {
 	$dic     = preg_replace( '/\s+/', '', $input['dic'] );
 	$dic_dph = preg_replace( '/\s+/', '', $input['dic_dph'] );
 
-	// BUSINESS ID
+	// COMPANY NAME + BUSINESS ID
+	// Every Slovak and Czech business entity has a Business ID, so a company must enter
+	// its name and that ID. Opt-in (woolab_icdic_required_ic_for_company). A company is
+	// "Buying as a company" checked when the toggle is on; with the toggle off it is a
+	// filled-in company name, so only the ID can be missing.
+	if ( ! empty( $input['require_ic_for_company'] ) ) {
+		$has_company = '' !== trim( (string) $input['company'] );
+		$is_company  = ! empty( $input['toggle_enabled'] ) ? ! empty( $input['iscomp'] ) : $has_company;
+		if ( $is_company && ! $has_company ) {
+			$errors[] = array( 'code' => 'missing_company' );
+		}
+		if ( $is_company && '' === $ico ) {
+			$errors[] = array( 'code' => 'missing_business_id' );
+		}
+	}
+
 	if ( $input['ic'] ) {
 
 		// CZ

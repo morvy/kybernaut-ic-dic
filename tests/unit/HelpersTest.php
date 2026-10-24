@@ -132,46 +132,4 @@ class HelpersTest extends TestCase {
             'Greek EL maps to GR'       => [ 'EL123456789', 'GR' ],
         ];
     }
-
-    public function testAddAfterCompanyBillingOnly() {
-        $fields = [
-            'billing_first_name' => [ 'label' => 'First name' ],
-            'billing_company'    => [ 'label' => 'Company' ],
-            'billing_city'       => [ 'label' => 'City' ],
-        ];
-        $additional = [
-            'billing_ic' => [ 'label' => 'Business ID' ],
-        ];
-
-        $result = woolab_icdic_add_after_company( $fields, $additional, 'billing' );
-
-        $this->assertSame(
-            [ 'billing_first_name', 'billing_company', 'billing_ic', 'billing_city' ],
-            array_keys( $result )
-        );
-        $this->assertSame( [ 'label' => 'Business ID' ], $result['billing_ic'] );
-    }
-
-    public function testAddAfterCompanyBoth() {
-        $fields = [
-            'billing' => [
-                'billing_company' => [ 'label' => 'Company' ],
-                'billing_city'    => [ 'label' => 'City' ],
-            ],
-            'shipping' => [
-                'shipping_city' => [ 'label' => 'City' ],
-            ],
-        ];
-        $additional = [
-            'billing_ic' => [ 'label' => 'Business ID' ],
-        ];
-
-        $result = woolab_icdic_add_after_company( $fields, $additional );
-
-        $this->assertSame(
-            [ 'billing_company', 'billing_ic', 'billing_city' ],
-            array_keys( $result['billing'] )
-        );
-        $this->assertSame( $fields['shipping'], $result['shipping'] );
-    }
 }

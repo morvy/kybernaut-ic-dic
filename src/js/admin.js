@@ -30,18 +30,6 @@
             }
         }
 
-        if ( $('.woolab-icdic-notice').length ) {
-            $( '.woolab-icdic-notice' ).on( 'click', '.notice-dismiss', function() {
-                $.ajax({
-                    url: ajaxurl,
-                    data: {
-                        action: "woolab_icdic_notice_dismiss",
-                        nonce: woolab.dismiss_nonce,
-                    }
-                });	
-            });
-        }
-
     });
 
     function enableAresActive( ares_check ) {

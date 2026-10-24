@@ -31,28 +31,30 @@ function woolab_icdic_plugin_row_meta( $links, $file ) {
 function woolab_icdic_checkout_fields( $fields ) {
 
 	$fields['billing']['billing_ic'] = array(
-		'label'       => __('Business ID', 'woolab-ic-dic'),
+		// Labels are trimmed: some translations carry a trailing space (the Slovak "IČO "),
+		// which WooCommerce's "&nbsp;(optional)" suffix turns into a visible gap. Same as blocks.php.
+		'label'       => trim( __('Business ID', 'woolab-ic-dic') ),
 		'placeholder' => _x('Business ID', 'placeholder', 'woolab-ic-dic'),
 		'required'    => false,
 		'class'       => apply_filters( 'woolab_icdic_class_billing_ic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
 		'clear'       => true,
-		'priority'    => 31, // @since 1.3.3 && WC 3.5.1
+		'priority'    => 31,
 	);
 	$fields['billing']['billing_dic'] = array(
-		'label'       => __('Tax ID', 'woolab-ic-dic'),
+		'label'       => trim( __('Tax ID', 'woolab-ic-dic') ),
 		'placeholder' => _x('Tax ID', 'placeholder', 'woolab-ic-dic'),
 		'required'    => false,
 		'class'       => apply_filters( 'woolab_icdic_class_billing_dic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
 		'clear'       => true,
-		'priority'    => 31, // @since 1.3.3 && WC 3.5.1
+		'priority'    => 32,
 	);
 	$fields['billing']['billing_dic_dph'] = array(
-		'label'       => __('VAT reg. no.', 'woolab-ic-dic'),
+		'label'       => trim( __('VAT reg. no.', 'woolab-ic-dic') ),
 		'placeholder' => _x('VAT reg. no.', 'placeholder', 'woolab-ic-dic'),
 		'required'    => false,
 		'class'       => apply_filters( 'woolab_icdic_class_billing_dic_dph', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
 		'clear'       => true,
-		'priority'    => 31, // @since 1.3.3 && WC 3.5.1
+		'priority'    => 33,
 	);
 
 	/**
@@ -110,41 +112,35 @@ function woolab_icdic_checkout_fields( $fields ) {
 
 function woolab_icdic_billing_fields( $fields, $country ) {
 
-	$additional_fields = array(
-		'billing_ic' => array(
-			'label'       => __('Business ID', 'woolab-ic-dic'),
-			'placeholder' => _x('Business ID', 'placeholder', 'woolab-ic-dic'),
-			'required'    => false,
-			'class'       => apply_filters( 'woolab_icdic_class_billing_ic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
-			'clear'       => true,
-			'priority'    => 31, // @since 1.3.3 && WC 3.5.1
-		),
-		'billing_dic' => array(
-			'label'       => __('Tax ID', 'woolab-ic-dic'),
-			'placeholder' => _x('Tax ID', 'placeholder', 'woolab-ic-dic'),
-			'required'    => false,
-			'class'       => apply_filters( 'woolab_icdic_class_billing_dic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
-			'clear'       => true,
-			'priority'    => 31, // @since 1.3.3 && WC 3.5.1
-		),
+	$fields['billing_ic'] = array(
+		'label'       => trim( __('Business ID', 'woolab-ic-dic') ),
+		'placeholder' => _x('Business ID', 'placeholder', 'woolab-ic-dic'),
+		'required'    => false,
+		'class'       => apply_filters( 'woolab_icdic_class_billing_ic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
+		'clear'       => true,
+		'priority'    => 31,
+	);
+	$fields['billing_dic'] = array(
+		'label'       => trim( __('Tax ID', 'woolab-ic-dic') ),
+		'placeholder' => _x('Tax ID', 'placeholder', 'woolab-ic-dic'),
+		'required'    => false,
+		'class'       => apply_filters( 'woolab_icdic_class_billing_dic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
+		'clear'       => true,
+		'priority'    => 32,
 	);
 
 	if ( $country == 'SK' ) {
-		$additional_fields['billing_dic_dph'] = array(
-			'label'       => __('VAT reg. no.', 'woolab-ic-dic'),
+		$fields['billing_dic_dph'] = array(
+			'label'       => trim( __('VAT reg. no.', 'woolab-ic-dic') ),
 			'placeholder' => _x('VAT reg. no.', 'placeholder', 'woolab-ic-dic'),
 			'required'    => false,
 			'class'       => apply_filters( 'woolab_icdic_class_billing_dic_dph', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
 			'clear'       => true,
-			'priority'    => 31, // @since 1.3.3 && WC 3.5.1
+			'priority'    => 33,
 		);
 	}
 
-	/**
-	 * NOTE: since WC 3.5.1 which starts to use 'priority' parameter for fields, there would be enough just to assign right priority and append new fields to $fields array
-	 * TODO: later drop support
-	 */
-	return woolab_icdic_add_after_company( $fields, $additional_fields, 'billing' );
+	return $fields;
 }
 
 /**
@@ -235,6 +231,10 @@ function woolab_icdic_checkout_field_process() {
 		'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
 		'require_sk_ic_and_dic' => (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', true ),
 		'check_dic_dph_match'   => (bool) woolab_icdic_dic_dicdph_match_enabled(),
+		'require_ic_for_company' => (bool) apply_filters( 'woolab_icdic_required_ic_for_company', false ),
+		'toggle_enabled'        => (bool) woolab_icdic_toggle_enabled(),
+		// The toggle is a plain checkbox: posted as "1" when ticked, absent otherwise.
+		'iscomp'                => ! empty( $_POST['billing_iscomp'] ),
 		'country_in_eu'         => $countries->isCountryCodeInEU( $country ),
 		'verify_vat'            => $verify_vat,
 		// Raw woolab_icdic_ares() result (or falsy) — passed as a callable directly.
@@ -265,6 +265,13 @@ function woolab_icdic_checkout_field_process() {
  */
 function woolab_icdic_checkout_error_message( array $error ) {
 	switch ( $error['code'] ) {
+		case 'missing_company':
+			// WooCommerce's own required-field notice, so it reads like the core fields' notices.
+			return sprintf( __( '%s is a required field.', 'woocommerce' ), '<strong>' . esc_html( __( 'Company', 'woocommerce' ) ) . '</strong>' );
+
+		case 'missing_business_id':
+			return __( 'Enter a valid Business ID', 'woolab-ic-dic' );
+
 		case 'invalid_business_id':
 			$message = __( 'Enter a valid Business ID', 'woolab-ic-dic' );
 			if ( isset( $error['data']['ares_message'] ) ) {
@@ -369,20 +376,78 @@ function woolab_icdic_formatted_address_replacements( $replace, $args) {
 
 function woolab_icdic_order_formatted_billing_address($address, $order) {
 
-	if ( version_compare( WC_VERSION, '2.7', '<' )) {
-		return $address += array(
-			'billing_ic'      => $order->billing_ic,
-			'billing_dic'     => $order->billing_dic,
-			'billing_dic_dph' => $order->billing_dic_dph
-		);
-	} else {
-		return $address += array(
-			'billing_ic'      => $order->get_meta('_billing_ic'),
-			'billing_dic'     => $order->get_meta('_billing_dic'),
-			'billing_dic_dph' => $order->get_meta('_billing_dic_dph')
-		);
+	// The front-end order details print the identifiers as their own block
+	// (woolab_icdic_order_details_ids()), so they are not address lines there.
+	if ( woolab_icdic_in_order_details() ) {
+		return $address;
 	}
 
+	$address += array(
+		'billing_ic'      => $order->get_meta('_billing_ic'),
+		'billing_dic'     => $order->get_meta('_billing_dic'),
+		'billing_dic_dph' => $order->get_meta('_billing_dic_dph'),
+	);
+
+	return $address;
+
+}
+
+/**
+ * Whether the front-end customer details (thank-you page, My Account → order) are
+ * being rendered. Set around core's `order/order-details-customer.php`, which follows
+ * `woocommerce_after_order_details` and ends with `woocommerce_order_details_after_customer_details`.
+ *
+ * @param bool|null $set Pass true/false to enter/leave the section.
+ * @return bool
+ */
+function woolab_icdic_in_order_details( $set = null ) {
+	static $inside = false;
+	if ( null !== $set ) {
+		$inside = (bool) $set;
+	}
+	return $inside;
+}
+
+function woolab_icdic_order_details_enter() {
+	woolab_icdic_in_order_details( true );
+}
+
+function woolab_icdic_order_details_leave() {
+	woolab_icdic_in_order_details( false );
+}
+
+/**
+ * Company identifiers under the billing address in the front-end order details.
+ *
+ * Elsewhere (e-mails, the admin order screen, PDF invoices) they stay address lines:
+ * the address-format replacements are escaped by WooCommerce and printed as plain text
+ * or with only <br> allowed, so markup cannot travel inside the address. Here they are
+ * a block of their own a theme can style: `p.woolab-ic-dic-customer-details`.
+ *
+ * @param string   $address_type billing or shipping.
+ * @param WC_Order $order        Order.
+ */
+function woolab_icdic_order_details_ids( $address_type, $order ) {
+	if ( 'billing' !== $address_type || ! $order instanceof WC_Order ) {
+		return;
+	}
+
+	$lines = array();
+	foreach (
+		array(
+			'ic'      => array( __( 'Business ID: ', 'woolab-ic-dic' ), $order->get_meta( '_billing_ic' ) ),
+			'dic'     => array( __( 'Tax ID: ', 'woolab-ic-dic' ), $order->get_meta( '_billing_dic' ) ),
+			'dic-dph' => array( __( 'VAT reg. no.: ', 'woolab-ic-dic' ), $order->get_meta( '_billing_dic_dph' ) ),
+		) as $key => $row
+	) {
+		if ( '' !== (string) $row[1] ) {
+			$lines[] = '<span class="woolab-ic-dic-customer-details__' . esc_attr( $key ) . '">' . esc_html( $row[0] . $row[1] ) . '</span>';
+		}
+	}
+
+	if ( $lines ) {
+		echo '<p class="woolab-ic-dic-customer-details">' . implode( '<br>', $lines ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above.
+	}
 }
 
 function woolab_icdic_toggle_iscomp_field($value, $input) {
@@ -390,6 +455,12 @@ function woolab_icdic_toggle_iscomp_field($value, $input) {
 
 	if ( empty($customer) ) {
 		return $value;
+	}
+
+	// With a Business ID required, a pre-ticked toggle without a stored one could never
+	// pass validation — tick it only for a customer who has one.
+	if ( apply_filters( 'woolab_icdic_required_ic_for_company', false ) ) {
+		return ! empty( $customer->get_meta( 'billing_ic' ) ) ? true : $value;
 	}
 
 	if ( !empty($customer->get_meta('billing_company'))
@@ -512,15 +583,15 @@ function woolab_icdic_save_order_metadata( $order_id ) {
 function woolab_icdic_customer_meta_fields($fields) {
 	$fields['billing']['fields'] += array(
 		'billing_ic' => array(
-			'label'       => __('Business ID', 'woolab-ic-dic'),
+			'label'       => trim( __('Business ID', 'woolab-ic-dic') ),
 			'description' => ''
 		),
 		'billing_dic' => array(
-			'label'       => __('Tax ID', 'woolab-ic-dic'),
+			'label'       => trim( __('Tax ID', 'woolab-ic-dic') ),
 			'description' => ''
 		),
 		'billing_dic_dph' => array(
-			'label'       => __('VAT reg. no.', 'woolab-ic-dic'),
+			'label'       => trim( __('VAT reg. no.', 'woolab-ic-dic') ),
 			'description' => ''
 		)
 	);
@@ -535,15 +606,15 @@ function woolab_icdic_admin_billing_fields ( $fields ) {
 	// Return empty fields everytime someone wants admin billing fields.
 	$fields += array(
 		'billing_ic' => array(
-			'label' => __('Business ID', 'woolab-ic-dic'),
+			'label' => trim( __('Business ID', 'woolab-ic-dic') ),
 			'show'  => false,
 		),
 		'billing_dic' => array(
-			'label' => __('Tax ID', 'woolab-ic-dic'),
+			'label' => trim( __('Tax ID', 'woolab-ic-dic') ),
 			'show'  => false,
 		),
 		'billing_dic_dph' => array(
-			'label' => __('VAT reg. no.', 'woolab-ic-dic'),
+			'label' => trim( __('VAT reg. no.', 'woolab-ic-dic') ),
 			'show'  => false,
 			)
 		);
@@ -584,21 +655,6 @@ function woolab_icdic_admin_billing_fields ( $fields ) {
 
 // Load customer user fields via ajax on admin order screen from a customer record
 // https://www.jnorton.co.uk/woocommerce-custom-fields
-function woolab_icdic_ajax_get_customer_details_old_woo ( $customer_data ){
-
-	$user_id = isset( $_POST['user_id'] ) ? absint( wp_unslash( $_POST['user_id'] ) ) : 0;
-	$country = get_user_meta( $user_id, 'billing_country', true );
-
-	$customer_data['billing_ic']  = get_user_meta( $user_id, 'billing_ic', true );
-	$customer_data['billing_dic'] = get_user_meta( $user_id, 'billing_dic', true );
-
-	if ( $country == 'SK' ) {
-		$customer_data['billing_dic_dph'] = get_user_meta( $user_id, 'billing_dic_dph', true );
-	}
-
-	return $customer_data;
-
-}
 function woolab_icdic_ajax_get_customer_details( $data, $customer, $user_id ){
 
 	$country = get_user_meta( $user_id, 'billing_country', true );

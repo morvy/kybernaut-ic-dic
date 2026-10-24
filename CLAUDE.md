@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Kybernaut IC DIC** is a WordPress/WooCommerce plugin that adds Czech and Slovak company identification fields (Business ID, Tax ID, VAT registration number) to WooCommerce checkout forms. It validates these numbers against official registries (ARES for Czech Republic, VIES for EU VAT) and supports automatic VAT exemption for valid intra-EU B2B transactions.
 
 - **Main plugin file**: `woolab-ic-dic.php`
-- **PHP compatibility**: 7.3+
-- **WooCommerce compatibility**: 3.5.0+ (HPOS compatible)
+- **PHP compatibility**: 8.1+
+- **WooCommerce compatibility**: 11.0+ (HPOS and Cart & Checkout Blocks compatible)
 
 ## Build and Development Commands
 
@@ -51,12 +51,13 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
   - `helpers.php` - Mathematical validation functions for IC/DIC/RC numbers
   - `settings.php` - WooCommerce settings integration
   - `logger.php` - Custom logging implementation
-  - `admin-notice.php` - Admin notifications
+  - `blocks.php` - Cart & Checkout Blocks: Additional Checkout Fields API + Store API hooks
   - `compatibility/` - Third-party plugin compatibility layers (SuperFaktura, PDF Invoices, Fluid Checkout)
 
 **Frontend Assets:**
 - `src/` - Source files (unminified)
-  - `js/public.js` - Checkout AJAX for ARES autofill
+  - `js/public.js` - Classic checkout AJAX for ARES autofill
+  - `js/blocks.js` - Block checkout: same checks against the WooCommerce Blocks data stores
   - `js/admin.js` - Admin settings page scripts
   - `js/admin-edit.js` - Order edit page scripts
   - `css/` - Styles for toggle functionality and admin UI
@@ -133,7 +134,6 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
 
 ### Known Limitations
 
-- Cart/Checkout blocks not supported (only shortcode-based checkout)
 - VIES validation requires PHP `SoapClient` extension
 - Fluid Checkout compatibility exists but not loaded globally (must be manually included)
 
