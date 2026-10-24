@@ -14,30 +14,34 @@ msgstr ""
 "2);\n"
 "X-Generator: GlotPress/4.1.0\n"
 
-#: woolab-ic-dic.php:158
+#: woolab-ic-dic.php:165
 msgid "Business ID is invalid."
 msgstr "IČO není platné."
 
-#: woolab-ic-dic.php:159, woolab-ic-dic.php:301,
+#: woolab-ic-dic.php:166, woolab-ic-dic.php:309,
 #: includes/filters-actions.php:300
 msgid "Unexpected error occurred. Try it again."
 msgstr "Nastala neočekávaná chyba. Vyzkoušejte znovu."
 
-#: woolab-ic-dic.php:160
+#: woolab-ic-dic.php:167
 msgid "Information loaded succesfully from ARES."
 msgstr "Informace byly úspěšně načteny z ARESu."
 
-#: woolab-ic-dic.php:161
+#: woolab-ic-dic.php:168
 msgid "Validating data in ARES."
 msgstr "Ověřuji data v ARESu."
 
-#: woolab-ic-dic.php:162
+#: woolab-ic-dic.php:169
 msgid "Information loaded succesfully from Finančná správa."
 msgstr "Informace byly úspěšně načteny z Finanční správy SR."
 
-#: woolab-ic-dic.php:163
+#: woolab-ic-dic.php:170
 msgid "Validating data in Finančná správa."
 msgstr "Ověřuji data ve Finanční správě SR."
+
+#: woolab-ic-dic.php:171
+msgid "Clear company details"
+msgstr "Vymazat údaje o firmě"
 
 #: includes/ares.php:20, includes/financna-sprava.php:385
 msgid "Business ID not set."
@@ -83,6 +87,10 @@ msgstr "DIČ"
 #: includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:36
 msgid "VAT reg. no."
 msgstr "IČ DPH"
+
+#: includes/class-woolab-icdic-settings-page.php:15
+msgid "IČO DIČ"
+msgstr "IČO DIČ"
 
 #: includes/filters-actions.php:20
 msgid "View GitHub"
@@ -242,50 +250,104 @@ msgstr "Seznamy Finanční správy SR nejsou dostupné."
 msgid "Business ID not found in Finančná správa, fill in the details manually."
 msgstr "IČO se ve Finanční správě SR nenašlo, vyplňte údaje ručně."
 
-#: includes/settings.php:10, includes/settings.php:13
+#: includes/settings.php:35, includes/settings.php:38
 msgid "Enable validation of VAT number in EU database VIES."
 msgstr "Povolit ověřování hodnoty DIČ v evropské databázi VIES."
 
-#: includes/settings.php:13
+#: includes/settings.php:38
 msgid "To enable this feature, turn on Soap Client (ask your hosting)."
 msgstr "Pro povolení povolte Soap Client (zeptejte se svého hostingu)."
 
-#: includes/settings.php:18
+#: includes/settings.php:43
 msgid "Enable VAT exemption for valid EU VAT numbers"
 msgstr "Povolení osvobození od DPH pro platná čísla DPH v EU"
 
-#: includes/settings.php:22
+#: includes/settings.php:47
 msgid "To enable this feature, turn on taxes in your store."
 msgstr "Chcete-li tuto funkci povolit, zapněte ve svém obchodě daně."
 
-#: includes/settings.php:31
+#: includes/settings.php:56
 msgid ""
 "To enable this feature, set your base country to one of the EU VAT countries."
 msgstr ""
 "Chcete-li tuto funkci povolit, nastavte základní zemi na jednu ze zemí EU s "
 "DPH."
 
-#: includes/settings.php:41
+#: includes/settings.php:60
+msgid "This feature is not compatible with Fluid Checkout for WooCommerce."
+msgstr ""
+"Tato funkce není kompatibilní s pluginem Fluid Checkout for WooCommerce."
+
+#. translators: 1: date and time, 2: number of DIČ, 3: number of IČ DPH
+#: includes/settings.php:65
+msgid "Lists last imported %1$s (%2$s DIČ, %3$s IČ DPH)."
+msgstr "Seznamy naposledy importovány %1$s (%2$s DIČ, %3$s IČ DPH)."
+
+#: includes/settings.php:66
+msgid ""
+"Lists not imported yet; the first import runs on the next WP-Cron run after "
+"enabling (or run \"wp woolab-icdic sk-import\")."
+msgstr ""
+"Seznamy zatím nejsou importovány; první import proběhne při nejbližším "
+"spuštění WP-Cron po zapnutí (nebo spusťte „wp woolab-icdic sk-import“)."
+
+#: includes/settings.php:71
 msgid "Kybernaut IČO DIČ options"
 msgstr "Kybernaut IČ DIČ nastavení"
 
-#: includes/settings.php:41
+#: includes/settings.php:71
 msgid "The following options affect how Business ID and VAT number behaves."
 msgstr "Následující možnosti ovlivní, jak se bude chovat ověřování IČO a DIČ."
 
-#: includes/settings.php:43
+#: includes/settings.php:73
+msgid "Toggle fields visibility"
+msgstr "Viditelnost polí"
+
+#: includes/settings.php:74
+msgid "Enable toggle switch to show/hide input fields"
+msgstr "Polovolit přepínač pro zobrazit/skrýt pole IČO, DIČ a Firma"
+
+#: includes/settings.php:81
+msgid "Move Country to top"
+msgstr "Přesunout \"Země\" na začátek"
+
+#: includes/settings.php:82
+msgid "Move Country field above the \"Buying as a company\" toggle"
+msgstr "Přesunout pole \"Země\" nad zaškrtávací pole \"Nakupuji na firmu\""
+
+#: includes/settings.php:89
+msgid ""
+"Ignore when ARES, Finančná správa or VIES check fails for technical reasons"
+msgstr ""
+"Ignorovat, když ověření v ARESu, ve Finanční správě SR nebo ve VIES selže z "
+"technických důvodů"
+
+#: includes/settings.php:90
+msgid ""
+"Allow the creation of an order if the verification of the Business ID in "
+"ARES or Finančná správa, or the VAT number in the European VIES database "
+"fails for technical reasons."
+msgstr ""
+"Umožnit vytvoření objednávky, pokud se z technických důvodů nepodaří ověřit "
+"IČO v ARESu nebo ve Finanční správě SR, nebo DIČ v evropské databázi VIES."
+
+#: includes/settings.php:98
+msgid "Czech Republic"
+msgstr "Česko"
+
+#: includes/settings.php:100
 msgid "CZ: Validate Business ID in ARES"
 msgstr "CZ: Ověřit IČO v ARESu"
 
-#: includes/settings.php:44
+#: includes/settings.php:101
 msgid "Enable validation of Business ID in Czech database ARES."
 msgstr "Povolit ověřování hodnoty IČO v databázi ARES."
 
-#: includes/settings.php:50
+#: includes/settings.php:107
 msgid "CZ: Validate and autofill based on ARES"
 msgstr "CZ: Ověřit a automaticky vyplňovat podle ARESu"
 
-#: includes/settings.php:51
+#: includes/settings.php:108
 msgid ""
 "Enable company name search, and autofill and validation for Company, VAT "
 "number, Address, City, and Postcode fields based on Czech database ARES. "
@@ -295,24 +357,15 @@ msgstr ""
 "Firma, DIČ, Adresa, Město a PSČ podle české databáze ARES. Vyžaduje zapnutou "
 "volbu výše."
 
-#. translators: 1: date and time, 2: number of DIČ, 3: number of IČ DPH
-#: includes/settings.php:59
-msgid "Lists last imported %1$s (%2$s DIČ, %3$s IČ DPH)."
-msgstr "Seznamy naposledy importovány %1$s (%2$s DIČ, %3$s IČ DPH)."
+#: includes/settings.php:116
+msgid "Slovakia"
+msgstr "Slovensko"
 
-#: includes/settings.php:60
-msgid ""
-"Lists not imported yet; the first import runs on the next WP-Cron run after "
-"enabling (or run \"wp woolab-icdic sk-import\")."
-msgstr ""
-"Seznamy zatím nejsou importovány; první import proběhne při nejbližším "
-"spuštění WP-Cron po zapnutí (nebo spusťte „wp woolab-icdic sk-import“)."
-
-#: includes/settings.php:62
+#: includes/settings.php:118
 msgid "SK: Validate in Finančná správa"
 msgstr "SK: Ověřit ve Finanční správě SR"
 
-#: includes/settings.php:63
+#: includes/settings.php:119
 msgid ""
 "Check Business ID, DIČ and IČ DPH in the Finančná správa lists, downloaded "
 "daily (about 70 MB) into a SQLite file in the uploads folder (about 190 MB). "
@@ -326,15 +379,15 @@ msgstr ""
 "přijme bez automatického vyplnění. IČ DPH se ověřuje ve VIES, jen pokud ho "
 "seznamy neobsahují."
 
-#: includes/settings.php:63
+#: includes/settings.php:119
 msgid "Source: Finančná správa SR."
 msgstr "Zdroj: Finančná správa SR."
 
-#: includes/settings.php:70
+#: includes/settings.php:126
 msgid "SK: Validate and autofill based on Finančná správa"
 msgstr "SK: Ověřit a automaticky vyplňovat podle Finanční správy SR"
 
-#: includes/settings.php:71
+#: includes/settings.php:127
 msgid ""
 "Enable company name search, and autofill and validation for Company, DIČ, IČ "
 "DPH, Address, City, and Postcode fields. Requires checked the option above."
@@ -342,35 +395,11 @@ msgstr ""
 "Povolit vyhledávání podle názvu firmy a automatické vyplnění a ověření polí "
 "Firma, DIČ, IČ DPH, Adresa, Město a PSČ. Vyžaduje zapnutou volbu výše."
 
-#: includes/settings.php:77
-msgid "EU: Validate VAT number in VIES"
-msgstr "EU: Ověřit DIČ ve VIES"
-
-#: includes/settings.php:85
-msgid "EU: VAT exempt"
-msgstr "EU: Osvobození od DPH"
-
-#: includes/settings.php:93
-msgid ""
-"Ignore when ARES, Finančná správa or VIES check fails for technical reasons"
-msgstr ""
-"Ignorovat, když ověření v ARESu, ve Finanční správě SR nebo ve VIES selže z "
-"technických důvodů"
-
-#: includes/settings.php:94
-msgid ""
-"Allow the creation of an order if the verification of the Business ID in "
-"ARES or Finančná správa, or the VAT number in the European VIES database "
-"fails for technical reasons."
-msgstr ""
-"Umožnit vytvoření objednávky, pokud se z technických důvodů nepodaří ověřit "
-"IČO v ARESu nebo ve Finanční správě SR, nebo DIČ v evropské databázi VIES."
-
-#: includes/settings.php:100
+#: includes/settings.php:133
 msgid "SK: Disable DIČ / IČ DPH match check"
 msgstr "SK: Zakázat kontrolu shody DIČ / IČ DPH"
 
-#: includes/settings.php:101
+#: includes/settings.php:134
 msgid ""
 "Disable validation that IČ DPH must equal \"SK\" + DIČ. Some non-profit "
 "organizations have IČ DPH that does not match their DIČ."
@@ -378,26 +407,17 @@ msgstr ""
 "Zrušte ověření, že IČ DPH se musí shodovat s „SK“ + DIČ. Některé neziskové "
 "organizace mají IČ DPH, které se neshoduje s jejich DIČ."
 
-#: includes/settings.php:107
-msgid "Toggle fields visibility"
-msgstr "Viditelnost polí"
+#: includes/settings.php:142
+msgid "European Union"
+msgstr "Evropská unie"
 
-#: includes/settings.php:108
-msgid "Enable toggle switch to show/hide input fields"
-msgstr "Polovolit přepínač pro zobrazit/skrýt pole IČO, DIČ a Firma"
+#: includes/settings.php:144
+msgid "EU: Validate VAT number in VIES"
+msgstr "EU: Ověřit DIČ ve VIES"
 
-#: includes/settings.php:108, includes/settings.php:116
-msgid "This feature is not compatible with Fluid Checkout for WooCommerce."
-msgstr ""
-"Tato funkce není kompatibilní s pluginem Fluid Checkout for WooCommerce."
-
-#: includes/settings.php:115
-msgid "Move Country to top"
-msgstr "Přesunout \"Země\" na začátek"
-
-#: includes/settings.php:116
-msgid "Move Country field above the \"Buying as a company\" toggle"
-msgstr "Přesunout pole \"Země\" nad zaškrtávací pole \"Nakupuji na firmu\""
+#: includes/settings.php:152
+msgid "EU: VAT exempt"
+msgstr "EU: Osvobození od DPH"
 
 #~ msgid "Kybernaut IC DIC"
 #~ msgstr "Kybernaut IC DIC"
@@ -470,7 +490,3 @@ msgstr "Přesunout pole \"Země\" nad zaškrtávací pole \"Nakupuji na firmu\""
 
 #~ msgid "Kybernaut IČ DIČ"
 #~ msgstr "Kybernaut IČ DIČ"
-
-#: woolab-ic-dic.php
-msgid "Clear company details"
-msgstr "Vymazat údaje o firmě"

@@ -68,7 +68,7 @@ By default, if you edit order details, user profile is not touched. If you want 
 
     add_filter( 'woolab_icdic_enable_dic_dicdph_match_check', '__return_false' );
 
-Or use the checkbox in WooCommerce > Settings > General > Kybernaut IČO DIČ options.
+Or use the checkbox in WooCommerce > Settings > IČO DIČ.
 
 ## Credits
 

@@ -900,7 +900,7 @@ function woolab_icdic_show_check_failed_notice_on_admin_email(
 // Add settings link
 function woolab_icdic_plugin_action_links( $links ) {
 	$action_links = array(
-		'settings' => '<a href="' . admin_url( 'admin.php?page=wc-settings' ) . '" aria-label="' . esc_attr__( 'View Kybernaut IČO DIČ settings', 'woolab-ic-dic' ) . '">' . esc_html__( 'Settings', 'woolab-ic-dic' ) . '</a>',
+		'settings' => '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=woolab_icdic' ) . '" aria-label="' . esc_attr__( 'View Kybernaut IČO DIČ settings', 'woolab-ic-dic' ) . '">' . esc_html__( 'Settings', 'woolab-ic-dic' ) . '</a>',
 	);
 
 	return array_merge( $action_links, $links );

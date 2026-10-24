@@ -290,7 +290,7 @@ function woolab_icdic_admin_scripts( $hook ) {
 		wp_enqueue_style( 'woolab-ic-dic-admin', WOOLAB_IC_DIC_URL . 'assets/css/admin.css', array(), WOOLAB_IC_DIC_VERSION );
 		wp_enqueue_script( 'woolab-ic-dic-admin-edit', WOOLAB_IC_DIC_URL . 'assets/js/admin-edit'.$suffix.'.js', array('jquery'), WOOLAB_IC_DIC_VERSION );
 	}
-	if ( 'woocommerce_page_wc-settings' === $hook ) {
+	if ( 'woocommerce_page_wc-settings' === $hook && isset( $_GET['tab'] ) && 'woolab_icdic' === $_GET['tab'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only picks the screen.
 		wp_enqueue_script( 'woolab-ic-dic-admin', WOOLAB_IC_DIC_URL . 'assets/js/admin'.$suffix.'.js', array('jquery'), WOOLAB_IC_DIC_VERSION );
 		wp_localize_script( 'woolab-ic-dic-admin', 'woolab', array(
 			'ajaxurl' => admin_url( 'admin-ajax.php' ),
