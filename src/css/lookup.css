@@ -1,6 +1,19 @@
+/* The icons, the spinner and the list are positioned against the field's wrapper.
+   WooCommerce's is an inline <span>, and an inline box is no reliable anchor:
+   Firefox placed the IČO padlock before the field and below its middle. A block
+   box as wide and as high as the input is. */
 .woolab-ic-dic-suggest-host,
-.woolab-ic-dic-loading {
+.woolab-ic-dic-loading,
+.woolab-ic-dic-verified {
 	position: relative;
+	display: block;
+}
+
+/* No line-box gap under the input, so 50% is the input's middle. */
+.woolab-ic-dic-suggest-host > input,
+.woolab-ic-dic-loading > input,
+.woolab-ic-dic-verified > input {
+	vertical-align: top;
 }
 
 /* Spinner at the end of the field while a lookup runs: IČO and company name,
@@ -84,10 +97,6 @@
 /* Lookup result (mark_filled() in src/js/public.js): a padlock on the company name
    and IČO, a checkmark on the rest of what the register filled in. Colours are
    WooCommerce's own, so a theme that sets them is followed. */
-.woolab-ic-dic-verified {
-	position: relative;
-}
-
 /* Themes pad inputs through selectors of every specificity; the icon needs room. */
 .woolab-ic-dic-verified > input {
 	padding-right: 2.5em !important;
