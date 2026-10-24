@@ -109,9 +109,33 @@
 		wp.data.dispatch( VALIDATION ).setValidationErrors( errors );
 	}
 
+	/**
+	 * The billing country as it will be on the order: with "use same address for
+	 * billing" ticked, the shipping one.
+	 */
 	function billingCountry() {
 		var customer = wp.data.select( CART ).getCustomerData();
-		return customer && customer.billingAddress ? customer.billingAddress.country : '';
+		if ( ! customer ) {
+			return '';
+		}
+		var address = wp.data.select( CHECKOUT ).getUseShippingAsBilling() ? customer.shippingAddress : customer.billingAddress;
+		return address ? address.country : '';
+	}
+
+	/**
+	 * With "use same address for billing" ticked, WooCommerce copies the shipping
+	 * address onto the billing one only when the order is placed. Until then the
+	 * billing country is whatever it was — and the fields' country rules
+	 * (includes/blocks.php) and the server's VAT exemption read it. Keep it in step.
+	 */
+	function syncBillingCountry() {
+		var customer = wp.data.select( CART ).getCustomerData();
+		if ( ! customer || ! customer.shippingAddress || ! customer.billingAddress || ! wp.data.select( CHECKOUT ).getUseShippingAsBilling() ) {
+			return;
+		}
+		if ( customer.shippingAddress.country && customer.shippingAddress.country !== customer.billingAddress.country ) {
+			wp.data.dispatch( CART ).setBillingAddress( { country: customer.shippingAddress.country } );
+		}
 	}
 
 	function lookupAres( ico, country ) {
@@ -295,6 +319,10 @@
 			}
 		} );
 	}
+
+	wp.data.subscribe( syncBillingCountry, CART );
+	wp.data.subscribe( syncBillingCountry, CHECKOUT );
+	syncBillingCountry();
 
 	// Scoped to the checkout store: the cart store changes far more often.
 	wp.data.subscribe( function () {
