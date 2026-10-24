@@ -1,0 +1,17 @@
+parameters:
+	level: 6
+	phpVersion: 80100
+	paths:
+		- woolab-ic-dic.php
+		- uninstall.php
+		- includes
+	# The scoped ibericode/vat (built by wpify/scoper, see composer-deps.json).
+	scanDirectories:
+		- deps
+	scanFiles:
+		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+		- vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+		- vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
+	bootstrapFiles:
+		- tests/phpstan/bootstrap.php
+	treatPhpDocTypesAsCertain: false

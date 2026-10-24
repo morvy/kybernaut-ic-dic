@@ -22,3 +22,6 @@ output.log
 CLAUDE.md
 Makefile
 /bin
+/phpcs.xml.dist
+/phpstan.neon.dist
+/rector.php

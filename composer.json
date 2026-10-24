@@ -10,20 +10,38 @@
         }
     ],
     "require-dev": {
-        "10up/wp_mock": "^0.4.2"
+        "10up/wp_mock": "^0.4.2",
+        "woocommerce/woocommerce-sniffs": "^2.0",
+        "phpstan/phpstan": "^2.3",
+        "phpstan/extension-installer": "^1.4",
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "php-stubs/woocommerce-stubs": "^11.2",
+        "rector/rector": "^2.7",
+        "fsylum/rector-wordpress": "^1.1",
+        "php-stubs/wp-cli-stubs": "^2.12"
     },
-    "scripts" : {
-        "test:unit": "vendor/bin/phpunit --testsuite Unit"
+    "scripts": {
+        "test:unit": "vendor/bin/phpunit --testsuite Unit",
+        "lint:phpcs": "phpcs",
+        "lint:phpstan": "phpstan analyse --memory-limit=2G",
+        "lint:rector": "rector process --dry-run",
+        "lint": [
+            "@lint:phpcs",
+            "@lint:phpstan",
+            "@lint:rector"
+        ]
     },
     "config": {
         "allow-plugins": {
-            "wpify/scoper": true
+            "wpify/scoper": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
         },
-		"platform": {
-			"php": "7.3"
-		}
+        "platform": {
+            "php": "8.2"
+        }
     },
-	"extra": {
+    "extra": {
         "wpify-scoper": {
             "prefix": "KybernautIcDicDeps"
         }

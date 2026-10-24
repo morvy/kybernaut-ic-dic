@@ -1,27 +1,37 @@
 name: CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  build-test:
+  test:
+    name: Tests and static analysis
     runs-on: ubuntu-latest
 
-    ## todo later - run deploy.
-
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Cache Composer dependencies
-      uses: actions/cache@v3
-      with:
-        path: /tmp/composer-cache
-        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-    
-    - uses: php-actions/composer@v6
+      - uses: actions/checkout@v5
 
-    - uses: php-actions/phpunit@v3
-      with:
-        version: 7.5.20
-        php_version: 7.3
-        bootstrap: tests/bootstrap.php
-        configuration: phpunit.xml
+      # The dev tools need PHP 8.2 (fsylum/rector-wordpress); the plugin is
+      # checked against PHP 8.1 by the tools' own settings.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      # wpify/scoper builds the scoped deps/ (composer-deps.json) on install,
+      # which PHPStan reads; same as create-build.yml.
+      - run: composer global config --no-plugins allow-plugins.wpify/scoper true
+      - run: composer global require wpify/scoper
+
+      - run: composer install --no-interaction --no-progress
+
+      - name: PHPUnit
+        run: composer test:unit
+
+      - name: PHPCS
+        run: composer lint:phpcs
+
+      - name: PHPStan
+        run: composer lint:phpstan
+
+      - name: Rector
+        run: composer lint:rector

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<ruleset name="woolab-ic-dic">
+	<description>WooCommerce coding standards for Kybernaut IČO DIČ.</description>
+
+	<file>woolab-ic-dic.php</file>
+	<file>uninstall.php</file>
+	<file>includes</file>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+	<arg name="parallel" value="8"/>
+	<!-- Relative paths in the report. -->
+	<arg name="basepath" value="."/>
+
+	<config name="testVersion" value="8.1-"/>
+	<config name="minimum_wp_version" value="6.9"/>
+
+	<rule ref="WooCommerce-Core"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<!-- WooCommerce's own strings are reused on purpose ("Company", "(optional)"). -->
+			<property name="text_domain" type="array">
+				<element value="woolab-ic-dic"/>
+				<element value="woocommerce"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="woolab_icdic"/>
+				<element value="Woolab_Icdic"/>
+				<element value="WOOLAB_ICDIC"/>
+				<element value="WOOLAB_IC_DIC"/>
+				<element value="KybernautIcDic"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

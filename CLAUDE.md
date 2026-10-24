@@ -39,6 +39,14 @@ vendor/bin/phpunit --testsuite Unit
 
 The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions without requiring a full WordPress installation.
 
+### Static analysis
+```bash
+composer lint            # PHPCS, PHPStan and Rector (dry run)
+composer lint:phpcs      # WooCommerce coding standards (phpcs.xml.dist)
+composer lint:phpstan    # level 6, WordPress / WooCommerce / WP-CLI stubs (phpstan.neon.dist)
+composer lint:rector     # PHP 8.1 + WordPress up to 6.9 deprecations (rector.php)
+```
+
 ## Architecture
 
 ### Code Organization
