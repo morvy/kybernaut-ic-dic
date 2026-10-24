@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "[![plugin version](https://img.shields.io/wordpress/plugin/v/woolab-ic-dic.svg)](https://wordpress.org/plugins/woolab-ic-dic)",
   "main": "gulpfile.js",
-  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.13.10",
     "@babel/preset-env": "^7.23.3",
+    "@playwright/test": "1.64.1",
+    "@wp-playground/cli": "3.1.60",
     "gulp": "^5.0.0",
     "gulp-autoprefixer": "^8.0.0",
     "gulp-babel": "^8.0.0",
@@ -17,7 +18,8 @@
     "gulp-wp-pot": "^2.2.0"
   },
   "scripts": {
-    "test": "js"
+    "test": "js",
+    "test:e2e": "playwright test -c tests/e2e/playwright.config.js"
   },
   "repository": {
     "type": "git",

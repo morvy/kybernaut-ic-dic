@@ -6,3 +6,5 @@ vendor
 .phpunit.cache
 deps
 .phpunit.result.cache
+test-results
+playwright-report

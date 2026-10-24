@@ -35,3 +35,35 @@ jobs:
 
       - name: Rector
         run: composer lint:rector
+
+  e2e:
+    name: Block checkout on WordPress 6.7 + WooCommerce 10.0 (Playground)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # The plugin loads deps/ (wpify/scoper) and vendor/ at runtime.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+      - run: composer global config --no-plugins allow-plugins.wpify/scoper true
+      - run: composer global require wpify/scoper
+      - run: composer install --no-interaction --no-progress
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      # Calls ARES and VIES live, like the checkout does.
+      - run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v5
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results
