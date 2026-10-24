@@ -4,14 +4,12 @@
 //   min    — the plugin's own minimums, read from its header: WooCommerce
 //            "WC requires at least" (its newest patch release), WordPress
 //            "Requires at least", PHP "Requires PHP";
-//   latest — the newest WooCommerce on the oldest WordPress it supports
-//            ("requires" on WordPress.org), on PHP 8.4.
+//   latest — the newest WordPress and WooCommerce (WordPress.org APIs), on the
+//            newest PHP Playground runs.
 //
 // Usage: node tests/e2e/stack.js min|latest
 const fs = require( 'fs' );
 const path = require( 'path' );
-
-const LATEST_PHP = '8.4';
 
 function header( name ) {
 	const source = fs.readFileSync( path.join( __dirname, '../../woolab-ic-dic.php' ), 'utf8' );
@@ -22,14 +20,15 @@ function header( name ) {
 	return match[ 1 ];
 }
 
-async function woocommerce() {
-	const url = 'https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request[slug]=woocommerce&request[fields][versions]=1&request[fields][sections]=0';
+async function api( url ) {
 	const response = await fetch( url );
 	if ( ! response.ok ) {
-		throw new Error( `WordPress.org plugin API: HTTP ${ response.status }` );
+		throw new Error( `${ url }: HTTP ${ response.status }` );
 	}
 	return response.json();
 }
+
+const woocommerce = () => api( 'https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request[slug]=woocommerce&request[fields][versions]=1&request[fields][sections]=0' );
 
 // "10.0" → the newest stable 10.0.x the plugin directory has.
 function newestPatch( info, minor ) {
@@ -50,7 +49,9 @@ async function stack( name ) {
 		return { wp: header( 'Requires at least' ), php: header( 'Requires PHP' ), wc, zip: info.versions[ wc ] };
 	}
 	if ( 'latest' === name ) {
-		return { wp: info.requires, php: LATEST_PHP, wc: info.version, zip: info.download_link };
+		const core = await api( 'https://api.wordpress.org/core/version-check/1.7/' );
+		const { LatestSupportedPHPVersion } = await import( '@php-wasm/universal' );
+		return { wp: core.offers[ 0 ].version, php: LatestSupportedPHPVersion, wc: info.version, zip: info.download_link };
 	}
 	throw new Error( 'Usage: node tests/e2e/stack.js min|latest' );
 }

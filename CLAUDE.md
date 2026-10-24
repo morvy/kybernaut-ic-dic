@@ -44,8 +44,8 @@ VIES, on two stacks that `tests/e2e/stack.js` resolves into `tests/e2e/.blueprin
 (`setup.php` fails the boot if Playground serves anything else):
 - `min`: the plugin header's minimums (WC requires at least → its newest patch,
   Requires at least, Requires PHP);
-- `latest`: the newest WooCommerce from WordPress.org, on the WordPress version it
-  requires, PHP 8.4. CI also runs it weekly.
+- `latest`: the newest WordPress and WooCommerce from the WordPress.org APIs, on the
+  newest PHP Playground supports. CI also runs it weekly.
 ```bash
 npx playwright install chromium   # once
 npm run test:e2e                  # both; or test:e2e:min / test:e2e:latest (port 9411)

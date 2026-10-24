@@ -48,8 +48,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # min: the plugin header's minimums; latest: newest WooCommerce on the
-        # WordPress it requires (tests/e2e/stack.js).
+        # min: the plugin header's minimums; latest: newest WordPress,
+        # WooCommerce and PHP (tests/e2e/stack.js).
         stack: [min, latest]
 
     steps:
