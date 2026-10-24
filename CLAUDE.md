@@ -89,7 +89,7 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
 **ARES Integration:**
 - New REST API endpoint (since 2024): `https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/{ico}`
 - Used for both validation and autofill functionality
-- AJAX endpoint: `ajaxAres` (both logged-in and guest users)
+- REST routes `woolab-ic-dic/v1/lookup` and `/search` (`includes/rest.php`), public, rate limited with WooCommerce's Store API `RateLimits`
 - Graceful degradation: if ARES fails and `woolab_icdic_ignore_check_fail` is enabled, order proceeds with warning
 
 **VAT Exemption Logic:**

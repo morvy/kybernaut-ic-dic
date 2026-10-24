@@ -85,8 +85,7 @@
         /** Company name suggestions: picking one looks its IČO up like a typed one */
         if ( window.woolabSuggest ) {
             woolabSuggest({
-                ajaxurl: woolab.ajaxurl,
-                nonce: woolab.nonce,
+                rest: woolab.rest,
                 selector: '#billing_company',
                 country: function () {
                     return $("#billing_country").val();
@@ -305,12 +304,11 @@
             if ( (value.length == 7 || value.length == 8) && value.match(/^[0-9]+$/) != null ) {
 
                 $.ajax({
-                    url: woolab.ajaxurl,
+                    // GET woolab-ic-dic/v1/lookup (includes/rest.php)
+                    url: woolab.rest + 'lookup',
                     data: {
-                        action: "ajaxAres",
                         'ico' : value,
                         'country' : sk ? 'SK' : 'CZ',
-                        'nonce' : woolab.nonce,
                     },
                     beforeSend: function() {
                         busy( ico, true );
@@ -432,7 +430,14 @@
                     complete: function () {
                         busy( ico, false );
                     },
-                    error: function(errorThrown){
+                    error: function( xhr ){
+                        // A refusal with a reason (rate limited, register off) is an
+                        // answer like any other, not a broken connection.
+                        if ( xhr.responseJSON && xhr.responseJSON.error ) {
+                            ico_class.removeClass( 'kbnt-validating' );
+                            this.success( xhr.responseJSON );
+                            return;
+                        }
                         if ( $('.woolab-ic-dic-tip').length == 0 ) {
                             ico.val('');
                             ares_error( ico_class );

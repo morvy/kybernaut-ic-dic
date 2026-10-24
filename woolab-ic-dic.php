@@ -64,6 +64,7 @@ function woolab_icdic_init() {
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/labels.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/ares.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/vies.php');
+	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/rest.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/financna-sprava.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/helpers.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/validation.php');
@@ -129,10 +130,6 @@ function woolab_icdic_init() {
 		add_action( 'wp_enqueue_scripts', 'woolab_icdic_enqueue_scripts' );
 	}
 
-	add_action('wp_ajax_nopriv_ajaxAres', 'woolab_icdic_ares_ajax');
-	add_action('wp_ajax_ajaxAres', 'woolab_icdic_ares_ajax');
-	add_action('wp_ajax_nopriv_woolab_icdic_search', 'woolab_icdic_search_ajax');
-	add_action('wp_ajax_woolab_icdic_search', 'woolab_icdic_search_ajax');
 
 }
 
@@ -155,7 +152,7 @@ function woolab_icdic_enqueue_lookup_style() {
 
 /**
  * Whether the company name search runs: wherever a register also autofills
- * (woolab_icdic_search_ajax()).
+ * (woolab_icdic_rest_search()).
  */
 function woolab_icdic_suggest_enabled() {
 	return woolab_icdic_ares_check() && woolab_icdic_ares_fill() || woolab_icdic_sk_check() && woolab_icdic_sk_fill();
@@ -186,8 +183,8 @@ function woolab_icdic_register_suggest_script() {
  */
 function woolab_icdic_script_data( $blocks ) {
 	$data = array(
-		'ajaxurl'            => admin_url( 'admin-ajax.php' ),
-		'nonce'              => wp_create_nonce( 'woolab_icdic_ares' ),
+		// The lookups (includes/rest.php).
+		'rest'               => woolab_icdic_rest_url(),
 		'l18n_not_valid'     => __( 'Business ID is invalid.', 'woolab-ic-dic' ),
 		'l18n_error'         => __( 'Unexpected error occurred. Try it again.', 'woolab-ic-dic' ),
 		'l18n_ok'            => __( 'Information loaded succesfully from ARES.', 'woolab-ic-dic' ),
@@ -372,43 +369,6 @@ function woolab_icdic_admin_scripts( $hook ) {
 	if ( 'woocommerce_page_wc-settings' === $hook && isset( $_GET['tab'] ) && 'woolab_icdic' === $_GET['tab'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only picks the screen.
 		wp_enqueue_script( 'woolab-ic-dic-admin', WOOLAB_IC_DIC_URL . 'assets/js/admin'.$suffix.'.js', array('jquery'), WOOLAB_IC_DIC_VERSION );
 	}
-}
-
-function woolab_icdic_ares_ajax(){
-	check_ajax_referer( 'woolab_icdic_ares', 'nonce' );
-
-	$ico = isset( $_REQUEST['ico'] ) ? wc_clean( wp_unslash( $_REQUEST['ico'] ) ) : '';
-	$country = isset( $_REQUEST['country'] ) ? wc_clean( wp_unslash( $_REQUEST['country'] ) ) : 'CZ';
-
-	if ( 'SK' === $country ) {
-		wp_send_json( woolab_icdic_sk_check() ? woolab_icdic_sk_lookup( $ico ) : array( 'error' => __( 'Unexpected error occurred. Try it again.', 'woolab-ic-dic' ) ) );
-	}
-
-	wp_send_json( woolab_icdic_ares( $ico ) );
-};
-
-/**
- * Company name suggestions for the checkout: ARES for CZ, the Slovak lists for SK, only where
- * that register also autofills (picking a suggestion fills the IČO, and the IČO
- * lookup fills the rest).
- */
-function woolab_icdic_search_ajax() {
-	check_ajax_referer( 'woolab_icdic_ares', 'nonce' );
-
-	$name    = isset( $_REQUEST['name'] ) ? trim( wc_clean( wp_unslash( $_REQUEST['name'] ) ) ) : '';
-	$country = isset( $_REQUEST['country'] ) ? wc_clean( wp_unslash( $_REQUEST['country'] ) ) : '';
-	$search  = array(
-		'CZ' => woolab_icdic_ares_check() && woolab_icdic_ares_fill() ? 'woolab_icdic_ares_search' : null,
-		'SK' => woolab_icdic_sk_check() && woolab_icdic_sk_fill() ? 'woolab_icdic_sk_search' : null,
-	)[ $country ] ?? null;
-
-	if ( ! $search || mb_strlen( $name ) < 3 || mb_strlen( $name ) > 100 ) {
-		wp_send_json( array( 'results' => array() ) );
-	}
-
-	$results = $search( $name );
-
-	wp_send_json( false === $results ? array( 'results' => array(), 'internal_error' => true ) : array( 'results' => $results ) );
 }
 
 /**

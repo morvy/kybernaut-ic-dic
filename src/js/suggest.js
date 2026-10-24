@@ -4,10 +4,10 @@
  * Company name suggestions, shared by public.js (classic checkout) and blocks.js.
  *
  * Typing into the company field lists matching subjects from ARES (CZ) or the Slovak lists (SK)
- * (woolab_icdic_search_ajax()); picking one hands its IČO to the caller, whose IČO
+ * (woolab_icdic_rest_search()); picking one hands its IČO to the caller, whose IČO
  * lookup then fills the company, tax IDs and address as if the IČO had been typed.
  *
- * Loaded before the script that calls it, which passes its endpoint and nonce.
+ * Loaded before the script that calls it, which passes the REST base URL.
  *
  * @since 2.0.0
  */
@@ -133,12 +133,10 @@ window.woolabSuggest = function ( options ) {
 		var id = ++request;
 		busy( el, true );
 
-		fetch( options.ajaxurl, {
-			method: 'POST',
-			credentials: 'same-origin',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			body: 'action=woolab_icdic_search&name=' + encodeURIComponent( name ) + '&country=' + encodeURIComponent( country ) + '&nonce=' + encodeURIComponent( options.nonce )
-		} ).then( function ( response ) {
+		// GET woolab-ic-dic/v1/search (includes/rest.php)
+		var url = options.rest + 'search' + ( options.rest.indexOf( '?' ) === -1 ? '?' : '&' ) + 'name=' + encodeURIComponent( name ) + '&country=' + encodeURIComponent( country );
+
+		fetch( url, { credentials: 'omit' } ).then( function ( response ) {
 			return response.json();
 		} ).then( function ( data ) {
 			// A newer keystroke, or the shopper has left the field.

@@ -16,31 +16,31 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: woolab-ic-dic.php:191
+#: woolab-ic-dic.php:188
 msgid "Business ID is invalid."
 msgstr ""
 
-#: woolab-ic-dic.php:192, woolab-ic-dic.php:384, includes/filters-actions.php:322
+#: woolab-ic-dic.php:189, includes/filters-actions.php:322, includes/rest.php:96, includes/rest.php:170
 msgid "Unexpected error occurred. Try it again."
 msgstr ""
 
-#: woolab-ic-dic.php:193
+#: woolab-ic-dic.php:190
 msgid "Information loaded succesfully from ARES."
 msgstr ""
 
-#: woolab-ic-dic.php:194
+#: woolab-ic-dic.php:191
 msgid "Validating data in ARES."
 msgstr ""
 
-#: woolab-ic-dic.php:195
+#: woolab-ic-dic.php:192
 msgid "Information loaded succesfully from Finančná správa."
 msgstr ""
 
-#: woolab-ic-dic.php:196
+#: woolab-ic-dic.php:193
 msgid "Validating data in Finančná správa."
 msgstr ""
 
-#: woolab-ic-dic.php:197
+#: woolab-ic-dic.php:194
 msgid "Clear company details"
 msgstr ""
 

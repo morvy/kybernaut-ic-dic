@@ -129,14 +129,12 @@
       });
     }
   }
+
+  /** GET woolab-ic-dic/v1/lookup (includes/rest.php); a 429 carries the same shape. */
   function lookupAres(ico, country) {
-    return fetch(woolab.ajaxurl, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: 'action=ajaxAres&ico=' + encodeURIComponent(ico) + '&country=' + encodeURIComponent(country) + '&nonce=' + encodeURIComponent(woolab.nonce)
+    var url = woolab.rest + 'lookup' + (woolab.rest.indexOf('?') === -1 ? '?' : '&') + 'ico=' + encodeURIComponent(ico) + '&country=' + encodeURIComponent(country);
+    return fetch(url, {
+      credentials: 'omit'
     }).then(function (response) {
       return response.json();
     });
@@ -280,8 +278,7 @@
   // looks it up like a typed one.
   if (window.woolabSuggest) {
     window.woolabSuggest({
-      ajaxurl: woolab.ajaxurl,
-      nonce: woolab.nonce,
+      rest: woolab.rest,
       selector: COMPANY ? '[id$="' + COMPANY.replace('/', '-') + '"]' : '#billing-company, #shipping-company',
       country: billingCountry,
       enabled: function enabled(country) {
