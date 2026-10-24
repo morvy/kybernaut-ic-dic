@@ -414,7 +414,12 @@ function woolab_icdic_blocks_default_iscomp( $value, $group, $wc_object ) {
 		: array( 'billing_company', 'billing_ic', 'billing_dic', 'billing_dic_dph' );
 
 	foreach ( $keys as $key ) {
-		if ( ! empty( $wc_object->get_meta( $key, true ) ) || ! empty( $wc_object->get_meta( '_' . $key, true ) ) ) {
+		// The company is a core property of orders and customers, not meta.
+		$stored = 'billing_company' === $key
+			? ( is_callable( array( $wc_object, 'get_billing_company' ) ) ? $wc_object->get_billing_company() : '' )
+			: ( $wc_object->get_meta( $key, true ) ?: $wc_object->get_meta( '_' . $key, true ) );
+
+		if ( ! empty( $stored ) ) {
 			return '1';
 		}
 	}

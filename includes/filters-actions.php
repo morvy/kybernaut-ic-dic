@@ -529,7 +529,8 @@ function woolab_icdic_toggle_iscomp_field($value, $input) {
 		return ! empty( $customer->get_meta( 'billing_ic' ) ) ? true : $value;
 	}
 
-	if ( !empty($customer->get_meta('billing_company'))
+	// The company is a core customer property: get_meta() does not see it.
+	if ( !empty($customer->get_billing_company())
 		|| !empty($customer->get_meta('billing_ic'))
 		|| !empty($customer->get_meta('billing_dic'))
 		|| !empty($customer->get_meta('billing_dic_dph'))
@@ -574,7 +575,8 @@ function woolab_icdic_set_vat_exempt_for_customer() {
 	$base_country          = apply_filters( 'woolab_icdic_base_country', $base_country );
 	$ignore_vat_check_fail = woolab_icdic_ignore_check_fail();
 	$is_vat_exempt         = false;
-	$billing_country       = $customer->get_meta('billing_country');
+	// A core customer property: get_meta() returned '' for it, so this never ran.
+	$billing_country       = $customer->get_billing_country();
 
 	if (!empty($billing_country) && $billing_country !== $base_country) {
 		$vat_num = woolab_icdic_select_vat_number( $billing_country, $customer->get_meta('billing_dic'), $customer->get_meta('billing_dic_dph') );
