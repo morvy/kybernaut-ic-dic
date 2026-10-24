@@ -14,7 +14,7 @@
 	<arg name="basepath" value="."/>
 
 	<config name="testVersion" value="8.1-"/>
-	<config name="minimum_wp_version" value="6.9"/>
+	<config name="minimum_wp_version" value="6.7"/>
 
 	<rule ref="WooCommerce-Core"/>
 

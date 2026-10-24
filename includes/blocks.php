@@ -22,8 +22,10 @@
  * formatting, the e-mails, invoicing plugins, order exports — keeps reading what it
  * always read and needs no change at all.
  *
- * Requires WooCommerce 11.0 — the conditional `hidden` rules need its schema parser,
- * which is why 2.0.0 raises the floor rather than feature-detecting the API.
+ * Requires WooCommerce 10.0 — the conditional `hidden` / `required` rules are
+ * JSON Schema with `properties` / `anyOf`, which 9.9 wraps a second time
+ * (woocommerce PR #57965), so 2.0.0 raises the floor rather than
+ * feature-detecting the API. tests/e2e runs the block checkout on 10.0.
  *
  * @since 2.0.0
  */

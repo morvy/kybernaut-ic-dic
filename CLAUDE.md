@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Main plugin file**: `woolab-ic-dic.php`
 - **PHP compatibility**: 8.1+
-- **WooCommerce compatibility**: 11.0+ (HPOS and Cart & Checkout Blocks compatible)
+- **WooCommerce compatibility**: 10.0+ (WordPress 6.7+) (HPOS and Cart & Checkout Blocks compatible)
 
 ## Build and Development Commands
 
@@ -44,7 +44,7 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
 composer lint            # PHPCS, PHPStan and Rector (dry run)
 composer lint:phpcs      # WooCommerce coding standards (phpcs.xml.dist)
 composer lint:phpstan    # level 6, WordPress / WooCommerce / WP-CLI stubs (phpstan.neon.dist)
-composer lint:rector     # PHP 8.1 + WordPress up to 6.9 deprecations (rector.php)
+composer lint:rector     # PHP 8.1 + WordPress up to 6.7 deprecations (rector.php)
 ```
 
 ## Architecture

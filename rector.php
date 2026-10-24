@@ -17,7 +17,7 @@ return RectorConfig::configure()
 		)
 	)
 	->withPhpSets( php81: true )
-	->withSets( array( WordPressLevelSetList::UP_TO_WP_6_9 ) )
+	->withSets( array( WordPressLevelSetList::UP_TO_WP_6_7 ) )
 	->withBootstrapFiles( array( __DIR__ . '/tests/phpstan/bootstrap.php' ) )
 	->withAutoloadPaths( array( __DIR__ . '/deps', __DIR__ . '/vendor/php-stubs/wordpress-stubs/wordpress-stubs.php', __DIR__ . '/vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php' ) )
 	->withSkip(

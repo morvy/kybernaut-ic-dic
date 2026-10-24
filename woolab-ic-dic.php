@@ -11,10 +11,10 @@
  License URI:			http://www.gnu.org/licenses/gpl-3.0.html
  Domain Path:			/languages
  Donate link:			https://paypal.me/KarolinaVyskocilova/
- Requires at least:		6.9
+ Requires at least:		6.7
  Requires PHP:			8.1
  Requires Plugins: 		woocommerce
- WC requires at least:	11.0
+ WC requires at least:	10.0
  WC tested up to:		11.0
  Copyright:				© 2016-2026 Karolína Vyskočilová.
  License:				GNU General Public License v3.0

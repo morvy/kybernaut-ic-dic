@@ -1,11 +1,11 @@
 ﻿=== Kybernaut IČO DIČ ===
 Contributors: vyskoczilova
 Tags: DIČ, IČO, IČ, IČ DPH, VAT number
-Requires at least: 6.9
+Requires at least: 6.7
 Tested up to: 7.1
 Stable tag: 2.0.0
 Requires PHP: 8.1
-WC requires at least: 11.0
+WC requires at least: 10.0
 WC tested up to: 11.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -19,7 +19,7 @@ Adds Company & VAT numbers (IČO & DIČ & IČ DPH) to WooCommerce billing fields
 
 Works with both the block Checkout and the classic (shortcode) one. In the block checkout the fields are registered through WooCommerce's Additional Checkout Fields API and appear in their own section, revealed by the "Buying as a company" toggle; the values are stored in the same `_billing_ic` / `_billing_dic` / `_billing_dic_dph` order meta as before, so invoicing plugins and exports need no change.
 
-Requires WooCommerce 11.0, WordPress 6.9 and PHP 8.1. For older stacks use the 1.11.x branch.
+Requires WooCommerce 10.0, WordPress 6.7 and PHP 8.1. For older stacks use the 1.11.x branch.
 
 === Main functionality ===
 
@@ -52,7 +52,7 @@ Requires WooCommerce 11.0, WordPress 6.9 and PHP 8.1. For older stacks use the 1
 * Woo iDoklad, Woo Doprava, Woo GoPay etc. by [Toret](https://toret.cz/obchod/ref/106/) (affiliate link)
 
 === Requirements ===
-* WooCommerce 11.0 or newer, PHP 8.1 or newer
+* WooCommerce 10.0 or newer, PHP 8.1 or newer
 * For the Slovak Finančná správa check: the zip, xmlreader and pdo_sqlite (with FTS5) PHP extensions, and about 190 MB in the uploads folder
 
 === Credits ===
@@ -143,7 +143,7 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 
 = 2.0.0 (2026-09-01) =
 
-**Breaking:** requires WooCommerce 11.0, WordPress 6.9 and PHP 8.1. Older stacks stay on 1.11.x.
+**Breaking:** requires WooCommerce 10.0, WordPress 6.7 and PHP 8.1. Older stacks stay on 1.11.x.
 
 * Feature: full support for the **Cart & Checkout Blocks**. IČO, DIČ and IČ DPH are registered through WooCommerce's Additional Checkout Fields API and rendered in their own section; the "Buying as a company" toggle and the SK-only IČ DPH field are conditional rules WooCommerce evaluates in the browser. Validation reuses the same code path as the classic checkout, so both behave identically, and ARES and VIES keep their result caches.
 * Tweak: on the front-end order details (thank-you page, My Account → order) IČO, DIČ and IČ DPH are printed as their own block, `p.woolab-ic-dic-customer-details`, under the billing address instead of as address lines, so a theme can style them. E-mails, the admin order screen and invoices keep them in the address.
