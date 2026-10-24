@@ -55,6 +55,9 @@ function woolab_icdic_init() {
 
 	// Localize
 	load_plugin_textdomain( 'woolab-ic-dic', FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
+	// A wordpress.org language pack takes precedence over the bundled file and lags
+	// behind new strings; load the bundled one too, it fills in what the pack lacks.
+	load_textdomain( 'woolab-ic-dic', WOOLAB_IC_DIC_ABSPATH . 'languages/woolab-ic-dic-' . determine_locale() . '.mo' );
 
 	// Load additional sources
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/ares.php');

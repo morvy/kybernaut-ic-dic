@@ -155,6 +155,7 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 * Removed: the self-deactivation guard for a missing WooCommerce. The `Requires Plugins` header lets WordPress enforce that.
 * Feature: **Slovak validation and autofill without an API key.** New options "SK: Validate in Finančná správa" and "SK: Validate and autofill based on Finančná správa". The Finančná správa lists of subjects registered for income tax (DIČ) and VAT (IČ DPH) are downloaded nightly by WP-Cron (or `wp woolab-icdic sk-import`) into a SQLite file in uploads (about 190 MB, outside the database); IČO lookup, autofill and the DIČ / IČ DPH checks run locally, so the checkout no longer depends on VIES being up. IČ DPH that is not "SK" + DIČ (VAT groups) is accepted when both belong to the same IČO. An IČO not in the lists yet (new, or not registered for tax) is accepted without autofill. Requires the zip, xmlreader and pdo_sqlite (with FTS5) PHP extensions.
 * Feature: **company name search** in the classic and block checkout. Typing at least 3 letters of the company name lists matching subjects from ARES (CZ) or the Finančná správa lists (SK); picking one fills the IČO and the rest is autofilled. Enabled together with the autofill options.
+* Feature: bundled Slovak and Czech translations, loaded on top of the wordpress.org language packs so new strings are translated before the packs catch up.
 * Tweak: postcodes are compared without spaces when checking autofilled data.
 * Tweak: `uninstall.php` removes the Slovak lists and the plugin's SK options.
 
