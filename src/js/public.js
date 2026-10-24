@@ -106,6 +106,7 @@
         $("#billing_dic_field").slideDown();
 
         var country = $("#billing_country").val();
+        relabel( country );
         switch (country) {
             case 'SK':
                 $("#billing_dic_dph_field").slideDown();
@@ -125,6 +126,26 @@
             enable_ares_check();
         }
         $("#billing_company_field").slideDown();
+    }
+
+    /**
+     * Labels follow the billing country (includes/labels.php): in SK the DIČ is the
+     * tax ID, everywhere else it is the VAT ID. Only the label's own text changes,
+     * WooCommerce's "(optional)" / required marks inside the label stay.
+     */
+    function relabel( country ) {
+        var labels = woolab.labels[ country ] || woolab.labels[''];
+
+        $.each( { billing_ic: labels.ic, billing_dic: labels.dic, billing_dic_dph: labels.dic_dph }, function ( id, text ) {
+            var label = document.querySelector( 'label[for="' + id + '"]' );
+            var node  = label && label.firstChild;
+
+            if ( node && node.nodeType === Node.TEXT_NODE ) {
+                // Keep whatever spacing WooCommerce put before its "(optional)".
+                node.nodeValue = text + node.nodeValue.match( /\s*$/ )[0];
+            }
+            $( '#' + id ).attr( 'placeholder', text );
+        });
     }
 
     function clear_company_data() {

@@ -13,32 +13,32 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n >= 2 && n <= 4) ? 1 : 2);\n"
 "X-Generator: GlotPress/4.1.0\n"
 
-#: woolab-ic-dic.php:167
+#: woolab-ic-dic.php:168
 msgid "Business ID is invalid."
 msgstr "IČO nie je platné."
 
-#: woolab-ic-dic.php:168, woolab-ic-dic.php:333,
-#: includes/filters-actions.php:300
+#: woolab-ic-dic.php:169, woolab-ic-dic.php:337,
+#: includes/filters-actions.php:287
 msgid "Unexpected error occurred. Try it again."
 msgstr "Nastala neočakávaná chyba. Vyskúšajte to znovu."
 
-#: woolab-ic-dic.php:169
+#: woolab-ic-dic.php:170
 msgid "Information loaded succesfully from ARES."
 msgstr "Informácie boli úspešne načítané z ARESu."
 
-#: woolab-ic-dic.php:170
+#: woolab-ic-dic.php:171
 msgid "Validating data in ARES."
 msgstr "Overujem údaje v ARESe."
 
-#: woolab-ic-dic.php:171
+#: woolab-ic-dic.php:172
 msgid "Information loaded succesfully from Finančná správa."
 msgstr "Informácie boli úspešne načítané z Finančnej správy."
 
-#: woolab-ic-dic.php:172
+#: woolab-ic-dic.php:173
 msgid "Validating data in Finančná správa."
 msgstr "Overujem údaje vo Finančnej správe."
 
-#: woolab-ic-dic.php:173
+#: woolab-ic-dic.php:174
 msgid "Clear company details"
 msgstr "Vymazať údaje o firme"
 
@@ -62,30 +62,9 @@ msgstr "ARES neodpovedá."
 msgid "An error occured while connecting to ARES, try it again later."
 msgstr "Pri pripájaní k ARES nastala chyba, skúste to neskôr."
 
-#: includes/blocks.php:134, includes/filters-actions.php:68
+#: includes/blocks.php:218, includes/filters-actions.php:75
 msgid "Buying as a company"
 msgstr "Nakupujem na firmu"
-
-#: includes/blocks.php:214, includes/filters-actions.php:36,
-#: includes/filters-actions.php:116, includes/filters-actions.php:613,
-#: includes/filters-actions.php:636,
-#: includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:30
-msgid "Business ID"
-msgstr "IČO "
-
-#: includes/blocks.php:215, includes/filters-actions.php:44,
-#: includes/filters-actions.php:124, includes/filters-actions.php:305,
-#: includes/filters-actions.php:617, includes/filters-actions.php:640,
-#: includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:33
-msgid "Tax ID"
-msgstr "DIČ "
-
-#: includes/blocks.php:216, includes/filters-actions.php:52,
-#: includes/filters-actions.php:134, includes/filters-actions.php:621,
-#: includes/filters-actions.php:644,
-#: includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:36
-msgid "VAT reg. no."
-msgstr "IČ DPH "
 
 #: includes/class-woolab-icdic-settings-page.php:15
 msgid "IČO DIČ"
@@ -115,98 +94,68 @@ msgstr "GitHub"
 msgid "Write a Review"
 msgstr "Ohodnotiť"
 
-#: includes/filters-actions.php:37, includes/filters-actions.php:117
-msgctxt "placeholder"
-msgid "Business ID"
-msgstr "IČO "
-
-#: includes/filters-actions.php:45, includes/filters-actions.php:125
-msgctxt "placeholder"
-msgid "Tax ID"
-msgstr "DIČ "
-
-#: includes/filters-actions.php:53, includes/filters-actions.php:135
-msgctxt "placeholder"
-msgid "VAT reg. no."
-msgstr "IČ DPH "
-
-#: includes/filters-actions.php:102
+#: includes/filters-actions.php:109
 msgid "Tax ID (optional, enter only if you are a VAT payer)"
 msgstr "IČ DPH (voliteľné, zadajte iba v prípade, že ste platcom DPH)"
 
-#: includes/filters-actions.php:290, includes/filters-actions.php:293
+#: includes/filters-actions.php:277, includes/filters-actions.php:280
 msgid "Enter a valid Business ID"
 msgstr "Zadajte platnú hodnotu IČO."
 
-#: includes/filters-actions.php:316
+#: includes/filters-actions.php:303
 msgid "%s is not corresponding to Finančná správa."
 msgid_plural "%s are not corresponding to Finančná správa."
 msgstr[0] "%s nezodpovedá údajom Finančnej správy."
 msgstr[1] "%s nezodpovedajú údajom Finančnej správy."
 msgstr[2] "%s nezodpovedá údajom Finančnej správy."
 
-#: includes/filters-actions.php:318
+#: includes/filters-actions.php:305
 msgid "%s is not corresponding to ARES."
 msgid_plural "%s are not corresponding to ARES."
 msgstr[0] "%s nezodpovedá hodnotám uvedeným v ARESe."
 msgstr[1] "%s nezodpovedajú hodnotám uvedeným v ARESe."
 msgstr[2] "%s nezodpovedá hodnotám uvedeným v ARESe."
 
-#: includes/filters-actions.php:321
+#: includes/filters-actions.php:308
 msgid "The billing country does not correspond to the country of the VAT number."
 msgstr "Fakturačná krajina nezodpovedá krajine IČ DPH."
 
-#: includes/filters-actions.php:324
+#: includes/filters-actions.php:311
 msgid "The shipping country does not correspond to the country of the VAT number."
 msgstr "Krajina doručenia nezodpovedá krajine IČ DPH."
 
-#: includes/filters-actions.php:327
+#: includes/filters-actions.php:314
 msgid "VAT number has not correct format"
 msgstr "Číslo IČ DPH nemá správny formát"
 
-#: includes/filters-actions.php:331
+#: includes/filters-actions.php:318
 msgid "Enter a valid VAT number"
 msgstr "Zadajte platnú hodnotu DIČ."
 
-#: includes/filters-actions.php:334
+#: includes/filters-actions.php:321
 msgid "Could not validate VAT number."
 msgstr "IČ DPH sa nepodarilo overiť."
 
-#: includes/filters-actions.php:337
+#: includes/filters-actions.php:324
 msgid "Enter a valid Tax ID"
 msgstr "Zadajte platné DIČ"
 
-#: includes/filters-actions.php:340
+#: includes/filters-actions.php:327
 msgctxt "IC DPH"
 msgid "Enter a valid VAT number"
 msgstr "Zadajte platné IČ DPH"
 
-#: includes/filters-actions.php:343
+#: includes/filters-actions.php:330
 msgid "Tax ID or VAT number is not valid."
 msgstr "DIČ alebo IČ DPH nie je platné."
 
-#: includes/filters-actions.php:346
+#: includes/filters-actions.php:333
 msgid "Tax ID does not belong to the entered Business ID."
 msgstr "DIČ nepatrí k zadanému IČO."
 
-#: includes/filters-actions.php:349
+#: includes/filters-actions.php:336
 msgid "Could not validate Tax ID."
 msgstr "DIČ sa nepodarilo overiť."
-
-#: includes/filters-actions.php:395, includes/filters-actions.php:398,
-#: includes/filters-actions.php:465
-msgid "Business ID: "
-msgstr "IČO: "
-
-#: includes/filters-actions.php:396, includes/filters-actions.php:399,
-#: includes/filters-actions.php:466
-msgid "Tax ID: "
-msgstr "DIČ: "
-
-#: includes/filters-actions.php:397, includes/filters-actions.php:400,
-#: includes/filters-actions.php:467
-msgid "VAT reg. no.: "
-msgstr "IČ DPH: "
 
 #: includes/filters-actions.php:798, includes/filters-actions.php:826,
 #: includes/filters-actions.php:850, includes/filters-actions.php:887
@@ -248,6 +197,37 @@ msgstr "Zoznamy Finančnej správy nie sú dostupné."
 #: includes/financna-sprava.php:473
 msgid "Business ID not found in Finančná správa, fill in the details manually."
 msgstr "IČO sa vo Finančnej správe nenašlo, vyplňte údaje ručne."
+
+#: includes/labels.php:29,
+#: includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:33
+msgid "Tax ID"
+msgstr "DIČ "
+
+#: includes/labels.php:31
+msgctxt "Czech DIČ field"
+msgid "VAT ID"
+msgstr "DIČ"
+
+#: includes/labels.php:33
+msgctxt "EU VAT number field"
+msgid "VAT ID"
+msgstr "IČ DPH"
+
+#: includes/labels.php:37,
+#: includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:30
+msgid "Business ID"
+msgstr "IČO "
+
+#: includes/labels.php:39
+msgctxt "Slovak IČ DPH field"
+msgid "VAT ID"
+msgstr "IČ DPH"
+
+#. translators: %s: field label, e.g. "Business ID"
+#: includes/labels.php:74
+msgctxt "label before a value"
+msgid "%s: "
+msgstr "%s: "
 
 #: includes/settings.php:57
 msgid "This feature is not compatible with Fluid Checkout for WooCommerce."
@@ -481,6 +461,31 @@ msgstr "Každý import sa zapisuje do %s."
 #: includes/settings.php:296
 msgid "WooCommerce → Status → Logs"
 msgstr "WooCommerce → Stav → Logy"
+
+#: includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:36
+msgid "VAT reg. no."
+msgstr "IČ DPH "
+
+#~ msgctxt "placeholder"
+#~ msgid "Business ID"
+#~ msgstr "IČO "
+
+#~ msgctxt "placeholder"
+#~ msgid "Tax ID"
+#~ msgstr "DIČ "
+
+#~ msgctxt "placeholder"
+#~ msgid "VAT reg. no."
+#~ msgstr "IČ DPH "
+
+#~ msgid "Business ID: "
+#~ msgstr "IČO: "
+
+#~ msgid "Tax ID: "
+#~ msgstr "DIČ: "
+
+#~ msgid "VAT reg. no.: "
+#~ msgstr "IČ DPH: "
 
 #~ msgid "Lists last imported %1$s (%2$s DIČ, %3$s IČ DPH)."
 #~ msgstr "Zoznamy naposledy importované %1$s (%2$s DIČ, %3$s IČ DPH)."

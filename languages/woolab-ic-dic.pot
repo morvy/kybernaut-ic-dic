@@ -16,31 +16,31 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: woolab-ic-dic.php:167
+#: woolab-ic-dic.php:168
 msgid "Business ID is invalid."
 msgstr ""
 
-#: woolab-ic-dic.php:168, woolab-ic-dic.php:333, includes/filters-actions.php:300
+#: woolab-ic-dic.php:169, woolab-ic-dic.php:337, includes/filters-actions.php:287
 msgid "Unexpected error occurred. Try it again."
 msgstr ""
 
-#: woolab-ic-dic.php:169
+#: woolab-ic-dic.php:170
 msgid "Information loaded succesfully from ARES."
 msgstr ""
 
-#: woolab-ic-dic.php:170
+#: woolab-ic-dic.php:171
 msgid "Validating data in ARES."
 msgstr ""
 
-#: woolab-ic-dic.php:171
+#: woolab-ic-dic.php:172
 msgid "Information loaded succesfully from Finančná správa."
 msgstr ""
 
-#: woolab-ic-dic.php:172
+#: woolab-ic-dic.php:173
 msgid "Validating data in Finančná správa."
 msgstr ""
 
-#: woolab-ic-dic.php:173
+#: woolab-ic-dic.php:174
 msgid "Clear company details"
 msgstr ""
 
@@ -64,20 +64,8 @@ msgstr ""
 msgid "An error occured while connecting to ARES, try it again later."
 msgstr ""
 
-#: includes/blocks.php:134, includes/filters-actions.php:68
+#: includes/blocks.php:218, includes/filters-actions.php:75
 msgid "Buying as a company"
-msgstr ""
-
-#: includes/blocks.php:214, includes/filters-actions.php:36, includes/filters-actions.php:116, includes/filters-actions.php:613, includes/filters-actions.php:636, includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:30
-msgid "Business ID"
-msgstr ""
-
-#: includes/blocks.php:215, includes/filters-actions.php:44, includes/filters-actions.php:124, includes/filters-actions.php:305, includes/filters-actions.php:617, includes/filters-actions.php:640, includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:33
-msgid "Tax ID"
-msgstr ""
-
-#: includes/blocks.php:216, includes/filters-actions.php:52, includes/filters-actions.php:134, includes/filters-actions.php:621, includes/filters-actions.php:644, includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:36
-msgid "VAT reg. no."
 msgstr ""
 
 #: includes/class-woolab-icdic-settings-page.php:15
@@ -108,92 +96,65 @@ msgstr ""
 msgid "Write a Review"
 msgstr ""
 
-#: includes/filters-actions.php:37, includes/filters-actions.php:117
-msgctxt "placeholder"
-msgid "Business ID"
-msgstr ""
-
-#: includes/filters-actions.php:45, includes/filters-actions.php:125
-msgctxt "placeholder"
-msgid "Tax ID"
-msgstr ""
-
-#: includes/filters-actions.php:53, includes/filters-actions.php:135
-msgctxt "placeholder"
-msgid "VAT reg. no."
-msgstr ""
-
-#: includes/filters-actions.php:102
+#: includes/filters-actions.php:109
 msgid "Tax ID (optional, enter only if you are a VAT payer)"
 msgstr ""
 
-#: includes/filters-actions.php:290, includes/filters-actions.php:293
+#: includes/filters-actions.php:277, includes/filters-actions.php:280
 msgid "Enter a valid Business ID"
 msgstr ""
 
-#: includes/filters-actions.php:316
+#: includes/filters-actions.php:303
 msgid "%s is not corresponding to Finančná správa."
 msgid_plural "%s are not corresponding to Finančná správa."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/filters-actions.php:318
+#: includes/filters-actions.php:305
 msgid "%s is not corresponding to ARES."
 msgid_plural "%s are not corresponding to ARES."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/filters-actions.php:321
+#: includes/filters-actions.php:308
 msgid "The billing country does not correspond to the country of the VAT number."
 msgstr ""
 
-#: includes/filters-actions.php:324
+#: includes/filters-actions.php:311
 msgid "The shipping country does not correspond to the country of the VAT number."
 msgstr ""
 
-#: includes/filters-actions.php:327
+#: includes/filters-actions.php:314
 msgid "VAT number has not correct format"
 msgstr ""
 
-#: includes/filters-actions.php:331
+#: includes/filters-actions.php:318
 msgid "Enter a valid VAT number"
 msgstr ""
 
-#: includes/filters-actions.php:334
+#: includes/filters-actions.php:321
 msgid "Could not validate VAT number."
 msgstr ""
 
-#: includes/filters-actions.php:337
+#: includes/filters-actions.php:324
 msgid "Enter a valid Tax ID"
 msgstr ""
 
-#: includes/filters-actions.php:340
+#: includes/filters-actions.php:327
 msgctxt "IC DPH"
 msgid "Enter a valid VAT number"
 msgstr ""
 
-#: includes/filters-actions.php:343
+#: includes/filters-actions.php:330
 msgid "Tax ID or VAT number is not valid."
 msgstr ""
 
-#: includes/filters-actions.php:346
+#: includes/filters-actions.php:333
 msgid "Tax ID does not belong to the entered Business ID."
 msgstr ""
 
-#: includes/filters-actions.php:349
+#: includes/filters-actions.php:336
 msgid "Could not validate Tax ID."
-msgstr ""
-
-#: includes/filters-actions.php:395, includes/filters-actions.php:398, includes/filters-actions.php:465
-msgid "Business ID: "
-msgstr ""
-
-#: includes/filters-actions.php:396, includes/filters-actions.php:399, includes/filters-actions.php:466
-msgid "Tax ID: "
-msgstr ""
-
-#: includes/filters-actions.php:397, includes/filters-actions.php:400, includes/filters-actions.php:467
-msgid "VAT reg. no.: "
 msgstr ""
 
 #: includes/filters-actions.php:798, includes/filters-actions.php:826, includes/filters-actions.php:850, includes/filters-actions.php:887
@@ -234,6 +195,35 @@ msgstr ""
 
 #: includes/financna-sprava.php:473
 msgid "Business ID not found in Finančná správa, fill in the details manually."
+msgstr ""
+
+#: includes/labels.php:29, includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:33
+msgid "Tax ID"
+msgstr ""
+
+#: includes/labels.php:31
+msgctxt "Czech DIČ field"
+msgid "VAT ID"
+msgstr ""
+
+#: includes/labels.php:33
+msgctxt "EU VAT number field"
+msgid "VAT ID"
+msgstr ""
+
+#: includes/labels.php:37, includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:30
+msgid "Business ID"
+msgstr ""
+
+#: includes/labels.php:39
+msgctxt "Slovak IČ DPH field"
+msgid "VAT ID"
+msgstr ""
+
+#. translators: %s: field label, e.g. "Business ID"
+#: includes/labels.php:74
+msgctxt "label before a value"
+msgid "%s: "
 msgstr ""
 
 #: includes/settings.php:57
@@ -467,4 +457,8 @@ msgstr ""
 
 #: includes/settings.php:296
 msgid "WooCommerce → Status → Logs"
+msgstr ""
+
+#: includes/compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php:36
+msgid "VAT reg. no."
 msgstr ""

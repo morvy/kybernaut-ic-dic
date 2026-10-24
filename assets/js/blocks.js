@@ -114,7 +114,11 @@
    * address onto the billing one on every change, so writing the billing address
    * alone would be undone straight away — write the one the shopper can see.
    */
-  function fillAddress(ares) {
+  /** The DIČ field shown for a billing country (woolab_icdic_blocks_dic_fields()) */
+  function dicField(country) {
+    return DIC[country] || DIC[''];
+  }
+  function fillAddress(ares, country) {
     var address = {
       address_1: ares.adresa,
       postcode: ares.psc,
@@ -130,7 +134,7 @@
       address.company = ares.spolecnost;
     }
     if (ares.dic) {
-      fields[DIC] = ares.dic;
+      fields[dicField(country)] = ares.dic;
     }
 
     // Finančná správa lists only; null when the subject has none.
@@ -190,7 +194,7 @@
       }
       setError(null);
       if (country === 'SK' ? woolab.sk_fill : woolab.ares_fill) {
-        fillAddress(ares);
+        fillAddress(ares, country);
       }
     })["catch"](function () {
       busy(false);

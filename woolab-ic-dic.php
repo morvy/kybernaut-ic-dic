@@ -61,6 +61,7 @@ function woolab_icdic_init() {
 
 	// Load additional sources
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/options.php');
+	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/labels.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/ares.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/financna-sprava.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/helpers.php');
@@ -176,9 +177,12 @@ function woolab_icdic_enqueue_scripts() {
 			'sk_check' => woolab_icdic_sk_check(),
 			'sk_fill' => woolab_icdic_sk_fill(),
 			'ignore_check_fail' => woolab_icdic_ignore_check_fail(),
+			// Field labels by billing country (includes/labels.php).
+			'labels' => woolab_icdic_labels_by_country(),
 			'fields' => array(
 				'ic'      => 'kybernaut/ic',
-				'dic'     => 'kybernaut/dic',
+				// Country => field: the DIČ field is one per label (includes/blocks.php).
+				'dic'     => woolab_icdic_blocks_dic_fields(),
 				'dic_dph' => 'kybernaut/dic-dph',
 				// Empty when the company name stays a normal address field, so ARES
 				// autofill knows where to put it.

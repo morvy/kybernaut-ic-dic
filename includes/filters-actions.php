@@ -27,35 +27,42 @@ function woolab_icdic_plugin_row_meta( $links, $file ) {
 	return (array) $links;
 }
 
+/**
+ * The three company identifier fields, labelled for a billing country
+ * (includes/labels.php).
+ *
+ * @param string $country Billing country code.
+ * @return array<string,array> WooCommerce form fields, keyed billing_ic, billing_dic, billing_dic_dph.
+ */
+function woolab_icdic_fields( $country ) {
+	$labels = woolab_icdic_labels( $country );
+
+	$field = function ( $key, $priority ) use ( $labels ) {
+		return array(
+			'label'       => $labels[ $key ],
+			'placeholder' => $labels[ $key ],
+			'required'    => false,
+			'class'       => apply_filters( 'woolab_icdic_class_billing_' . $key, array( 'form-row-wide', 'woolab-ic-dic-no_spaces' ) ),
+			'clear'       => true,
+			'priority'    => $priority,
+		);
+	};
+
+	return array(
+		'billing_ic'      => $field( 'ic', 31 ),
+		'billing_dic'     => $field( 'dic', 32 ),
+		'billing_dic_dph' => $field( 'dic_dph', 33 ),
+	);
+}
+
 // add checkout fields
 function woolab_icdic_checkout_fields( $fields ) {
 
-	$fields['billing']['billing_ic'] = array(
-		// Labels are trimmed: some translations carry a trailing space (the Slovak "IČO "),
-		// which WooCommerce's "&nbsp;(optional)" suffix turns into a visible gap. Same as blocks.php.
-		'label'       => trim( __('Business ID', 'woolab-ic-dic') ),
-		'placeholder' => _x('Business ID', 'placeholder', 'woolab-ic-dic'),
-		'required'    => false,
-		'class'       => apply_filters( 'woolab_icdic_class_billing_ic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
-		'clear'       => true,
-		'priority'    => 31,
-	);
-	$fields['billing']['billing_dic'] = array(
-		'label'       => trim( __('Tax ID', 'woolab-ic-dic') ),
-		'placeholder' => _x('Tax ID', 'placeholder', 'woolab-ic-dic'),
-		'required'    => false,
-		'class'       => apply_filters( 'woolab_icdic_class_billing_dic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
-		'clear'       => true,
-		'priority'    => 32,
-	);
-	$fields['billing']['billing_dic_dph'] = array(
-		'label'       => trim( __('VAT reg. no.', 'woolab-ic-dic') ),
-		'placeholder' => _x('VAT reg. no.', 'placeholder', 'woolab-ic-dic'),
-		'required'    => false,
-		'class'       => apply_filters( 'woolab_icdic_class_billing_dic_dph', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
-		'clear'       => true,
-		'priority'    => 33,
-	);
+	// Labelled for the country the form opens with; public.js relabels them when
+	// the shopper picks another one.
+	$country = WC()->customer ? WC()->customer->get_billing_country() : '';
+
+	$fields['billing'] = array_merge( $fields['billing'], woolab_icdic_fields( $country ) );
 
 	/**
 	 * Enable/Disable fields toggle
@@ -112,35 +119,14 @@ function woolab_icdic_checkout_fields( $fields ) {
 
 function woolab_icdic_billing_fields( $fields, $country ) {
 
-	$fields['billing_ic'] = array(
-		'label'       => trim( __('Business ID', 'woolab-ic-dic') ),
-		'placeholder' => _x('Business ID', 'placeholder', 'woolab-ic-dic'),
-		'required'    => false,
-		'class'       => apply_filters( 'woolab_icdic_class_billing_ic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
-		'clear'       => true,
-		'priority'    => 31,
-	);
-	$fields['billing_dic'] = array(
-		'label'       => trim( __('Tax ID', 'woolab-ic-dic') ),
-		'placeholder' => _x('Tax ID', 'placeholder', 'woolab-ic-dic'),
-		'required'    => false,
-		'class'       => apply_filters( 'woolab_icdic_class_billing_dic', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
-		'clear'       => true,
-		'priority'    => 32,
-	);
+	$ids = woolab_icdic_fields( $country );
 
-	if ( $country == 'SK' ) {
-		$fields['billing_dic_dph'] = array(
-			'label'       => trim( __('VAT reg. no.', 'woolab-ic-dic') ),
-			'placeholder' => _x('VAT reg. no.', 'placeholder', 'woolab-ic-dic'),
-			'required'    => false,
-			'class'       => apply_filters( 'woolab_icdic_class_billing_dic_dph', array('form-row-wide', 'woolab-ic-dic-no_spaces') ),
-			'clear'       => true,
-			'priority'    => 33,
-		);
+	// The VAT registration number is a Slovak field only.
+	if ( 'SK' !== $country ) {
+		unset( $ids['billing_dic_dph'] );
 	}
 
-	return $fields;
+	return array_merge( $fields, $ids );
 }
 
 /**
@@ -262,7 +248,7 @@ function woolab_icdic_checkout_field_process() {
 
 	// Map each structured error code back to its exact original notice.
 	foreach ( $result['errors'] as $error ) {
-		wc_add_notice( woolab_icdic_checkout_error_message( $error ), 'error' );
+		wc_add_notice( woolab_icdic_checkout_error_message( $error, $country ), 'error' );
 	}
 
 	// Set flag about Business ID or VAT number check fails.
@@ -277,10 +263,11 @@ function woolab_icdic_checkout_field_process() {
  * One-to-one with the codes emitted by woolab_icdic_validate_checkout(); the text,
  * text domain, and context match the strings the monolithic hook used to emit.
  *
- * @param array $error ['code' => string, 'data' => array]
+ * @param array  $error   ['code' => string, 'data' => array]
+ * @param string $country Billing country, for the field labels.
  * @return string
  */
-function woolab_icdic_checkout_error_message( array $error ) {
+function woolab_icdic_checkout_error_message( array $error, $country = '' ) {
 	switch ( $error['code'] ) {
 		case 'missing_company':
 			// WooCommerce's own required-field notice, so it reads like the core fields' notices.
@@ -302,7 +289,7 @@ function woolab_icdic_checkout_error_message( array $error ) {
 		case 'ares_mismatch':
 		case 'sk_mismatch':
 			$labels = array(
-				'tax_id'   => __( 'Tax ID', 'woolab-ic-dic' ),
+				'tax_id'   => woolab_icdic_labels( $country )['dic'],
 				'company'  => __( 'Company', 'woocommerce' ),
 				'postcode' => __( 'Postcode / ZIP', 'woocommerce' ),
 				'city'     => __( 'Town / City', 'woocommerce' ),
@@ -390,15 +377,19 @@ function woolab_icdic_localisation_address_formats($address_formats) {
 }
 
 // Formatting
-function woolab_icdic_formatted_address_replacements( $replace, $args) {
-	return $replace += array(
-		'{billing_ic}'            => (isset($args['billing_ic']) && $args['billing_ic'] != '' ) ?  __('Business ID: ', 'woolab-ic-dic') . esc_html( $args['billing_ic'] ) : '',
-		'{billing_dic}'           => (isset($args['billing_dic']) && $args['billing_dic'] != '') ?  __('Tax ID: ', 'woolab-ic-dic') . esc_html( $args['billing_dic'] ) : '',
-		'{billing_dic_dph}'       => (isset($args['billing_dic_dph']) && $args['billing_dic_dph'] != '') ?  __('VAT reg. no.: ', 'woolab-ic-dic') . esc_html( $args['billing_dic_dph'] ) : '',
-		'{billing_ic_upper}'      => strtoupper((isset($args['billing_ic_upper']) && $args['billing_ic_upper'] != '') ?__('Business ID: ', 'woolab-ic-dic') . esc_html( $args['billing_ic_upper'] ) : '' ),
-		'{billing_dic_upper}'     => strtoupper((isset($args['billing_dic_upper']) && $args['billing_dic_upper'] != '') ? __('Tax ID: ', 'woolab-ic-dic') . esc_html( $args['billing_dic_upper'] ) : ''),
-		'{billing_dic_dph_upper}' => strtoupper((isset($args['billing_dic_dph_upper']) && $args['billing_dic_dph_upper'] != '') ? __('VAT reg. no.: ', 'woolab-ic-dic') . esc_html( $args['billing_dic_dph_upper'] ) : ''),
-	);
+function woolab_icdic_formatted_address_replacements( $replace, $args ) {
+
+	$labels  = woolab_icdic_labels( isset( $args['country'] ) ? $args['country'] : '' );
+	$replace = (array) $replace;
+
+	foreach ( array( 'ic' => 'billing_ic', 'dic' => 'billing_dic', 'dic_dph' => 'billing_dic_dph' ) as $key => $token ) {
+		foreach ( array( '' => $token, '_upper' => $token . '_upper' ) as $suffix => $arg ) {
+			$line = isset( $args[ $arg ] ) && '' != $args[ $arg ] ? woolab_icdic_label_prefix( $labels[ $key ] ) . esc_html( $args[ $arg ] ) : '';
+			$replace += array( '{' . $token . $suffix . '}' => $suffix ? strtoupper( $line ) : $line );
+		}
+	}
+
+	return $replace;
 }
 
 function woolab_icdic_order_formatted_billing_address($address, $order) {
@@ -459,12 +450,13 @@ function woolab_icdic_order_details_ids( $address_type, $order ) {
 		return;
 	}
 
-	$lines = array();
+	$labels = woolab_icdic_labels( $order->get_billing_country() );
+	$lines  = array();
 	foreach (
 		array(
-			'ic'      => array( __( 'Business ID: ', 'woolab-ic-dic' ), $order->get_meta( '_billing_ic' ) ),
-			'dic'     => array( __( 'Tax ID: ', 'woolab-ic-dic' ), $order->get_meta( '_billing_dic' ) ),
-			'dic-dph' => array( __( 'VAT reg. no.: ', 'woolab-ic-dic' ), $order->get_meta( '_billing_dic_dph' ) ),
+			'ic'      => array( woolab_icdic_label_prefix( $labels['ic'] ), $order->get_meta( '_billing_ic' ) ),
+			'dic'     => array( woolab_icdic_label_prefix( $labels['dic'] ), $order->get_meta( '_billing_dic' ) ),
+			'dic-dph' => array( woolab_icdic_label_prefix( $labels['dic_dph'] ), $order->get_meta( '_billing_dic_dph' ) ),
 		) as $key => $row
 	) {
 		if ( '' !== (string) $row[1] ) {
@@ -608,17 +600,21 @@ function woolab_icdic_save_order_metadata( $order_id ) {
 
 // admin
 function woolab_icdic_customer_meta_fields($fields) {
+	// The profile being edited, for its billing country (user-edit.php sets it).
+	$country = isset( $GLOBALS['profileuser'] ) ? (string) get_user_meta( $GLOBALS['profileuser']->ID, 'billing_country', true ) : '';
+	$labels  = woolab_icdic_labels( $country );
+
 	$fields['billing']['fields'] += array(
 		'billing_ic' => array(
-			'label'       => trim( __('Business ID', 'woolab-ic-dic') ),
+			'label'       => $labels['ic'],
 			'description' => ''
 		),
 		'billing_dic' => array(
-			'label'       => trim( __('Tax ID', 'woolab-ic-dic') ),
+			'label'       => $labels['dic'],
 			'description' => ''
 		),
 		'billing_dic_dph' => array(
-			'label'       => trim( __('VAT reg. no.', 'woolab-ic-dic') ),
+			'label'       => woolab_icdic_labels( 'SK' )['dic_dph'],
 			'description' => ''
 		)
 	);
@@ -633,15 +629,15 @@ function woolab_icdic_admin_billing_fields ( $fields ) {
 	// Return empty fields everytime someone wants admin billing fields.
 	$fields += array(
 		'billing_ic' => array(
-			'label' => trim( __('Business ID', 'woolab-ic-dic') ),
+			'label' => woolab_icdic_labels( '' )['ic'],
 			'show'  => false,
 		),
 		'billing_dic' => array(
-			'label' => trim( __('Tax ID', 'woolab-ic-dic') ),
+			'label' => woolab_icdic_labels( '' )['dic'],
 			'show'  => false,
 		),
 		'billing_dic_dph' => array(
-			'label' => trim( __('VAT reg. no.', 'woolab-ic-dic') ),
+			'label' => woolab_icdic_labels( 'SK' )['dic_dph'],
 			'show'  => false,
 			)
 		);
@@ -664,6 +660,10 @@ function woolab_icdic_admin_billing_fields ( $fields ) {
 	if ( $order instanceof \WC_Order ) {
 
 		$country = $order->get_billing_country();
+		$labels  = woolab_icdic_labels( $country );
+
+		$fields['billing_ic']['label']  = $labels['ic'];
+		$fields['billing_dic']['label'] = $labels['dic'];
 
 		$fields['billing_ic']['value'] = $order->get_meta( '_billing_ic', true );
 		$fields['billing_dic']['value'] = $order->get_meta( '_billing_dic', true );

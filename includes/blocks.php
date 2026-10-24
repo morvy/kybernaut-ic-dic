@@ -36,19 +36,103 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Additional-field id => the legacy meta name the rest of the plugin already uses.
+ * The additional fields: id => array(
+ *     'legacy'    => the meta name the rest of the plugin already uses,
+ *     'label'     => array( billing country, woolab_icdic_labels() key ),
+ *     'countries' => array( 'only' | 'except' => country codes ), or null for all.
+ * )
  *
- * The order meta key is that name with a leading underscore (`_billing_ic`), the
- * customer meta key is the bare name (`billing_ic`) — the same split the classic
- * checkout produces.
+ * The order meta key is the legacy name with a leading underscore (`_billing_ic`),
+ * the customer meta key is the bare name (`billing_ic`) — the same split the
+ * classic checkout produces.
  *
- * @return array<string,string>
+ * The DIČ field reads differently per billing country (includes/labels.php), and a
+ * block field's label is fixed, so there is one field per label, each shown for
+ * its countries and all saved to billing_dic.
+ *
+ * @return array<string,array>
  */
 function woolab_icdic_blocks_fields() {
 	return array(
-		'kybernaut/ic'      => 'billing_ic',
-		'kybernaut/dic'     => 'billing_dic',
-		'kybernaut/dic-dph' => 'billing_dic_dph',
+		'kybernaut/ic'      => array( 'legacy' => 'billing_ic', 'label' => array( '', 'ic' ), 'countries' => null ),
+		'kybernaut/dic-sk'  => array( 'legacy' => 'billing_dic', 'label' => array( 'SK', 'dic' ), 'countries' => array( 'only' => array( 'SK' ) ) ),
+		'kybernaut/dic-cz'  => array( 'legacy' => 'billing_dic', 'label' => array( 'CZ', 'dic' ), 'countries' => array( 'only' => array( 'CZ' ) ) ),
+		// The original id, so orders placed before the split keep their value.
+		'kybernaut/dic'     => array( 'legacy' => 'billing_dic', 'label' => array( 'EU', 'dic' ), 'countries' => array( 'except' => array( 'SK', 'CZ' ) ) ),
+		'kybernaut/dic-dph' => array( 'legacy' => 'billing_dic_dph', 'label' => array( 'SK', 'dic_dph' ), 'countries' => array( 'only' => array( 'SK' ) ) ),
+	);
+}
+
+/**
+ * Whether a field of woolab_icdic_blocks_fields() is shown for a billing country.
+ *
+ * @param array  $field
+ * @param string $country
+ * @return bool
+ */
+function woolab_icdic_blocks_field_applies( array $field, $country ) {
+	if ( empty( $field['countries'] ) ) {
+		return true;
+	}
+
+	return isset( $field['countries']['only'] )
+		? in_array( $country, $field['countries']['only'], true )
+		: ! in_array( $country, $field['countries']['except'], true );
+}
+
+/**
+ * The field that holds a legacy value for a billing country, e.g. which of the
+ * three DIČ fields is shown for SK.
+ *
+ * @param string $legacy  billing_ic, billing_dic or billing_dic_dph.
+ * @param string $country
+ * @return string|null Field id.
+ */
+function woolab_icdic_blocks_field_for( $legacy, $country ) {
+	foreach ( woolab_icdic_blocks_fields() as $id => $field ) {
+		if ( $legacy === $field['legacy'] && woolab_icdic_blocks_field_applies( $field, $country ) ) {
+			return $id;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * The DIČ field id per billing country, for assets/js/blocks.js: 'SK', 'CZ', and
+ * '' for every other country.
+ *
+ * @return array<string,string>
+ */
+function woolab_icdic_blocks_dic_fields() {
+	return array(
+		'SK' => woolab_icdic_blocks_field_for( 'billing_dic', 'SK' ),
+		'CZ' => woolab_icdic_blocks_field_for( 'billing_dic', 'CZ' ),
+		''   => woolab_icdic_blocks_field_for( 'billing_dic', 'EU' ),
+	);
+}
+
+/**
+ * A `hidden` rule: hide the field outside its countries.
+ *
+ * @param array $countries woolab_icdic_blocks_fields() 'countries'.
+ * @return array JSON Schema.
+ */
+function woolab_icdic_blocks_country_rule( array $countries ) {
+	$country = isset( $countries['only'] )
+		? array( 'not' => array( 'enum' => $countries['only'] ) )
+		: array( 'enum' => $countries['except'] );
+
+	return array(
+		'properties' => array(
+			'customer' => array(
+				'properties' => array(
+					'billing_address' => array(
+						'properties' => array( 'country' => $country ),
+					),
+				),
+			),
+		),
 	);
 }
 
@@ -155,22 +239,6 @@ function woolab_icdic_blocks_register_fields() {
 		),
 	);
 
-	// The VAT registration number is a Slovak field only — the same gate
-	// woolab_icdic_billing_fields() applies with $country == 'SK'.
-	$not_slovak = array(
-		'properties' => array(
-			'customer' => array(
-				'properties' => array(
-					'billing_address' => array(
-						'properties' => array(
-							'country' => array( 'not' => array( 'const' => 'SK' ) ),
-						),
-					),
-				),
-			),
-		),
-	);
-
 	// Opt-in: a company must enter its name and Business ID. "A company" is the inverse of
 	// $not_a_company while the toggle is on, and a filled-in company name (a core
 	// address field then) while it is off. WooCommerce evaluates the rule in the
@@ -207,15 +275,6 @@ function woolab_icdic_blocks_register_fields() {
 			);
 	}
 
-	// Trimmed because some translations carry a trailing space (the Slovak "IČO ")
-	// that the classic markup swallowed and the block label renders as a gap before
-	// WooCommerce's own "(optional)" suffix.
-	$labels = array(
-		'kybernaut/ic'      => trim( __( 'Business ID', 'woolab-ic-dic' ) ),
-		'kybernaut/dic'     => trim( __( 'Tax ID', 'woolab-ic-dic' ) ),
-		'kybernaut/dic-dph' => trim( __( 'VAT reg. no.', 'woolab-ic-dic' ) ),
-	);
-
 	// The company name comes first, above the identifiers — the same order the field
 	// priorities give the classic checkout. It is a core order property rather than
 	// meta, so it is registered here and not part of woolab_icdic_blocks_fields().
@@ -237,20 +296,22 @@ function woolab_icdic_blocks_register_fields() {
 		add_filter( 'woocommerce_get_default_value_for_kybernaut/company', 'woolab_icdic_blocks_default_company', 10, 3 );
 	}
 
-	foreach ( woolab_icdic_blocks_fields() as $id => $legacy ) {
+	foreach ( woolab_icdic_blocks_fields() as $id => $field ) {
 
+		$legacy = $field['legacy'];
 		$hidden = $toggle ? $not_a_company : false;
 
-		if ( 'kybernaut/dic-dph' === $id ) {
-			$hidden = $toggle
-				? array( 'anyOf' => array( array( 'properties' => $not_a_company ), $not_slovak ) )
-				: $not_slovak;
+		if ( $field['countries'] ) {
+			$by_country = woolab_icdic_blocks_country_rule( $field['countries'] );
+			$hidden     = $toggle
+				? array( 'anyOf' => array( array( 'properties' => $not_a_company ), $by_country ) )
+				: $by_country;
 		}
 
 		woocommerce_register_additional_checkout_field(
 			array(
 				'id'                         => $id,
-				'label'                      => $labels[ $id ],
+				'label'                      => woolab_icdic_labels( $field['label'][0] )[ $field['label'][1] ],
 				'location'                   => 'order',
 				'type'                       => 'text',
 				'hidden'                     => $hidden,
@@ -417,13 +478,14 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 	}
 
 	$countries = new Countries();
+	$dic_field = woolab_icdic_blocks_field_for( 'billing_dic', $country );
 
 	$result = woolab_icdic_validate_checkout(
 		array(
 			'country'               => $country,
 			'ic'                    => (string) ( $fields['kybernaut/ic'] ?? '' ),
-			'dic'                   => (string) ( $fields['kybernaut/dic'] ?? '' ),
-			'dic_present'           => isset( $fields['kybernaut/dic'] ),
+			'dic'                   => (string) ( $fields[ $dic_field ] ?? '' ),
+			'dic_present'           => isset( $fields[ $dic_field ] ),
 			'dic_dph'               => (string) ( $fields['kybernaut/dic-dph'] ?? '' ),
 			// While the toggle owns the company name it is posted with the rest of
 			// the section, not with the address.
@@ -457,7 +519,7 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 	);
 
 	foreach ( $result['errors'] as $error ) {
-		$errors->add( 'woolab_icdic_' . $error['code'], woolab_icdic_checkout_error_message( $error ) );
+		$errors->add( 'woolab_icdic_' . $error['code'], woolab_icdic_checkout_error_message( $error, $country ) );
 	}
 
 	// Read back in woolab_icdic_blocks_update_order(), which stands in for
@@ -494,8 +556,12 @@ function woolab_icdic_blocks_update_order( $order, $request ) {
 		}
 	}
 
-	foreach ( woolab_icdic_blocks_fields() as $id => $legacy ) {
-		$value = (string) $order->get_meta( '_wc_other/' . $id, true );
+	$country = $order->get_billing_country();
+
+	foreach ( array( 'billing_ic', 'billing_dic', 'billing_dic_dph' ) as $legacy ) {
+		// The field shown for this country; none (IČ DPH outside SK) stores empty.
+		$id    = woolab_icdic_blocks_field_for( $legacy, $country );
+		$value = $id ? (string) $order->get_meta( '_wc_other/' . $id, true ) : '';
 
 		$order->update_meta_data( '_' . $legacy, $value );
 
