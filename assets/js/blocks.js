@@ -181,6 +181,23 @@
     });
   }
   var checkLater = debounce(check, 500);
+
+  // Company name suggestions: picking one sets the IČO, and the subscriber below
+  // looks it up like a typed one.
+  if (window.woolabSuggest) {
+    window.woolabSuggest({
+      selector: COMPANY ? '[id$="' + COMPANY.replace('/', '-') + '"]' : '#billing-company, #shipping-company',
+      country: billingCountry,
+      enabled: function enabled(country) {
+        return country === 'CZ' && woolab.ares_check && woolab.ares_fill || country === 'SK' && woolab.sk_check && woolab.sk_fill;
+      },
+      pick: function pick(item) {
+        var fields = {};
+        fields[IC] = item.ico;
+        wp.data.dispatch(CHECKOUT).setAdditionalFields(fields);
+      }
+    });
+  }
   wp.data.subscribe(function () {
     var fields = wp.data.select(CHECKOUT).getAdditionalFields() || {};
     var ico = String(fields[IC] || '').replace(/\s+/g, '');

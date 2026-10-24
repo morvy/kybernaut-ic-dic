@@ -54,6 +54,23 @@
         }, 750); // 750ms debounce delay
 
         $('#billing_dic, #billing_dic_dph').on('input', validateFields);
+
+        /** Company name suggestions: picking one looks its IČO up like a typed one */
+        if ( window.woolabSuggest ) {
+            woolabSuggest({
+                selector: '#billing_company',
+                country: function () {
+                    return $("#billing_country").val();
+                },
+                enabled: function ( country ) {
+                    return country === 'CZ' && woolab.ares_check && woolab.ares_fill || country === 'SK' && woolab.sk_check && woolab.sk_fill;
+                },
+                pick: function ( item ) {
+                    $('#billing_ic').val( item.ico );
+                    ares_check( $('#billing_ic') );
+                }
+            });
+        }
     });
 
     /** ARES for CZ, the Slovak lists for SK */

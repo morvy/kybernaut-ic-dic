@@ -48,7 +48,7 @@ function woolab_icdic_icdic_general_settings($settings) {
     );
     $settings[] = array(
         'title'   => __( 'CZ: Validate and autofill based on ARES', 'woolab-ic-dic' ),
-        'desc'    => __( 'Enable autofill and validation for Company, VAT number, Address, City, and Postcode fields based on Czech database ARES. Requires checked the option above.', 'woolab-ic-dic' ),
+        'desc'    => __( 'Enable company name search, and autofill and validation for Company, VAT number, Address, City, and Postcode fields based on Czech database ARES. Requires checked the option above.', 'woolab-ic-dic' ),
         'id'      => 'woolab_icdic_ares_fill',
         'default' => 'no',
         'type'    => 'checkbox',
@@ -68,7 +68,7 @@ function woolab_icdic_icdic_general_settings($settings) {
     );
     $settings[] = array(
         'title'   => __( 'SK: Validate and autofill based on Finančná správa', 'woolab-ic-dic' ),
-        'desc'    => __( 'Enable autofill and validation for Company, DIČ, IČ DPH, Address, City, and Postcode fields. Requires checked the option above.', 'woolab-ic-dic' ),
+        'desc'    => __( 'Enable company name search, and autofill and validation for Company, DIČ, IČ DPH, Address, City, and Postcode fields. Requires checked the option above.', 'woolab-ic-dic' ),
         'id'      => 'woolab_icdic_sk_fill',
         'default' => 'no',
         'type'    => 'checkbox',

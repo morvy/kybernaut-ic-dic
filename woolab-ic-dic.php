@@ -119,6 +119,8 @@ function woolab_icdic_init() {
 
 	add_action('wp_ajax_nopriv_ajaxAres', 'woolab_icdic_ares_ajax');
 	add_action('wp_ajax_ajaxAres', 'woolab_icdic_ares_ajax');
+	add_action('wp_ajax_nopriv_woolab_icdic_search', 'woolab_icdic_search_ajax');
+	add_action('wp_ajax_woolab_icdic_search', 'woolab_icdic_search_ajax');
 
 }
 
@@ -137,10 +139,17 @@ function woolab_icdic_enqueue_scripts() {
 		// localized settings below serve both.
 		$blocks = woolab_icdic_blocks_checkout();
 
+		// Company name suggestions, wherever a register autofills (woolab_icdic_search_ajax()).
+		$suggest = woolab_icdic_ares_check() && woolab_icdic_ares_fill() || woolab_icdic_sk_check() && woolab_icdic_sk_fill();
+		if ( $suggest ) {
+			wp_register_script( 'woolab-icdic-suggest-js', WOOLAB_IC_DIC_URL . 'assets/js/suggest'.$suffix.'.js', array(), WOOLAB_IC_DIC_VERSION );
+			wp_enqueue_style( 'woolab-icdic-suggest-css', WOOLAB_IC_DIC_URL . 'assets/css/suggest.css', array(), WOOLAB_IC_DIC_VERSION );
+		}
+
 		if ( $blocks ) {
-			wp_enqueue_script( 'woolab-icdic-public-js', WOOLAB_IC_DIC_URL . 'assets/js/blocks'.$suffix.'.js', array( 'wp-data', 'wc-blocks-data-store' ), WOOLAB_IC_DIC_VERSION, true );
+			wp_enqueue_script( 'woolab-icdic-public-js', WOOLAB_IC_DIC_URL . 'assets/js/blocks'.$suffix.'.js', array_merge( array( 'wp-data', 'wc-blocks-data-store' ), $suggest ? array( 'woolab-icdic-suggest-js' ) : array() ), WOOLAB_IC_DIC_VERSION, true );
 		} else {
-			wp_enqueue_script( 'woolab-icdic-public-js', WOOLAB_IC_DIC_URL . 'assets/js/public'.$suffix.'.js', array( 'jquery' ), WOOLAB_IC_DIC_VERSION );
+			wp_enqueue_script( 'woolab-icdic-public-js', WOOLAB_IC_DIC_URL . 'assets/js/public'.$suffix.'.js', array_merge( array( 'jquery' ), $suggest ? array( 'woolab-icdic-suggest-js' ) : array() ), WOOLAB_IC_DIC_VERSION );
 		}
 
 		wp_localize_script( 'woolab-icdic-public-js', 'woolab', array(
@@ -294,6 +303,30 @@ function woolab_icdic_ares_ajax(){
 
 	wp_send_json( woolab_icdic_ares( $ico ) );
 };
+
+/**
+ * Company name suggestions for the checkout: ARES for CZ, the Slovak lists for SK, only where
+ * that register also autofills (picking a suggestion fills the IČO, and the IČO
+ * lookup fills the rest).
+ */
+function woolab_icdic_search_ajax() {
+	check_ajax_referer( 'woolab_icdic_ares', 'nonce' );
+
+	$name    = isset( $_REQUEST['name'] ) ? trim( wc_clean( wp_unslash( $_REQUEST['name'] ) ) ) : '';
+	$country = isset( $_REQUEST['country'] ) ? wc_clean( wp_unslash( $_REQUEST['country'] ) ) : '';
+	$search  = array(
+		'CZ' => woolab_icdic_ares_check() && woolab_icdic_ares_fill() ? 'woolab_icdic_ares_search' : null,
+		'SK' => woolab_icdic_sk_check() && woolab_icdic_sk_fill() ? 'woolab_icdic_sk_search' : null,
+	)[ $country ] ?? null;
+
+	if ( ! $search || mb_strlen( $name ) < 3 || mb_strlen( $name ) > 100 ) {
+		wp_send_json( array( 'results' => array() ) );
+	}
+
+	$results = $search( $name );
+
+	wp_send_json( false === $results ? array( 'results' => array(), 'internal_error' => true ) : array( 'results' => $results ) );
+}
 
 /**
  * Declare WooCommerce HPOS compatibility.

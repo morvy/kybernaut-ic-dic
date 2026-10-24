@@ -59,6 +59,7 @@ The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions witho
 - `src/` - Source files (unminified)
   - `js/public.js` - Classic checkout AJAX for ARES autofill
   - `js/blocks.js` - Block checkout: same checks against the WooCommerce Blocks data stores
+  - `js/suggest.js` - Company name suggestions (`window.woolabSuggest`), shared by public.js and blocks.js
   - `js/admin.js` - Admin settings page scripts
   - `js/admin-edit.js` - Order edit page scripts
   - `css/` - Styles for toggle functionality and admin UI

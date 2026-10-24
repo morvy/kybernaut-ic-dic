@@ -104,3 +104,53 @@ if ( ! function_exists( 'woolab_icdic_ares') ) {
 
     }
 }
+
+/**
+ * Company name search for the checkout suggestions: up to 10 active subjects as
+ * array( 'ico', 'name', 'address' ), an empty list when ARES finds too many to
+ * return, or false when ARES is unavailable.
+ */
+function woolab_icdic_ares_search( $name ) {
+
+    // Unauthenticated and fired while typing: cache to spare ARES.
+    $cache_key = 'woolab_icdic_ares_search_' . md5( mb_strtolower( $name ) );
+    $cached    = get_transient( $cache_key );
+    if ( is_array( $cached ) ) {
+        return $cached;
+    }
+
+    $response = wp_remote_post( 'https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/vyhledat', array(
+        'timeout' => 10,
+        'headers' => array( 'Content-Type' => 'application/json' ),
+        'body'    => wp_json_encode( array( 'obchodniJmeno' => $name, 'pocet' => 10 ) ),
+    ) );
+    $code = wp_remote_retrieve_response_code( $response );
+    $data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+    // A short or common name matches more than ARES returns; the shopper types on.
+    if ( 400 === $code && 'VYSTUP_PRILIS_MNOHO_VYSLEDKU' === ( $data['subKod'] ?? '' ) ) {
+        return array();
+    }
+
+    if ( 200 !== $code || ! isset( $data['ekonomickeSubjekty'] ) ) {
+        Logger::getInstance()->log( sprintf( 'ARES search is not responding, used name: %s', $name ) );
+        Logger::getInstance()->log( $response );
+        return false;
+    }
+
+    $results = array();
+    foreach ( $data['ekonomickeSubjekty'] as $subject ) {
+        if ( empty( $subject['ico'] ) || ! empty( $subject['datumZaniku'] ) ) {
+            continue;
+        }
+        $results[] = array(
+            'ico'     => $subject['ico'],
+            'name'    => $subject['obchodniJmeno'] ?? '',
+            'address' => $subject['sidlo']['textovaAdresa'] ?? '',
+        );
+    }
+
+    set_transient( $cache_key, $results, DAY_IN_SECONDS );
+
+    return $results;
+}

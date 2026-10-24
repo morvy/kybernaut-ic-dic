@@ -7,7 +7,7 @@
  * income tax (DIČ) and for VAT (IČ DPH), with their IČO, name and address. They
  * have no keyless API, but full dumps are refreshed every night, so they are
  * imported daily into a SQLite file (about 190 MB, outside the WordPress database)
- * and everything — IČO lookup, DIČ and IČ DPH checks — runs
+ * and everything — IČO lookup, company name search, DIČ and IČ DPH checks — runs
  * locally: no network call at checkout, no dependency on RPO or VIES. IČ DPH is
  * not always "SK" + DIČ (VAT groups, some non-profits), so both lists are kept.
  * https://opendata.financnasprava.sk/
@@ -101,6 +101,13 @@ function woolab_icdic_sk_import_supported() {
 
 	if ( null === $supported ) {
 		$supported = class_exists( 'ZipArchive' ) && class_exists( 'XMLReader' ) && class_exists( 'PDO' ) && in_array( 'sqlite', PDO::getAvailableDrivers(), true );
+
+		// The name search needs SQLite's full-text search, part of nearly every build.
+		try {
+			$supported = $supported && false !== ( new PDO( 'sqlite::memory:' ) )->exec( 'CREATE VIRTUAL TABLE t USING fts5(a)' );
+		} catch ( PDOException $e ) {
+			$supported = false;
+		}
 	}
 
 	return $supported;
@@ -214,6 +221,9 @@ function woolab_icdic_sk_import_run( $path ) {
 	}
 
 	$db->exec( 'CREATE INDEX ico ON n (ico, kind)' );
+	// Prefix-searchable names, diacritics folded. External content: the names are not stored twice.
+	$db->exec( "CREATE VIRTUAL TABLE f USING fts5(name, content='s', content_rowid='ico', tokenize='unicode61 remove_diacritics 2', prefix='3')" );
+	$db->exec( 'INSERT INTO f (rowid, name) SELECT ico, name FROM s' );
 
 	return $counts;
 }
@@ -408,6 +418,38 @@ function woolab_icdic_sk_lookup( $ico = '' ) {
 		'dic'        => woolab_icdic_sk_number_for_ico( 'dic', $ico ),
 		'dic_dph'    => woolab_icdic_sk_number_for_ico( 'dph', $ico ),
 	);
+}
+
+/**
+ * Company name search in the imported lists, same contract as
+ * woolab_icdic_ares_search(): every word of the query matches the start of a word
+ * in the name, diacritics ignored ("kavia" finds "Kaviareň").
+ */
+function woolab_icdic_sk_search( $name ) {
+
+	preg_match_all( '/[\p{L}\p{N}]+/u', $name, $words );
+	if ( ! $words[0] ) {
+		return array();
+	}
+
+	$match = implode( ' ', array_map( function ( $word ) {
+		return '"' . $word . '"*';
+	}, $words[0] ) );
+
+	// Names starting with what was typed first ("alza" → Alza.sk before Ľudmila Alzate).
+	$rows = woolab_icdic_sk_query( "SELECT s.ico, s.name, s.street, s.psc, s.city FROM f JOIN s ON s.ico = f.rowid WHERE f MATCH ? ORDER BY s.name LIKE ? ESCAPE '\\' DESC, f.rank LIMIT 10", array( $match, addcslashes( trim( $name ), '%_\\' ) . '%' ) );
+
+	if ( false === $rows ) {
+		return false;
+	}
+
+	return array_map( function ( $row ) {
+		return array(
+			'ico'     => str_pad( $row[0], 8, '0', STR_PAD_LEFT ),
+			'name'    => $row[1],
+			'address' => implode( ', ', array_filter( array( woolab_icdic_sk_street( $row[2], $row[4] ), trim( $row[3] . ' ' . $row[4] ) ) ) ),
+		);
+	}, $rows );
 }
 
 /**
