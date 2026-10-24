@@ -116,6 +116,7 @@ function woolab_icdic_init() {
 	add_action( 'woocommerce_store_api_checkout_update_order_from_request', 'woolab_icdic_blocks_update_order', 10, 2 );
 	add_action( 'woocommerce_store_api_checkout_update_customer_from_request', 'woolab_icdic_blocks_customer_vat_exempt', 10, 2 );
 	add_action( 'woocommerce_init', 'woolab_icdic_blocks_register_update_callback' );
+	add_action( 'woocommerce_before_calculate_totals', 'woolab_icdic_blocks_restore_vat_exempt' );
 	add_filter( 'woocommerce_localisation_address_formats', 'woolab_icdic_blocks_strip_address_tokens', 20 );
 	add_filter( 'option_woocommerce_checkout_company_field', 'woolab_icdic_blocks_hide_core_company' );
 	add_filter( 'default_option_woocommerce_checkout_company_field', 'woolab_icdic_blocks_hide_core_company' );

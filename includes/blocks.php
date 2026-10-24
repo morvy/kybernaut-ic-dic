@@ -695,6 +695,7 @@ function woolab_icdic_blocks_update_vat_exempt( $data ) {
 	}
 
 	woolab_icdic_blocks_apply_vat_exempt_from_fields( $country, isset( $data['fields'] ) ? (array) $data['fields'] : array() );
+	woolab_icdic_blocks_remember_vat_exempt();
 }
 
 /**
@@ -709,6 +710,55 @@ function woolab_icdic_blocks_customer_vat_exempt( $customer, $request ) {
 	$country = ! empty( $billing['country'] ) ? wc_clean( $billing['country'] ) : $customer->get_billing_country();
 
 	woolab_icdic_blocks_apply_vat_exempt_from_fields( $country, (array) ( $request['additional_fields'] ?? array() ) );
+	woolab_icdic_blocks_remember_vat_exempt();
+}
+
+/**
+ * The last exemption decision, outside the session.
+ *
+ * Store API requests run in parallel, and each works on the session as it was
+ * when it started. Before WooCommerce 10.9 the Checkout block sends a checkout
+ * PATCH (`__experimental_calc_totals`) on the same change that sends ours —
+ * a field hidden by the new country is cleared — and that PATCH recalculates
+ * the totals with the exemption it loaded, answers after ours and wins: the
+ * shopper is back in the shop's country and still sees no VAT. The PATCH carries
+ * neither the country nor the VAT fields, so it cannot decide again; it can
+ * read the decision fresh from here when it calculates.
+ *
+ * @return string Transient key, '' without a session.
+ */
+function woolab_icdic_blocks_vat_exempt_key() {
+	$id = WC()->session instanceof WC_Session_Handler ? WC()->session->get_customer_unique_id() : '';
+	return '' === $id ? '' : 'woolab_icdic_vat_exempt_' . md5( $id );
+}
+
+/**
+ * Remember the decision just applied to the cart customer.
+ *
+ * @return void
+ */
+function woolab_icdic_blocks_remember_vat_exempt() {
+	$key = woolab_icdic_blocks_vat_exempt_key();
+	if ( $key && WC()->customer ) {
+		set_transient( $key, WC()->customer->get_is_vat_exempt() ? 'yes' : 'no', DAY_IN_SECONDS );
+	}
+}
+
+/**
+ * Before every Store API totals calculation: the decision remembered above.
+ *
+ * @return void
+ */
+function woolab_icdic_blocks_restore_vat_exempt() {
+	if ( ! WC()->is_store_api_request() || ! WC()->customer || ! woolab_icdic_vat_exempt_enabled() ) {
+		return;
+	}
+
+	$key      = woolab_icdic_blocks_vat_exempt_key();
+	$remember = $key ? get_transient( $key ) : false;
+	if ( false !== $remember ) {
+		woolab_icdic_vat_exempt_set( 'yes' === $remember );
+	}
 }
 
 /**
