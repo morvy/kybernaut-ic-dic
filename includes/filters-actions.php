@@ -568,6 +568,29 @@ function woolab_icdic_vat_number_exempt( $vat_num, $ignore_check_fail ) {
  * show — it used to run on `init` for every request, with a VIES call each time
  * the result was not cached.
  */
+/**
+ * Set the customer's VAT exemption and remember that this plugin set it.
+ *
+ * @param bool $exempt
+ */
+function woolab_icdic_vat_exempt_set( $exempt ) {
+	WC()->customer->set_is_vat_exempt( $exempt );
+	if ( WC()->session ) {
+		WC()->session->set( 'woolab_icdic_vat_exempt', $exempt ? 'yes' : null );
+	}
+}
+
+/**
+ * Lift an exemption this plugin set, once its rule no longer applies (the
+ * shopper switched to the store's own or a non-EU country). One another plugin
+ * set, e.g. for exports, is left alone.
+ */
+function woolab_icdic_vat_exempt_reset() {
+	if ( WC()->session && 'yes' === WC()->session->get( 'woolab_icdic_vat_exempt' ) ) {
+		woolab_icdic_vat_exempt_set( false );
+	}
+}
+
 function woolab_icdic_set_vat_exempt_for_customer() {
 	if ( ! is_cart() && ! is_checkout() ) {
 		return;
@@ -598,7 +621,7 @@ function woolab_icdic_set_vat_exempt_for_customer() {
 
 	$is_vat_exempt = apply_filters( 'woolab_icdic_vat_exempt_customer', $is_vat_exempt, $vat_num, $customer );
 
-	$customer->set_is_vat_exempt( $is_vat_exempt );
+	woolab_icdic_vat_exempt_set( $is_vat_exempt );
 }
 
 function woolab_icdic_validate_vat_exempt_for_company( $post_data ) {
@@ -618,6 +641,7 @@ function woolab_icdic_validate_vat_exempt_for_company( $post_data ) {
 
 	if ( empty( $country ) || $country === $base_country || !$is_eu_country) {
 		// Skip check if company's billing country is the same as store's country or if company's billing country is not EU VAT country.
+		woolab_icdic_vat_exempt_reset();
 		return;
 	}
 
@@ -630,9 +654,9 @@ function woolab_icdic_validate_vat_exempt_for_company( $post_data ) {
 
 		$is_vat_exempt = apply_filters( 'woolab_icdic_vat_exempt_company', $is_vat_exempt, $data );
 
-		WC()->customer->set_is_vat_exempt( $is_vat_exempt );
+		woolab_icdic_vat_exempt_set( $is_vat_exempt );
 	} else {
-		WC()->customer->set_is_vat_exempt( false );
+		woolab_icdic_vat_exempt_set( false );
 	}
 }
 

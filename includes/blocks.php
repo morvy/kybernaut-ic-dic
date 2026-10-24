@@ -558,11 +558,11 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 }
 
 /**
- * Copy the additional fields onto the legacy meta and recalculate VAT exemption.
+ * Copy the additional fields onto the legacy meta.
  *
- * Runs on the draft-order PUT as well as on the final POST, which is what makes the
- * exemption show up in the totals while the shopper is still filling the form —
- * WooCommerce recalculates them straight after this hook.
+ * Runs when the order is created on placing it (and on a PATCH that updates an
+ * existing order, a failed-payment retry). The VAT exemption is not set here: the
+ * totals are already calculated by then (woolab_icdic_blocks_customer_vat_exempt()).
  *
  * @param WC_Order        $order
  * @param WP_REST_Request $request
@@ -605,8 +605,6 @@ function woolab_icdic_blocks_update_order( $order, $request ) {
 		'woolab_icdic_vat_check_fail_ignored',
 		WC()->session->get( 'woolab_icdic_vat_check_fail_ignored' ) ? 'yes' : 'no'
 	);
-
-	woolab_icdic_blocks_apply_vat_exempt( $order );
 }
 
 /**
@@ -615,9 +613,12 @@ function woolab_icdic_blocks_update_order( $order, $request ) {
  * Same rule, same filter, same payload shape — only the source of the data differs,
  * because there is no serialized order-review form to parse here.
  *
- * @param WC_Order $order
+ * @param string $country    Billing country.
+ * @param string $dic        DIČ field value.
+ * @param string $dic_dph    IČ DPH field value.
+ * @param bool   $is_company "Buying as a company" ticked, or no toggle.
  */
-function woolab_icdic_blocks_apply_vat_exempt( $order ) {
+function woolab_icdic_blocks_apply_vat_exempt( $country, $dic, $dic_dph, $is_company ) {
 
 	if ( ! woolab_icdic_vat_exempt_enabled() || empty( WC()->customer ) ) {
 		return;
@@ -625,19 +626,15 @@ function woolab_icdic_blocks_apply_vat_exempt( $order ) {
 
 	$wc_countries  = new WC_Countries();
 	$base_country  = apply_filters( 'woolab_icdic_base_country', $wc_countries->get_base_country() );
-	$country       = $order->get_billing_country();
 	$vat_countries = $wc_countries->get_european_union_countries( 'eu_vat' );
 
-	// Skip if the billing country is the store's own or is not an EU VAT country.
+	// The store's own country, or not an EU VAT country: no intra-EU exemption.
 	if ( empty( $country ) || $country === $base_country || ! in_array( $country, $vat_countries, true ) ) {
+		woolab_icdic_vat_exempt_reset();
 		return;
 	}
 
-	$dic     = (string) $order->get_meta( '_billing_dic', true );
-	$dic_dph = (string) $order->get_meta( '_billing_dic_dph', true );
 	$vat_num = woolab_icdic_select_vat_number( $country, $dic, $dic_dph );
-
-	$is_company = ! woolab_icdic_toggle_enabled() || $order->get_meta( '_wc_other/kybernaut/iscomp', true );
 
 	$is_vat_exempt = ( ! empty( $vat_num ) && $is_company )
 		? woolab_icdic_vat_number_exempt( $vat_num, woolab_icdic_ignore_check_fail() )
@@ -650,7 +647,70 @@ function woolab_icdic_blocks_apply_vat_exempt( $order ) {
 		'billing_iscomp'  => $is_company ? 1 : 0,
 	);
 
-	WC()->customer->set_is_vat_exempt( apply_filters( 'woolab_icdic_vat_exempt_company', $is_vat_exempt, $data ) );
+	woolab_icdic_vat_exempt_set( apply_filters( 'woolab_icdic_vat_exempt_company', $is_vat_exempt, $data ) );
+}
+
+/**
+ * The exemption for the posted additional fields of a Store API checkout request.
+ *
+ * @param string $country
+ * @param array  $fields  'kybernaut/…' => value.
+ */
+function woolab_icdic_blocks_apply_vat_exempt_from_fields( $country, array $fields ) {
+	$dic_field = woolab_icdic_blocks_field_for( 'billing_dic', $country );
+
+	woolab_icdic_blocks_apply_vat_exempt(
+		$country,
+		wc_clean( (string) ( $fields[ $dic_field ] ?? '' ) ),
+		wc_clean( (string) ( $fields['kybernaut/dic-dph'] ?? '' ) ),
+		! woolab_icdic_toggle_enabled() || ! empty( $fields['kybernaut/iscomp'] )
+	);
+}
+
+/**
+ * Live exemption while the shopper types: blocks.js sends the VAT fields with
+ * extensionCartUpdate(), WooCommerce runs this, recalculates the cart and returns
+ * the new totals. The billing country is the cart customer's — the block
+ * checkout keeps it current through cart/update-customer.
+ *
+ * Since WooCommerce 10.9 the checkout PATCH no longer builds a draft order, so
+ * woocommerce_store_api_checkout_update_order_from_request does not run while the
+ * form is filled; this is the documented route for totals that depend on input.
+ *
+ * @param array $data 'fields' => array( 'kybernaut/…' => value ).
+ */
+function woolab_icdic_blocks_update_vat_exempt( $data ) {
+	if ( empty( WC()->customer ) ) {
+		return;
+	}
+
+	woolab_icdic_blocks_apply_vat_exempt_from_fields( WC()->customer->get_billing_country(), isset( $data['fields'] ) ? (array) $data['fields'] : array() );
+}
+
+/**
+ * The exemption on placing the order, from what was posted. Runs before
+ * WooCommerce calculates the totals and compares them with what the shopper saw.
+ *
+ * @param WC_Customer     $customer
+ * @param WP_REST_Request $request
+ */
+function woolab_icdic_blocks_customer_vat_exempt( $customer, $request ) {
+	$billing = (array) ( $request['billing_address'] ?? array() );
+	$country = ! empty( $billing['country'] ) ? wc_clean( $billing['country'] ) : $customer->get_billing_country();
+
+	woolab_icdic_blocks_apply_vat_exempt_from_fields( $country, (array) ( $request['additional_fields'] ?? array() ) );
+}
+
+/**
+ * Register the extensionCartUpdate() callback.
+ */
+function woolab_icdic_blocks_register_update_callback() {
+	woocommerce_store_api_register_update_callback(
+		array(
+			'namespace' => 'woolab-ic-dic',
+			'callback'  => 'woolab_icdic_blocks_update_vat_exempt',
+		)
+	);
 }
 
 /**

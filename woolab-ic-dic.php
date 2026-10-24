@@ -111,6 +111,8 @@ function woolab_icdic_init() {
 	add_filter( 'rest_pre_dispatch', 'woolab_icdic_blocks_remember_request', 10, 3 );
 	add_action( 'woocommerce_blocks_validate_location_order_fields', 'woolab_icdic_blocks_validate', 10, 2 );
 	add_action( 'woocommerce_store_api_checkout_update_order_from_request', 'woolab_icdic_blocks_update_order', 10, 2 );
+	add_action( 'woocommerce_store_api_checkout_update_customer_from_request', 'woolab_icdic_blocks_customer_vat_exempt', 10, 2 );
+	add_action( 'woocommerce_init', 'woolab_icdic_blocks_register_update_callback' );
 	add_filter( 'woocommerce_localisation_address_formats', 'woolab_icdic_blocks_strip_address_tokens', 20 );
 	add_filter( 'option_woocommerce_checkout_company_field', 'woolab_icdic_blocks_hide_core_company' );
 	add_filter( 'default_option_woocommerce_checkout_company_field', 'woolab_icdic_blocks_hide_core_company' );
@@ -200,6 +202,9 @@ function woolab_icdic_script_data( $blocks ) {
 	);
 
 	if ( $blocks ) {
+		// Ask the server to recalculate the exemption as the VAT fields change
+		// (woolab_icdic_blocks_update_vat_exempt()).
+		$data['vat_exempt'] = woolab_icdic_vat_exempt_enabled();
 		$data['fields'] = array(
 			'ic'      => 'kybernaut/ic',
 			// Country => field: the DIČ field is one per label (includes/blocks.php).

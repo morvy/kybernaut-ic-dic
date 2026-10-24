@@ -209,6 +209,46 @@
   }
   var checkLater = debounce(check, 500);
 
+  /**
+   * VAT exemption while the form is filled: the server decides
+   * (woolab_icdic_blocks_update_vat_exempt()) and WooCommerce returns the cart
+   * with the new totals. Sent when the billing country, the toggle or a VAT field
+   * changes.
+   */
+  var lastVat = null;
+  var updateVat = debounce(function (fields) {
+    wc.blocksCheckout.extensionCartUpdate({
+      namespace: 'woolab-ic-dic',
+      data: {
+        fields: fields
+      }
+    });
+  }, 800);
+  function watchVat() {
+    var fields = wp.data.select(CHECKOUT).getAdditionalFields() || {};
+    var country = billingCountry();
+    var vat = {};
+    vat[dicField(country)] = fields[dicField(country)] || '';
+    vat[DIC_DPH] = fields[DIC_DPH] || '';
+    vat['kybernaut/iscomp'] = !!fields['kybernaut/iscomp'];
+    var key = country + '|' + JSON.stringify(vat);
+    if (key === lastVat) {
+      return;
+    }
+
+    // The first run only records the state the page opened with: the server set
+    // the exemption from the customer's saved details on page load.
+    var first = null === lastVat;
+    lastVat = key;
+    if (!first) {
+      updateVat(vat);
+    }
+  }
+  if (woolab.vat_exempt && wc.blocksCheckout && wc.blocksCheckout.extensionCartUpdate) {
+    wp.data.subscribe(watchVat, CHECKOUT);
+    wp.data.subscribe(watchVat, CART);
+  }
+
   // Company name suggestions: picking one sets the IČO, and the subscriber below
   // looks it up like a typed one.
   if (window.woolabSuggest) {
