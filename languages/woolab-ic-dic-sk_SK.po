@@ -460,3 +460,7 @@ msgstr "Presunúť pole \"Krajina\" nad zaškrtávacie pole \"Nakupujem na firmu
 
 #~ msgid "Kybernaut IČ DIČ"
 #~ msgstr "Kybernaut IČO DIČ"
+
+#: woolab-ic-dic.php
+msgid "Clear company details"
+msgstr "Vymazať údaje o firme"

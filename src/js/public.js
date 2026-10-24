@@ -1,6 +1,9 @@
 (function($) {
 
     var last_ico_value = '';
+    // Whether the company fields hold what the last lookup filled in.
+    var filled = false;
+    var filled_fields = '#billing_ic, #billing_dic, #billing_dic_dph, #billing_postcode, #billing_city, #billing_address_1';
 
     // Debounce function to replace donetyping
     function debounce(func, wait) {
@@ -54,6 +57,15 @@
         }, 750); // 750ms debounce delay
 
         $('#billing_dic, #billing_dic_dph').on('input', validateFields);
+
+        // The company name stays editable after a lookup. Changing it means another
+        // company: drop the IČO and what the lookup filled in, so the shopper can
+        // search again or fill the rest by hand.
+        $(document.body).on('input', '#billing_company', function () {
+            if ( filled ) {
+                start_over();
+            }
+        });
 
         /** Company name suggestions: picking one looks its IČO up like a typed one */
         if ( window.woolabSuggest ) {
@@ -116,6 +128,7 @@
     }
 
     function clear_company_data() {
+        unmark_filled();
         var country   = $("#billing_country").val();
         var vat_field = country == 'SK' ? 'billing_dic_dph' : 'billing_dic';
         $("#billing_company, #billing_ic, #billing_dic, #billing_dic_dph").each(function(index,el) {
@@ -138,6 +151,51 @@
                 }
             }
         });
+    }
+
+    /** Forget what the last lookup filled in */
+    function start_over() {
+        filled = false;
+        last_ico_value = '';
+        $(filled_fields).val('');
+        ares_remove_disabled_from_input();
+        $('.woolab-ic-dic-tip').remove();
+        woolab_remove_class_ok( $('#billing_ic_field') );
+    }
+
+    /**
+     * Green padlock on the company name and IČO (its X clears them), a checkmark
+     * on the rest of what the lookup filled in (src/css/lookup.css).
+     */
+    function mark_filled() {
+        unmark_filled();
+        $('#billing_company, #billing_ic').each(function () {
+            $(this).parent().addClass( 'woolab-ic-dic-verified' ).append(
+                $('<button type="button" class="woolab-ic-dic-lock"></button>')
+                    .attr({ 'aria-label': woolab.l18n_clear, title: woolab.l18n_clear })
+                    // Bound here, not delegated: the click does not reach the body
+                    // on every theme.
+                    .on('click', clear_company)
+            );
+        });
+        // Locked by the lookup; a DIČ the Slovak lists do not have stays the shopper's.
+        $('#billing_dic, #billing_dic_dph, #billing_address_1, #billing_postcode, #billing_city').filter(function () {
+            return this.readOnly;
+        }).each(function () {
+            $(this).parent().addClass( 'woolab-ic-dic-verified' ).append( '<span class="woolab-ic-dic-check" aria-hidden="true"></span>' );
+        });
+    }
+
+    /** The padlock's X: clear the company details, the company name included */
+    function clear_company() {
+        start_over();
+        $('#billing_company').val('').trigger('focus');
+        $('body').trigger('update_checkout');
+    }
+
+    function unmark_filled() {
+        $('.woolab-ic-dic-lock, .woolab-ic-dic-check').remove();
+        $('.woolab-ic-dic-verified').removeClass( 'woolab-ic-dic-verified' );
     }
 
     function clear_validation() {
@@ -176,6 +234,7 @@
     }
 
     function ares_remove_disabled_from_input() {
+        unmark_filled();
         $('#billing_company').removeAttr("readonly");
         $('#billing_dic').removeAttr("readonly");
         $('#billing_dic_dph').removeAttr("readonly");
@@ -199,6 +258,7 @@
             var not_valid = '<span role="alert" class="woolab-ic-dic-tip">'+woolab.l18n_not_valid+'</span>';
 
             $('.woolab-ic-dic-tip').remove();
+            unmark_filled();
             woolab_remove_class_wrong( ico_class );
             woolab_remove_class_ok( ico_class );
 
@@ -213,6 +273,7 @@
                         'nonce' : woolab.nonce,
                     },
                     beforeSend: function() {
+                        busy( ico, true );
                         ico_class.addClass( 'kbnt-validating' );
                         ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+( sk ? woolab.l18n_validating_sk : woolab.l18n_validating )+'</span>' );
                     },
@@ -230,7 +291,8 @@
                                 // Not in the Slovak lists yet: accepted, filled in by hand, so
                                 // drop what an earlier lookup filled in.
                                 $('.woolab-ic-dic-tip').remove();
-                                if ( registry_fill() && $('#billing_company').is('[readonly]') ) {
+                                if ( filled ) {
+                                    filled = false;
                                     $('#billing_company, #billing_dic, #billing_dic_dph, #billing_postcode, #billing_city, #billing_address_1').val('');
                                 }
                                 ares_remove_disabled_from_input();
@@ -281,7 +343,8 @@
                                     }
 
                                     // Update values
-                                    $('#billing_company').val(data.spolecnost).attr('readonly', true);
+                                    filled = true;
+                                    $('#billing_company').val(data.spolecnost);
                                     // Slovak lists: null when unknown, leave the field to the shopper.
                                     if ( ! sk || data.dic ) {
                                         $('#billing_dic').val(data.dic).attr('readonly', true);
@@ -293,6 +356,8 @@
                                     $('#billing_postcode').val(data.psc).attr('readonly', true);
                                     $('#billing_city').val(data.mesto).attr('readonly', true);
                                     ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+( sk ? woolab.l18n_ok_sk : woolab.l18n_ok )+'</span>' );
+
+                                    mark_filled();
 
                                     // Trigger the checkout update
                                     $('body').trigger('update_checkout');
@@ -324,6 +389,9 @@
 
 
                     },
+                    complete: function () {
+                        busy( ico, false );
+                    },
                     error: function(errorThrown){
                         if ( $('.woolab-ic-dic-tip').length == 0 ) {
                             ico.val('');
@@ -345,6 +413,12 @@
         }
     }
 
+    /** Spinner in the field while a lookup runs (src/css/lookup.css) */
+    function busy( input, on ) {
+        input.parent().toggleClass( 'woolab-ic-dic-loading', on );
+        input.attr( 'aria-busy', on ? 'true' : 'false' );
+    }
+
     function ares_error ( ico_class ) {
 
         if ( registry_fill() ) {
@@ -358,6 +432,7 @@
             }
 
             ares_remove_disabled_from_input();
+            filled = false;
         }
 
         woolab_add_class_wrong( ico_class );

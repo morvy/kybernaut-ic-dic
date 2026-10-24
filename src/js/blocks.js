@@ -69,9 +69,24 @@
 	 * own id swaps the slash for a dash. Find the element by the id it renders, then
 	 * take the key off it, so neither convention has to be rebuilt here.
 	 */
+	function icInput() {
+		return document.querySelector( '[id$="' + IC.replace( '/', '-' ) + '"]' );
+	}
+
 	function errorId() {
-		var input = document.querySelector( '[id$="' + IC.replace( '/', '-' ) + '"]' );
+		var input = icInput();
 		return input && input.name ? input.name : IC;
+	}
+
+	/**
+	 * Spinner in the field while a lookup runs (src/css/lookup.css).
+	 */
+	function busy( on ) {
+		var input = icInput();
+		if ( input ) {
+			input.parentNode.classList.toggle( 'woolab-ic-dic-loading', on );
+			input.setAttribute( 'aria-busy', on ? 'true' : 'false' );
+		}
 	}
 
 	function setError( message ) {
@@ -169,7 +184,11 @@
 			return;
 		}
 
+		busy( true );
+
 		lookupAres( ico, country ).then( function ( ares ) {
+			busy( false );
+
 			if ( ! ares ) {
 				setError( woolab.l18n_not_valid );
 				return;
@@ -196,6 +215,7 @@
 				fillAddress( ares );
 			}
 		} ).catch( function () {
+			busy( false );
 			setError( woolab.l18n_error );
 		} );
 	}

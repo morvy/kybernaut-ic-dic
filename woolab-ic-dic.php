@@ -142,11 +142,15 @@ function woolab_icdic_enqueue_scripts() {
 		// localized settings below serve both.
 		$blocks = woolab_icdic_blocks_checkout();
 
+		// Lookup spinner and the suggestion list.
+		if ( woolab_icdic_ares_check() || woolab_icdic_sk_check() ) {
+			wp_enqueue_style( 'woolab-icdic-lookup-css', WOOLAB_IC_DIC_URL . 'assets/css/lookup.css', array(), WOOLAB_IC_DIC_VERSION );
+		}
+
 		// Company name suggestions, wherever a register autofills (woolab_icdic_search_ajax()).
 		$suggest = woolab_icdic_ares_check() && woolab_icdic_ares_fill() || woolab_icdic_sk_check() && woolab_icdic_sk_fill();
 		if ( $suggest ) {
 			wp_register_script( 'woolab-icdic-suggest-js', WOOLAB_IC_DIC_URL . 'assets/js/suggest'.$suffix.'.js', array(), WOOLAB_IC_DIC_VERSION );
-			wp_enqueue_style( 'woolab-icdic-suggest-css', WOOLAB_IC_DIC_URL . 'assets/css/suggest.css', array(), WOOLAB_IC_DIC_VERSION );
 		}
 
 		if ( $blocks ) {
@@ -164,6 +168,7 @@ function woolab_icdic_enqueue_scripts() {
 			'l18n_validating' => __('Validating data in ARES.', 'woolab-ic-dic'),
 			'l18n_ok_sk' => __('Information loaded succesfully from Finančná správa.', 'woolab-ic-dic'),
 			'l18n_validating_sk' => __('Validating data in Finančná správa.', 'woolab-ic-dic'),
+			'l18n_clear' => __('Clear company details', 'woolab-ic-dic'),
 			'ares_check' => woolab_icdic_ares_check(),
 			'ares_fill' => woolab_icdic_ares_fill(),
 			'sk_check' => woolab_icdic_sk_check(),

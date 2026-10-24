@@ -328,3 +328,7 @@ msgstr ""
 #: includes/settings.php:116
 msgid "Move Country field above the \"Buying as a company\" toggle"
 msgstr ""
+
+#: woolab-ic-dic.php
+msgid "Clear company details"
+msgstr ""

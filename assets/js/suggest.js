@@ -25,11 +25,20 @@ window.woolabSuggest = function (options) {
   function matches(el) {
     return el && el.matches && el.matches(options.selector);
   }
+
+  /**
+   * Spinner in the field while a lookup runs (src/css/lookup.css).
+   */
+  function busy(el, on) {
+    el.parentNode.classList.toggle('woolab-ic-dic-loading', on);
+    el.setAttribute('aria-busy', on ? 'true' : 'false');
+  }
   function close() {
     request++;
     list.hidden = true;
     active = -1;
     if (input) {
+      busy(input, false);
       input.setAttribute('aria-expanded', 'false');
       input.removeAttribute('aria-activedescendant');
     }
@@ -49,6 +58,25 @@ window.woolabSuggest = function (options) {
     if (item) {
       options.pick(item);
     }
+  }
+
+  /**
+   * Dress the list like the field it belongs to. Themes style their inputs through
+   * many routes (theme.json, a customizer, plain CSS), but the result is always in
+   * the computed style, so read it there. A transparent input shows the page
+   * behind it: take the first ancestor background that is not transparent.
+   */
+  function theme() {
+    var style = getComputedStyle(input);
+    var background = style.backgroundColor;
+    for (var el = input; el && /^(transparent|rgba\(.*,\s*0\))$/.test(background); el = el.parentElement) {
+      background = getComputedStyle(el).backgroundColor;
+    }
+    list.style.setProperty('--woolab-ic-dic-suggest-bg', background);
+    list.style.setProperty('--woolab-ic-dic-suggest-text', style.color);
+    list.style.setProperty('--woolab-ic-dic-suggest-border', style.borderTopColor);
+    list.style.setProperty('--woolab-ic-dic-suggest-radius', style.borderTopLeftRadius);
+    list.style.fontFamily = style.fontFamily;
   }
   function render() {
     list.textContent = '';
@@ -76,6 +104,7 @@ window.woolabSuggest = function (options) {
     if (list.parentNode !== host) {
       host.appendChild(list);
     }
+    theme();
     list.hidden = false;
     input.setAttribute('aria-expanded', 'true');
     highlight(-1);
@@ -88,6 +117,7 @@ window.woolabSuggest = function (options) {
       return;
     }
     var id = ++request;
+    busy(el, true);
     fetch(woolab.ajaxurl, {
       method: 'POST',
       credentials: 'same-origin',
@@ -102,6 +132,7 @@ window.woolabSuggest = function (options) {
       if (id !== request || document.activeElement !== el) {
         return;
       }
+      busy(el, false);
       items = data && data.results ? data.results : [];
       render();
     })["catch"](close);
