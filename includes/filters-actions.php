@@ -558,8 +558,18 @@ function woolab_icdic_vat_number_exempt( $vat_num, $ignore_check_fail ) {
 	return woolab_icdic_vat_exempt_from_state( $verify_vat( $vat_num ), $ignore_check_fail );
 }
 
+/**
+ * Set the VAT exemption from the customer's saved details when the cart or the
+ * checkout page loads, so the totals are right before anything is typed.
+ *
+ * On `wp`, which neither admin-ajax nor the Store API reach: the checkouts set it
+ * themselves while the shopper types (woolab_icdic_validate_vat_exempt_for_company(),
+ * the Store API hooks in includes/blocks.php), and every other page has no totals to
+ * show — it used to run on `init` for every request, with a VIES call each time
+ * the result was not cached.
+ */
 function woolab_icdic_set_vat_exempt_for_customer() {
-	if ( wp_doing_ajax() ) {
+	if ( ! is_cart() && ! is_checkout() ) {
 		return;
 	}
 
