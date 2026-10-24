@@ -75,6 +75,13 @@ function woolab_icdic_settings_general() {
 			'disabled' => (bool) $fluid_checkout,
 		),
 		array(
+			'title'   => __( 'Hide "(optional)" on the company fields', 'woolab-ic-dic' ),
+			'desc'    => __( 'Companies need the company name and IDs, everyone else skips them, so "(optional)" only confuses. The VAT ID field says "enter only if you are a VAT payer" instead.', 'woolab-ic-dic' ),
+			'id'      => woolab_icdic_settings_id( 'hide_optional' ),
+			'default' => 'no',
+			'type'    => 'checkbox',
+		),
+		array(
 			'title'   => __( 'Ignore when ARES, Finančná správa or VIES check fails for technical reasons', 'woolab-ic-dic' ),
 			'desc'    => __( 'Allow the creation of an order if the verification of the Business ID in ARES or Finančná správa, or the VAT number in the European VIES database fails for technical reasons.', 'woolab-ic-dic' ),
 			'id'      => woolab_icdic_settings_id( 'ignore_check_fail' ),

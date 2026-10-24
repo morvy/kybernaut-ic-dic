@@ -50,6 +50,36 @@ function woolab_icdic_labels( $country ) {
 }
 
 /**
+ * Whether the company fields drop WooCommerce's "(optional)" (Settings → IČO DIČ →
+ * General, or the 1.x woolab_icdic_fake_required filter, which also adds the
+ * required asterisk to Company and Business ID).
+ *
+ * @return bool
+ */
+function woolab_icdic_hide_optional() {
+	return 'yes' === woolab_icdic_setting( 'hide_optional' ) || apply_filters( 'woolab_icdic_fake_required', false );
+}
+
+/**
+ * The labels as the checkout form shows them: with "(optional)" hidden, the VAT
+ * fields say who fills them in instead.
+ *
+ * @param string $country
+ * @return array{ic:string, dic:string, dic_dph:string}
+ */
+function woolab_icdic_form_labels( $country ) {
+	$labels = woolab_icdic_labels( $country );
+
+	if ( woolab_icdic_hide_optional() ) {
+		$vat            = 'SK' === $country ? 'dic_dph' : 'dic';
+		/* translators: %s: field label, e.g. "VAT ID" */
+		$labels[ $vat ] = sprintf( _x( '%s (enter only if you are a VAT payer)', 'field label', 'woolab-ic-dic' ), $labels[ $vat ] );
+	}
+
+	return $labels;
+}
+
+/**
  * The countries the Business ID field is shown for, or null for every country
  * (the default, Settings → IČO DIČ → Validation → "Business ID only for …").
  *
@@ -85,13 +115,17 @@ function woolab_icdic_ic_shown( $country ) {
  * The labels for the classic checkout script, which swaps them when the billing
  * country changes: 'SK', 'CZ', and '' for every other country.
  *
+ * @param bool $form Form labels (woolab_icdic_form_labels()), or the bare ones
+ *                   the placeholders use.
  * @return array<string,array>
  */
-function woolab_icdic_labels_by_country() {
+function woolab_icdic_labels_by_country( $form = true ) {
+	$labels = $form ? 'woolab_icdic_form_labels' : 'woolab_icdic_labels';
+
 	return array(
-		'SK' => woolab_icdic_labels( 'SK' ),
-		'CZ' => woolab_icdic_labels( 'CZ' ),
-		''   => woolab_icdic_labels( 'EU' ),
+		'SK' => $labels( 'SK' ),
+		'CZ' => $labels( 'CZ' ),
+		''   => $labels( 'EU' ),
 	);
 }
 

@@ -35,12 +35,13 @@ function woolab_icdic_plugin_row_meta( $links, $file ) {
  * @return array<string,array> WooCommerce form fields, keyed billing_ic, billing_dic, billing_dic_dph.
  */
 function woolab_icdic_fields( $country ) {
-	$labels = woolab_icdic_labels( $country );
+	$labels       = woolab_icdic_form_labels( $country );
+	$placeholders = woolab_icdic_labels( $country );
 
-	$field = function ( $key, $priority ) use ( $labels ) {
+	$field = function ( $key, $priority ) use ( $labels, $placeholders ) {
 		return array(
 			'label'       => $labels[ $key ],
-			'placeholder' => $labels[ $key ],
+			'placeholder' => $placeholders[ $key ],
 			'required'    => false,
 			'class'       => apply_filters( 'woolab_icdic_class_billing_' . $key, array( 'form-row-wide', 'woolab-ic-dic-no_spaces' ) ),
 			'clear'       => true,
@@ -99,15 +100,14 @@ function woolab_icdic_checkout_fields( $fields ) {
 
 	/**
 	 * Optionally show "required" asterisk for Company and Business ID
-	 * as these are always required for companies
+	 * as these are always required for companies. Implies hiding "(optional)"
+	 * (woolab_icdic_hide_optional()).
 	 * @since 1.5.0
 	 */
 	$fakeRequired = apply_filters( 'woolab_icdic_fake_required', false);
 	if($fakeRequired) {
 		$fields['billing']['billing_company']['label']   .= ' <abbr class="required" title="'.__('required', 'woocommerce').'">*</abbr>';
 		$fields['billing']['billing_ic']['label']        .= ' <abbr class="required" title="'.__('required', 'woocommerce').'">*</abbr>';
-		$fields['billing']['billing_dic']['label']        = __('Tax ID (optional, enter only if you are a VAT payer)', 'woolab-ic-dic');
-		$fields['billing']['billing_dic']['label_class']  = array('woolab-ic-dic-not-optional');
 	}
 
 	// Why there is no placeholder for Company field by default ?!
@@ -131,6 +131,23 @@ function woolab_icdic_billing_fields( $fields, $country ) {
 	}
 
 	return array_merge( $fields, $ids );
+}
+
+/**
+ * Drop WooCommerce's "(optional)" from the company fields when the store asks for
+ * it (woolab_icdic_hide_optional()): companies need them, everyone else skips
+ * them, and the VAT fields say in their label who should fill them in.
+ *
+ * @param string $field Field HTML.
+ * @param string $key   Field key.
+ * @return string
+ */
+function woolab_icdic_form_field_hide_optional( $field, $key ) {
+	if ( in_array( $key, array( 'billing_company', 'billing_ic', 'billing_dic', 'billing_dic_dph' ), true ) && woolab_icdic_hide_optional() ) {
+		$field = preg_replace( '#(&nbsp;|\s)*<span class="optional">.*?</span>#', '', $field );
+	}
+
+	return $field;
 }
 
 /**
@@ -288,6 +305,9 @@ function woolab_icdic_checkout_field_process() {
  * @return string
  */
 function woolab_icdic_checkout_error_message( array $error, $country = '' ) {
+	$labels    = woolab_icdic_labels( $country );
+	$vat_label = 'SK' === $country ? $labels['dic_dph'] : $labels['dic'];
+
 	switch ( $error['code'] ) {
 		case 'missing_company':
 			// WooCommerce's own required-field notice, so it reads like the core fields' notices.
@@ -309,7 +329,7 @@ function woolab_icdic_checkout_error_message( array $error, $country = '' ) {
 		case 'ares_mismatch':
 		case 'sk_mismatch':
 			$labels = array(
-				'tax_id'   => woolab_icdic_labels( $country )['dic'],
+				'tax_id'   => $labels['dic'],
 				'company'  => __( 'Company', 'woocommerce' ),
 				'postcode' => __( 'Postcode / ZIP', 'woocommerce' ),
 				'city'     => __( 'Town / City', 'woocommerce' ),
@@ -324,30 +344,37 @@ function woolab_icdic_checkout_error_message( array $error, $country = '' ) {
 			}
 			return sprintf( _n( '%s is not corresponding to ARES.', '%s are not corresponding to ARES.', count( $missing_fields ), 'woolab-ic-dic' ), wc_format_list_of_items( $missing_fields ) );
 
+		// The VAT checks are on IČ DPH in Slovakia, on the DIČ field elsewhere; the
+		// messages name the field as the form labels it (includes/labels.php).
 		case 'vat_country_mismatch_billing':
-			return __( 'The billing country does not correspond to the country of the VAT number.', 'woolab-ic-dic' );
+			/* translators: %s: field label, e.g. "VAT ID" */
+			return sprintf( _x( 'The billing country does not correspond to the country of the %s.', 'field label', 'woolab-ic-dic' ), $vat_label );
 
 		case 'vat_country_mismatch_shipping':
-			return __( 'The shipping country does not correspond to the country of the VAT number.', 'woolab-ic-dic' );
+			/* translators: %s: field label, e.g. "VAT ID" */
+			return sprintf( _x( 'The shipping country does not correspond to the country of the %s.', 'field label', 'woolab-ic-dic' ), $vat_label );
 
 		case 'vat_format':
-			return __( 'VAT number has not correct format', 'woolab-ic-dic' );
+			/* translators: %s: field label, e.g. "VAT ID" */
+			return sprintf( _x( '%s has not a correct format.', 'field label', 'woolab-ic-dic' ), $vat_label );
 
 		case 'invalid_vat':
 		case 'invalid_dic_cz':
-			return __( 'Enter a valid VAT number', 'woolab-ic-dic' );
+		case 'invalid_vat_dph':
+			/* translators: %s: field label, e.g. "VAT ID" */
+			return sprintf( _x( 'Enter a valid %s.', 'field label', 'woolab-ic-dic' ), $vat_label );
 
 		case 'vat_unverifiable':
-			return __( 'Could not validate VAT number.', 'woolab-ic-dic' );
+			/* translators: %s: field label, e.g. "VAT ID" */
+			return sprintf( _x( 'Could not validate %s.', 'field label', 'woolab-ic-dic' ), $vat_label );
 
 		case 'invalid_tax_id_sk':
-			return __( 'Enter a valid Tax ID', 'woolab-ic-dic' );
-
-		case 'invalid_vat_dph':
-			return _x( 'Enter a valid VAT number', 'IC DPH', 'woolab-ic-dic' );
+			/* translators: %s: field label, e.g. "Tax ID" */
+			return sprintf( _x( 'Enter a valid %s.', 'field label', 'woolab-ic-dic' ), $labels['dic'] );
 
 		case 'dic_dph_mismatch':
-			return __( 'Tax ID or VAT number is not valid.', 'woolab-ic-dic' );
+			/* translators: 1: Tax ID label, 2: VAT ID label */
+			return sprintf( __( '%1$s or %2$s is not valid.', 'woolab-ic-dic' ), $labels['dic'], $labels['dic_dph'] );
 
 		case 'dic_ico_mismatch':
 			return __( 'Tax ID does not belong to the entered Business ID.', 'woolab-ic-dic' );

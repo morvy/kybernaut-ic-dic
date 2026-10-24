@@ -141,9 +141,11 @@
      * WooCommerce's "(optional)" / required marks inside the label stay.
      */
     function relabel( country ) {
-        var labels = woolab.labels[ country ] || woolab.labels[''];
+        var labels       = woolab.labels[ country ] || woolab.labels[''];
+        var placeholders = woolab.placeholders[ country ] || woolab.placeholders[''];
 
-        $.each( { billing_ic: labels.ic, billing_dic: labels.dic, billing_dic_dph: labels.dic_dph }, function ( id, text ) {
+        $.each( { billing_ic: 'ic', billing_dic: 'dic', billing_dic_dph: 'dic_dph' }, function ( id, key ) {
+            var text  = labels[ key ];
             var label = document.querySelector( 'label[for="' + id + '"]' );
             var node  = label && label.firstChild;
 
@@ -151,7 +153,7 @@
                 // Keep whatever spacing WooCommerce put before its "(optional)".
                 node.nodeValue = text + node.nodeValue.match( /\s*$/ )[0];
             }
-            $( '#' + id ).attr( 'placeholder', text );
+            $( '#' + id ).attr( 'placeholder', placeholders[ key ] );
         });
     }
 

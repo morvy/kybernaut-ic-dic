@@ -64,6 +64,18 @@ function woolab_icdic_blocks_fields() {
 }
 
 /**
+ * What an optional field reads: WooCommerce's "Label (optional)", or the bare
+ * label when the store hides it (woolab_icdic_hide_optional()).
+ *
+ * @param string $label
+ * @return string
+ */
+function woolab_icdic_blocks_optional_label( $label ) {
+	/* translators: %s Field label. */
+	return woolab_icdic_hide_optional() ? $label : sprintf( __( '%s (optional)', 'woocommerce' ), $label );
+}
+
+/**
  * Whether a field of woolab_icdic_blocks_fields() is shown for a billing country.
  *
  * @param array  $field
@@ -283,6 +295,7 @@ function woolab_icdic_blocks_register_fields() {
 			array(
 				'id'                         => 'kybernaut/company',
 				'label'                      => __( 'Company', 'woocommerce' ),
+				'optionalLabel'              => woolab_icdic_blocks_optional_label( __( 'Company', 'woocommerce' ) ),
 				'location'                   => 'order',
 				'type'                       => 'text',
 				'hidden'                     => $not_a_company,
@@ -311,7 +324,8 @@ function woolab_icdic_blocks_register_fields() {
 		woocommerce_register_additional_checkout_field(
 			array(
 				'id'                         => $id,
-				'label'                      => woolab_icdic_labels( $field['label'][0] )[ $field['label'][1] ],
+				'label'                      => woolab_icdic_form_labels( $field['label'][0] )[ $field['label'][1] ],
+				'optionalLabel'              => woolab_icdic_blocks_optional_label( woolab_icdic_form_labels( $field['label'][0] )[ $field['label'][1] ] ),
 				'location'                   => 'order',
 				'type'                       => 'text',
 				'hidden'                     => $hidden,

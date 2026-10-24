@@ -39,6 +39,7 @@ function woolab_icdic_settings_schema() {
 		'toggle'                => array( 'woolab_icdic_toggle_switch', 'no' ),
 		'country_ontop'         => array( 'woolab_icdic_country_switch', 'no' ),
 		'ic_countries_only'     => array( null, 'no' ),
+		'hide_optional'         => array( null, 'no' ),
 		// Appearance (lookup.css); empty follows the theme and WooCommerce.
 		'color_ok'              => array( null, '' ),
 		'color_clear'           => array( null, '' ),
