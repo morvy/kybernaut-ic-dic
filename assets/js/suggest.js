@@ -121,9 +121,7 @@ window.woolabSuggest = function (options) {
 
     // GET woolab-ic-dic/v1/search (includes/rest.php)
     var url = options.rest + 'search' + (options.rest.indexOf('?') === -1 ? '?' : '&') + 'name=' + encodeURIComponent(name) + '&country=' + encodeURIComponent(country);
-    fetch(url, {
-      credentials: 'omit'
-    }).then(function (response) {
+    fetch(url).then(function (response) {
       return response.json();
     }).then(function (data) {
       // A newer keystroke, or the shopper has left the field.

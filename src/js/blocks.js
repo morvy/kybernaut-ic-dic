@@ -142,7 +142,7 @@
 	function lookupAres( ico, country ) {
 		var url = woolab.rest + 'lookup' + ( woolab.rest.indexOf( '?' ) === -1 ? '?' : '&' ) + 'ico=' + encodeURIComponent( ico ) + '&country=' + encodeURIComponent( country );
 
-		return fetch( url, { credentials: 'omit' } ).then( function ( response ) {
+		return fetch( url ).then( function ( response ) {
 			return response.json();
 		} );
 	}
@@ -264,10 +264,10 @@
 	 */
 	var lastVat = null;
 
-	var updateVat = debounce( function ( fields ) {
+	var updateVat = debounce( function ( fields, country ) {
 		wc.blocksCheckout.extensionCartUpdate( {
 			namespace: 'woolab-ic-dic',
-			data: { fields: fields }
+			data: { fields: fields, country: country }
 		} );
 	}, 800 );
 
@@ -290,7 +290,7 @@
 		var first = null === lastVat;
 		lastVat = key;
 		if ( ! first ) {
-			updateVat( vat );
+			updateVat( vat, country );
 		}
 	}
 

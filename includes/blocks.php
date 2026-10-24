@@ -670,21 +670,29 @@ function woolab_icdic_blocks_apply_vat_exempt_from_fields( $country, array $fiel
 /**
  * Live exemption while the shopper types: blocks.js sends the VAT fields with
  * extensionCartUpdate(), WooCommerce runs this, recalculates the cart and returns
- * the new totals. The billing country is the cart customer's — the block
- * checkout keeps it current through cart/update-customer.
+ * the new totals. The billing country comes with them: with "Use same address for
+ * billing" ticked, WooCommerce 10.0 pushes only the shipping address, so the cart
+ * customer's billing country is stale until the order is placed. It only steers
+ * this preview — the order POST decides again from the real address
+ * (woolab_icdic_blocks_customer_vat_exempt()).
  *
  * Since WooCommerce 10.9 the checkout PATCH no longer builds a draft order, so
  * woocommerce_store_api_checkout_update_order_from_request does not run while the
  * form is filled; this is the documented route for totals that depend on input.
  *
- * @param array $data 'fields' => array( 'kybernaut/…' => value ).
+ * @param array $data 'fields' => array( 'kybernaut/…' => value ), 'country' => billing country.
  */
 function woolab_icdic_blocks_update_vat_exempt( $data ) {
 	if ( empty( WC()->customer ) ) {
 		return;
 	}
 
-	woolab_icdic_blocks_apply_vat_exempt_from_fields( WC()->customer->get_billing_country(), isset( $data['fields'] ) ? (array) $data['fields'] : array() );
+	$country = isset( $data['country'] ) ? strtoupper( wc_clean( (string) $data['country'] ) ) : '';
+	if ( ! array_key_exists( $country, WC()->countries->get_allowed_countries() ) ) {
+		$country = WC()->customer->get_billing_country();
+	}
+
+	woolab_icdic_blocks_apply_vat_exempt_from_fields( $country, isset( $data['fields'] ) ? (array) $data['fields'] : array() );
 }
 
 /**
