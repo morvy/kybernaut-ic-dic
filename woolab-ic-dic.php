@@ -78,6 +78,7 @@ function woolab_icdic_init() {
 	// include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/compatibility/fluidcheckout.php'); don't apply globally.
 
 	add_filter( 'woocommerce_billing_fields' , 'woolab_icdic_billing_fields', 10, 2 );
+	add_filter( 'woocommerce_default_address_fields', 'woolab_icdic_default_address_fields' );
 	add_filter( 'woocommerce_checkout_fields', 'woolab_icdic_checkout_fields', 10, 2);
 	add_action( 'woocommerce_checkout_process', 'woolab_icdic_checkout_field_process', 10, 0);
 	add_filter( 'woocommerce_checkout_posted_data', 'woolab_icdic_checkout_posted_data' );

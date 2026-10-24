@@ -89,14 +89,6 @@ function woolab_icdic_checkout_fields( $fields ) {
 	}
 
 	/**
-	 * Move Country above the toggle, makes more sense when filling in VAT / TAX ID
-	 * @since 1.5.0
-	 */
-	if( woolab_icdic_country_ontop_enabled() ) {
-		$fields['billing']['billing_country']['priority'] = 28;
-	}
-
-	/**
 	 * Optionally show "required" asterisk for Company and Business ID
 	 * as these are always required for companies. Implies hiding "(optional)"
 	 * (woolab_icdic_hide_optional()).
@@ -129,6 +121,28 @@ function woolab_icdic_billing_fields( $fields, $country ) {
 	}
 
 	return array_merge( $fields, $ids );
+}
+
+/**
+ * Move Country above the toggle: the country decides which company fields there
+ * are and how they are labelled, so it is picked first.
+ *
+ * Set on the default address fields, not only on the checkout's billing fields:
+ * WooCommerce's address-i18n.js re-sorts the form by the country locale on load
+ * and on every country change, and the locale's default comes from here. With
+ * only the checkout field moved, the script put Country back at 40 — after the
+ * company fields.
+ *
+ * @since 1.5.0
+ * @param array $fields Default address fields.
+ * @return array
+ */
+function woolab_icdic_default_address_fields( $fields ) {
+	if ( isset( $fields['country'] ) && woolab_icdic_country_ontop_enabled() ) {
+		$fields['country']['priority'] = 28;
+	}
+
+	return $fields;
 }
 
 /**
