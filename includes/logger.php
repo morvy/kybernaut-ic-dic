@@ -61,8 +61,8 @@ class Logger
 	/**
 	 * Log simple message
 	 *
-	 * @param string $message Message.
-	 * @param string  $level Error level (emergency|alert|critical|error|warning|notice|info|debug).
+	 * @param mixed  $message Message; anything else than a string or number is logged as JSON.
+	 * @param string $level Error level (emergency|alert|critical|error|warning|notice|info|debug).
 	 * @return void
 	 */
 	public function log($message, $level = 'info')

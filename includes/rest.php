@@ -154,12 +154,12 @@ function woolab_icdic_rest_rate_limit() {
 	$action_id = 'woolab_icdic_lookup_' . md5( $ip );
 	$retry     = RateLimits::is_exceeded_retry_after( $action_id );
 
-	$server->send_header( 'RateLimit-Limit', $options->limit );
+	$server->send_header( 'RateLimit-Limit', (string) $options->limit );
 
 	if ( false !== $retry ) {
-		$server->send_header( 'RateLimit-Remaining', 0 );
-		$server->send_header( 'RateLimit-Retry-After', $retry );
-		$server->send_header( 'RateLimit-Reset', time() + $retry );
+		$server->send_header( 'RateLimit-Remaining', '0' );
+		$server->send_header( 'RateLimit-Retry-After', (string) $retry );
+		$server->send_header( 'RateLimit-Reset', (string) ( time() + $retry ) );
 
 		/** This action is documented in woocommerce/src/StoreApi/Authentication.php */
 		do_action( 'woocommerce_store_api_rate_limit_exceeded', $ip, $action_id );
@@ -172,14 +172,14 @@ function woolab_icdic_rest_rate_limit() {
 			),
 			429
 		);
-		$response->header( 'Retry-After', $retry );
+		$response->header( 'Retry-After', (string) $retry );
 
 		return $response;
 	}
 
 	$limit = RateLimits::update_rate_limit( $action_id );
-	$server->send_header( 'RateLimit-Remaining', $limit->remaining );
-	$server->send_header( 'RateLimit-Reset', $limit->reset );
+	$server->send_header( 'RateLimit-Remaining', (string) $limit->remaining );
+	$server->send_header( 'RateLimit-Reset', (string) $limit->reset );
 
 	return null;
 }

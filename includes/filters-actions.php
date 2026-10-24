@@ -401,7 +401,8 @@ function woolab_icdic_my_address_formatted_address( $fields, $customer_id, $name
 		'billing_ic'  => get_user_meta( $customer_id, $name . '_ic', true ),
 		'billing_dic' => get_user_meta( $customer_id, $name . '_dic', true )
 	);
-	if ( get_user_meta( $customer_id, $name . '_country', '' ) == 'SK' ) {
+	// $single must be true: with '' this returned an array, never 'SK'.
+	if ( 'SK' === get_user_meta( $customer_id, $name . '_country', true ) ) {
 		$fields += array(
 			'billing_dic_dph' => get_user_meta( $customer_id, $name . '_dic_dph', true )
 		);

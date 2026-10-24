@@ -79,8 +79,8 @@ function woolab_icdic_init() {
 
 	add_filter( 'woocommerce_billing_fields' , 'woolab_icdic_billing_fields', 10, 2 );
 	add_filter( 'woocommerce_default_address_fields', 'woolab_icdic_default_address_fields' );
-	add_filter( 'woocommerce_checkout_fields', 'woolab_icdic_checkout_fields', 10, 2);
-	add_action( 'woocommerce_checkout_process', 'woolab_icdic_checkout_field_process', 10, 0);
+	add_filter( 'woocommerce_checkout_fields', 'woolab_icdic_checkout_fields' );
+	add_action( 'woocommerce_checkout_process', 'woolab_icdic_checkout_field_process', 10, 0 );
 	add_filter( 'woocommerce_checkout_posted_data', 'woolab_icdic_checkout_posted_data' );
 	add_filter( 'woocommerce_form_field', 'woolab_icdic_form_field_hide_optional', 10, 2 );
 	add_filter( 'woocommerce_my_account_my_address_formatted_address', 'woolab_icdic_my_address_formatted_address', 10, 3 );
