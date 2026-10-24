@@ -54,7 +54,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 function woolab_icdic_blocks_fields() {
 	return array(
-		'kybernaut/ic'      => array( 'legacy' => 'billing_ic', 'label' => array( '', 'ic' ), 'countries' => null ),
+		'kybernaut/ic'      => array( 'legacy' => 'billing_ic', 'label' => array( '', 'ic' ), 'countries' => null === woolab_icdic_ic_countries() ? null : array( 'only' => woolab_icdic_ic_countries() ) ),
 		'kybernaut/dic-sk'  => array( 'legacy' => 'billing_dic', 'label' => array( 'SK', 'dic' ), 'countries' => array( 'only' => array( 'SK' ) ) ),
 		'kybernaut/dic-cz'  => array( 'legacy' => 'billing_dic', 'label' => array( 'CZ', 'dic' ), 'countries' => array( 'only' => array( 'CZ' ) ) ),
 		// The original id, so orders placed before the split keep their value.

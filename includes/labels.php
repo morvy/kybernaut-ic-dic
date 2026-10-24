@@ -50,6 +50,38 @@ function woolab_icdic_labels( $country ) {
 }
 
 /**
+ * The countries the Business ID field is shown for, or null for every country
+ * (the default, Settings → IČO DIČ → Validation → "Business ID only for …").
+ *
+ * @return string[]|null
+ */
+function woolab_icdic_ic_countries() {
+	if ( 'yes' !== woolab_icdic_setting( 'ic_countries_only' ) ) {
+		return null;
+	}
+
+	/**
+	 * Countries whose companies have a Business ID (IČO), when the field is limited
+	 * to them.
+	 *
+	 * @since 2.0.0
+	 * @param string[] $countries Country codes.
+	 */
+	return array_values( (array) apply_filters( 'woolab_icdic_ic_countries', array( 'CZ', 'SK' ) ) );
+}
+
+/**
+ * Whether the Business ID field is shown for a billing country.
+ *
+ * @param string $country
+ * @return bool
+ */
+function woolab_icdic_ic_shown( $country ) {
+	$countries = woolab_icdic_ic_countries();
+	return null === $countries || in_array( $country, $countries, true );
+}
+
+/**
  * The labels for the classic checkout script, which swaps them when the billing
  * country changes: 'SK', 'CZ', and '' for every other country.
  *

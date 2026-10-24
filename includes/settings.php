@@ -167,6 +167,13 @@ function woolab_icdic_settings_validation() {
 			'disabled' => ! class_exists( 'SoapClient' ),
 		),
 		array(
+			'title'   => __( 'Business ID only where companies have one', 'woolab-ic-dic' ),
+			'desc'    => __( 'Hide the Business ID field for billing countries other than Slovakia and the Czech Republic, whose companies have no IČO. The list can be changed with the woolab_icdic_ic_countries filter.', 'woolab-ic-dic' ),
+			'id'      => woolab_icdic_settings_id( 'ic_countries_only' ),
+			'default' => 'no',
+			'type'    => 'checkbox',
+		),
+		array(
 			'title'    => __( 'EU: VAT exempt', 'woolab-ic-dic' ),
 			'desc'     => $vat_desc,
 			'id'       => woolab_icdic_settings_id( 'vat_exempt' ),

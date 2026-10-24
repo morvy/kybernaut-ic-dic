@@ -126,7 +126,26 @@ function woolab_icdic_billing_fields( $fields, $country ) {
 		unset( $ids['billing_dic_dph'] );
 	}
 
+	if ( ! woolab_icdic_ic_shown( $country ) ) {
+		unset( $ids['billing_ic'] );
+	}
+
 	return array_merge( $fields, $ids );
+}
+
+/**
+ * Do not store a Business ID for a country the field is hidden for: public.js
+ * empties it, this covers a form posted without the script.
+ *
+ * @param array $data Posted checkout data.
+ * @return array
+ */
+function woolab_icdic_checkout_posted_data( $data ) {
+	if ( isset( $data['billing_ic'] ) && ! woolab_icdic_ic_shown( isset( $data['billing_country'] ) ? $data['billing_country'] : '' ) ) {
+		$data['billing_ic'] = '';
+	}
+
+	return $data;
 }
 
 /**
@@ -213,7 +232,7 @@ function woolab_icdic_checkout_field_process() {
 
 	$input = array(
 		'country'               => $country,
-		'ic'                    => isset( $_POST['billing_ic'] ) ? wc_clean( wp_unslash( $_POST['billing_ic'] ) ) : '',
+		'ic'                    => isset( $_POST['billing_ic'] ) && woolab_icdic_ic_shown( $country ) ? wc_clean( wp_unslash( $_POST['billing_ic'] ) ) : '',
 		'dic'                   => isset( $_POST['billing_dic'] ) ? wc_clean( wp_unslash( $_POST['billing_dic'] ) ) : '',
 		'dic_present'           => isset( $_POST['billing_dic'] ),
 		'dic_dph'               => isset( $_POST['billing_dic_dph'] ) ? wc_clean( wp_unslash( $_POST['billing_dic_dph'] ) ) : '',
@@ -232,7 +251,8 @@ function woolab_icdic_checkout_field_process() {
 		'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
 		'require_sk_ic_and_dic' => (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', true ),
 		'check_dic_dph_match'   => (bool) woolab_icdic_dic_dicdph_match_enabled(),
-		'require_ic_for_company' => (bool) apply_filters( 'woolab_icdic_required_ic_for_company', false ),
+		// Not asked for where the field is hidden (woolab_icdic_ic_countries()).
+		'require_ic_for_company' => woolab_icdic_ic_shown( $country ) && (bool) apply_filters( 'woolab_icdic_required_ic_for_company', false ),
 		'toggle_enabled'        => (bool) woolab_icdic_toggle_enabled(),
 		// The toggle is a plain checkbox: posted as "1" when ticked, absent otherwise.
 		'iscomp'                => ! empty( $_POST['billing_iscomp'] ),

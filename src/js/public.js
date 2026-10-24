@@ -102,11 +102,18 @@
             clear_validation();
         }
 
-        $("#billing_ic_field").slideDown();
-        $("#billing_dic_field").slideDown();
-
         var country = $("#billing_country").val();
         relabel( country );
+
+        // Limited to the countries that have one (woolab_icdic_ic_countries()):
+        // hidden elsewhere, and emptied so a hidden value is not submitted.
+        if ( ! woolab.ic_countries || woolab.ic_countries.indexOf( country ) !== -1 ) {
+            $("#billing_ic_field").slideDown();
+        } else {
+            $("#billing_ic_field").slideUp();
+            $("#billing_ic").val('');
+        }
+        $("#billing_dic_field").slideDown();
         switch (country) {
             case 'SK':
                 $("#billing_dic_dph_field").slideDown();
