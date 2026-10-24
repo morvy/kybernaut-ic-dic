@@ -60,6 +60,7 @@ function woolab_icdic_init() {
 	load_textdomain( 'woolab-ic-dic', WOOLAB_IC_DIC_ABSPATH . 'languages/woolab-ic-dic-' . determine_locale() . '.mo' );
 
 	// Load additional sources
+	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/options.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/ares.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/financna-sprava.php');
 	include_once( WOOLAB_IC_DIC_ABSPATH . 'includes/helpers.php');
@@ -190,22 +191,22 @@ function woolab_icdic_enqueue_scripts() {
 }
 
 function woolab_icdic_ares_check() {
-	$option = woolab_icdic_get_option( 'woolab_icdic_ares_check', 'yes' );
+	$option = 'yes' === woolab_icdic_setting( 'ares_check' );
 	return apply_filters( 'woolab_icdic_ares_check', $option );
 }
 
 function woolab_icdic_ares_fill() {
-	$option = woolab_icdic_get_option( 'woolab_icdic_ares_fill', 'no' );
+	$option = 'yes' === woolab_icdic_setting( 'ares_fill' );
 	return apply_filters( 'woolab_icdic_ares_fill', $option );
 }
 
 function woolab_icdic_sk_check() {
-	$option = woolab_icdic_get_option( 'woolab_icdic_sk_check', 'no' );
+	$option = 'yes' === woolab_icdic_setting( 'sk_check' );
 	return apply_filters( 'woolab_icdic_sk_check', $option );
 }
 
 function woolab_icdic_sk_fill() {
-	$option = woolab_icdic_get_option( 'woolab_icdic_sk_fill', 'no' );
+	$option = 'yes' === woolab_icdic_setting( 'sk_fill' );
 	return apply_filters( 'woolab_icdic_sk_fill', $option );
 }
 
@@ -215,31 +216,29 @@ function woolab_icdic_vies_check() {
 		return false;
 	}
 
-	$option = woolab_icdic_get_option( 'woolab_icdic_vies_check', 'yes' );
+	$option = 'yes' === woolab_icdic_setting( 'vies_check' );
 	return apply_filters( 'woolab_icdic_vies_check', $option );
 
 }
 
 function woolab_icdic_ignore_check_fail() {
-	$option = woolab_icdic_get_option( 'woolab_icdic_ignore_check_fail', 'no' );
+	$option = 'yes' === woolab_icdic_setting( 'ignore_check_fail' );
 	return apply_filters( 'woolab_icdic_ignore_check_fail', $option );
 }
 
-// NOTE: the four accessors below deliberately do NOT go through
-// woolab_icdic_get_option(). Each preserves its original public filter contract,
-// which differs from the helpers above: the vat_exempt/dic_dicdph filters receive
+// NOTE: the four accessors below keep their original public filter contracts,
+// which differ from the helpers above: the vat_exempt/dic_dicdph filters receive
 // an already-computed bool (and vat_exempt ANDs in wc_tax_enabled / dic_dicdph is
 // an inverted "disable" option), while the toggle/country filters receive the raw
-// 'yes'/'no' string and are normalized with `!== 'no'` afterwards. Routing any of
-// these through woolab_icdic_get_option() would change what the filter sees or the
-// truthiness — do not "consolidate" them into it.
+// 'yes'/'no' string and are normalized with `!== 'no'` afterwards — do not
+// "consolidate" them.
 
 /**
  * Whether automatic VAT exemption for valid intra-EU B2B is enabled.
  * Filter receives (and returns) a bool, matching the original call sites.
  */
 function woolab_icdic_vat_exempt_enabled() {
-	return apply_filters( 'woolab_icdic_vat_exempt_enabled', ( get_option( 'woolab_icdic_vat_exempt_switch', 'no' ) !== 'no' && wc_tax_enabled() ) );
+	return apply_filters( 'woolab_icdic_vat_exempt_enabled', ( woolab_icdic_setting( 'vat_exempt' ) !== 'no' && wc_tax_enabled() ) );
 }
 
 /**
@@ -247,7 +246,7 @@ function woolab_icdic_vat_exempt_enabled() {
  * "disable" option. Filter receives (and returns) a bool.
  */
 function woolab_icdic_dic_dicdph_match_enabled() {
-	return apply_filters( 'woolab_icdic_enable_dic_dicdph_match_check', get_option( 'woolab_icdic_disable_dic_dicdph_match', 'no' ) !== 'yes' );
+	return apply_filters( 'woolab_icdic_enable_dic_dicdph_match_check', woolab_icdic_setting( 'disable_dic_dph_match' ) !== 'yes' );
 }
 
 /**
@@ -256,7 +255,7 @@ function woolab_icdic_dic_dicdph_match_enabled() {
  * happens here.
  */
 function woolab_icdic_toggle_enabled() {
-	return apply_filters( 'woolab_icdic_toggle', get_option( 'woolab_icdic_toggle_switch', 'no' ) ) !== 'no';
+	return apply_filters( 'woolab_icdic_toggle', woolab_icdic_setting( 'toggle' ) ) !== 'no';
 }
 
 /**
@@ -265,17 +264,24 @@ function woolab_icdic_toggle_enabled() {
  * happens here.
  */
 function woolab_icdic_country_ontop_enabled() {
-	return apply_filters( 'woolab_icdic_country_ontop', get_option( 'woolab_icdic_country_switch', 'no' ) ) !== 'no';
+	return apply_filters( 'woolab_icdic_country_ontop', woolab_icdic_setting( 'country_ontop' ) ) !== 'no';
 }
 
+/**
+ * Whether a 1.x setting option is 'yes'. Kept for code calling it from outside;
+ * the settings now live in one array (includes/options.php).
+ *
+ * @deprecated 2.0.0 Use woolab_icdic_setting().
+ */
 function woolab_icdic_get_option( $name, $default = 'yes' ) {
 
-	$option = get_option( $name, $default );
-	if ( $option == 'yes' ) {
-		return true;
-	} else {
-		return false;
+	foreach ( woolab_icdic_settings_schema() as $key => $definition ) {
+		if ( $definition[0] === $name ) {
+			return 'yes' === woolab_icdic_setting( $key );
+		}
 	}
+
+	return 'yes' === get_option( $name, $default );
 
 }
 
