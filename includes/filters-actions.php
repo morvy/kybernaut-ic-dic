@@ -469,8 +469,11 @@ function woolab_icdic_order_formatted_billing_address($address, $order) {
 
 /**
  * Whether the front-end customer details (thank-you page, My Account → order) are
- * being rendered. Set around core's `order/order-details-customer.php`, which follows
- * `woocommerce_after_order_details` and ends with `woocommerce_order_details_after_customer_details`.
+ * being rendered: core's `order/order-details-customer.php` template. Block themes
+ * render the order confirmation with blocks instead (the identifiers then stay
+ * lines of the billing address), and fire `woocommerce_after_order_details` from
+ * the totals block without that template following, so the section is bounded by
+ * the template itself.
  *
  * @param bool|null $set Pass true/false to enter/leave the section.
  * @return bool
@@ -483,12 +486,26 @@ function woolab_icdic_in_order_details( $set = null ) {
 	return $inside;
 }
 
-function woolab_icdic_order_details_enter() {
-	woolab_icdic_in_order_details( true );
+/**
+ * Enter the customer details section.
+ *
+ * @param string $template_name Template being rendered.
+ */
+function woolab_icdic_order_details_enter( $template_name ) {
+	if ( 'order/order-details-customer.php' === $template_name ) {
+		woolab_icdic_in_order_details( true );
+	}
 }
 
-function woolab_icdic_order_details_leave() {
-	woolab_icdic_in_order_details( false );
+/**
+ * Leave the customer details section.
+ *
+ * @param string $template_name Template rendered.
+ */
+function woolab_icdic_order_details_leave( $template_name ) {
+	if ( 'order/order-details-customer.php' === $template_name ) {
+		woolab_icdic_in_order_details( false );
+	}
 }
 
 /**

@@ -87,12 +87,8 @@ function woolab_icdic_init() {
 	add_filter( 'woocommerce_localisation_address_formats', 'woolab_icdic_localisation_address_formats' );
 	add_filter( 'woocommerce_formatted_address_replacements', 'woolab_icdic_formatted_address_replacements', 10, 2 );
 	add_filter( 'woocommerce_order_formatted_billing_address', 'woolab_icdic_order_formatted_billing_address', 10, 2 );
-	add_action( 'woocommerce_after_order_details', 'woolab_icdic_order_details_enter', 1 );
-	add_action( 'woocommerce_order_details_after_customer_details', 'woolab_icdic_order_details_leave', 99 );
-	// Core skips the customer details for a viewer who is not the order's customer, and then
-	// the hook above never fires: close the section when the order view itself is done.
-	add_action( 'woocommerce_thankyou', 'woolab_icdic_order_details_leave', 99 );
-	add_action( 'woocommerce_view_order', 'woolab_icdic_order_details_leave', 99 );
+	add_action( 'woocommerce_before_template_part', 'woolab_icdic_order_details_enter' );
+	add_action( 'woocommerce_after_template_part', 'woolab_icdic_order_details_leave' );
 	add_action( 'woocommerce_order_details_after_customer_address', 'woolab_icdic_order_details_ids', 10, 2 );
 	add_filter( 'woocommerce_customer_meta_fields', 'woolab_icdic_customer_meta_fields' );
 	add_filter( 'woocommerce_admin_billing_fields', 'woolab_icdic_admin_billing_fields' );
