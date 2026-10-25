@@ -2,19 +2,17 @@
 
 namespace KybernautIcDic\Test;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests for the mathematical validation helpers in includes/helpers.php.
  *
  * All functions under test are pure (no WordPress dependencies),
- * so no WP_Mock setup is needed.
+ * so they need no WordPress functions.
  */
 class HelpersTest extends TestCase {
 
-    /**
-     * @dataProvider providerIc
-     */
+    #[DataProvider( 'providerIc' )]
     public function testVerifyIc( $ic, $expected ) {
         $this->assertSame( $expected, (bool) woolab_icdic_verify_ic( $ic ), "IC: {$ic}" );
     }
@@ -32,9 +30,7 @@ class HelpersTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider providerRc
-     */
+    #[DataProvider( 'providerRc' )]
     public function testVerifyRc( $rc, $expected ) {
         $this->assertSame( $expected, (bool) woolab_icdic_verify_rc( $rc ), "RC: {$rc}" );
     }
@@ -52,9 +48,7 @@ class HelpersTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider providerDic
-     */
+    #[DataProvider( 'providerDic' )]
     public function testVerifyDic( $dic, $expected ) {
         $this->assertSame( $expected, (bool) woolab_icdic_verify_dic( $dic ), "DIC: {$dic}" );
     }
@@ -78,9 +72,7 @@ class HelpersTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider providerDicSk
-     */
+    #[DataProvider( 'providerDicSk' )]
     public function testVerifyDicSk( $dic, $expected ) {
         $this->assertSame( $expected, (bool) woolab_icdic_verify_dic_sk( $dic ), "SK DIC: {$dic}" );
     }
@@ -99,9 +91,7 @@ class HelpersTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider providerDicDphSk
-     */
+    #[DataProvider( 'providerDicDphSk' )]
     public function testVerifyDicDphSk( $dic_dph, $expected ) {
         $this->assertSame( $expected, (bool) woolab_icdic_verify_dic_dph_sk( $dic_dph ), "SK DIC DPH: {$dic_dph}" );
     }
@@ -118,9 +108,7 @@ class HelpersTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider providerVatCountryCode
-     */
+    #[DataProvider( 'providerVatCountryCode' )]
     public function testGetVatNumberCountryCode( $vat_number, $expected ) {
         $this->assertSame( $expected, woolab_icdic_get_vat_number_country_code( $vat_number ) );
     }

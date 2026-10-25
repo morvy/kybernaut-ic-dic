@@ -10,7 +10,8 @@
         }
     ],
     "require-dev": {
-        "10up/wp_mock": "^0.4.2",
+        "phpunit/phpunit": "^12.5",
+        "brain/monkey": "^2.7",
         "woocommerce/woocommerce-sniffs": "^2.0",
         "phpstan/phpstan": "^2.3",
         "phpstan/extension-installer": "^1.4",
@@ -50,7 +51,7 @@
             "phpstan/extension-installer": true
         },
         "platform": {
-            "php": "8.2"
+            "php": "8.3"
         }
     },
     "extra": {

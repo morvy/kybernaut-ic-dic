@@ -2,7 +2,7 @@
 
 namespace KybernautIcDic\Test;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * VIES REST answers mapped to the verifier's states (includes/vies.php). The
@@ -10,9 +10,7 @@ use PHPUnit\Framework\TestCase;
  */
 class ViesTest extends TestCase {
 
-	/**
-	 * @dataProvider providerAnswers
-	 */
+	#[DataProvider( 'providerAnswers' )]
 	public function testAnswers( $code, $body, $expected ) {
 		$this->assertSame( $expected, woolab_icdic_vies_state( $code, json_encode( $body ) ) );
 	}

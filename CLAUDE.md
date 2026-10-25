@@ -51,7 +51,7 @@ composer test:unit
 vendor/bin/phpunit --testsuite Unit
 ```
 
-The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions without requiring a full WordPress installation.
+The unit tests run on PHPUnit 12 (PHP 8.3+) with Brain Monkey for the WordPress functions, without a WordPress installation. Every test extends `tests/TestCase.php`, which sets Brain Monkey up and stubs translation, escaping and a few helpers; `AresTest` reads live ARES.
 
 End-to-end tests run the checkouts in WordPress Playground with live ARES (VIES is
 answered by `tests/e2e/mu-plugin.php`: its registers are too often busy), on two
@@ -200,7 +200,7 @@ The ARES API structure is defined in `includes/ares.php`. The API returns JSON w
 - `sidlo` object with address components
 
 ### Testing checkout validation
-Tests go in `tests/unit/`. Use WP_Mock to mock WordPress functions. See `tests/unit/AresTest.php` for examples.
+Tests go in `tests/unit/` and extend `KybernautIcDic\Test\TestCase`. Mock WordPress functions with Brain Monkey: `Functions\when( 'fn' )->justReturn( … )` for a stub, `Functions\expect( 'fn' )->once()` for an expectation (see `tests/unit/ProcessShopOrderTest.php`). Data providers are `#[DataProvider( 'name' )]` attributes on public static methods.
 
 ### Scoping dependencies
 Dependencies are scoped using wpify/scoper to avoid conflicts. Configuration in composer.json:

@@ -2,9 +2,8 @@
 
 namespace KybernautIcDic\Test;
 
+use Brain\Monkey\Functions;
 use Mockery;
-use PHPUnit\Framework\TestCase;
-use WP_Mock;
 
 /**
  * Tests for woolab_icdic_process_shop_order() in includes/filters-actions.php.
@@ -20,18 +19,11 @@ class ProcessShopOrderTest extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
-		// Older tests in this suite never call WP_Mock::tearDown(), so unmet
-		// expectations can leak into the shared Mockery container; discard them
-		// instead of letting WP_Mock::setUp()'s Mockery::close() verify them.
-		Mockery::resetContainer();
-		WP_Mock::setUp();
 		$_POST = array();
 	}
 
 	protected function tearDown(): void {
 		$_POST = array();
-		WP_Mock::tearDown();
-		Mockery::close();
 		parent::tearDown();
 	}
 
@@ -50,18 +42,16 @@ class ProcessShopOrderTest extends TestCase {
 	private function mockRequestGuards() {
 		$_POST['woocommerce_meta_nonce'] = 'nonce';
 
-		WP_Mock::userFunction( 'wp_verify_nonce', array( 'return' => true ) );
-		WP_Mock::userFunction( 'current_user_can', array( 'return' => true ) );
-		WP_Mock::userFunction( 'wp_unslash', array( 'return_arg' => 0 ) );
-		WP_Mock::userFunction( 'wc_clean', array( 'return_arg' => 0 ) );
+		Functions\when( 'wp_verify_nonce' )->justReturn( true );
+		Functions\when( 'current_user_can' )->justReturn( true );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'wc_clean' )->returnArg();
 	}
 
 	public function testMissingNonceBailsOutBeforeLoadingOrder() {
-		WP_Mock::userFunction( 'wc_get_order', array( 'times' => 0 ) );
+		Functions\expect( 'wc_get_order' )->never();
 
 		woolab_icdic_process_shop_order( 123, null );
-
-		$this->assertConditionsMet();
 	}
 
 	public function testUnchangedValuesWriteAndSaveNothing() {
@@ -80,11 +70,9 @@ class ProcessShopOrderTest extends TestCase {
 		$order->shouldNotReceive( 'save_meta_data' );
 		$order->shouldNotReceive( 'save' );
 
-		WP_Mock::userFunction( 'wc_get_order', array( 'return' => $order ) );
+		Functions\when( 'wc_get_order' )->justReturn( $order );
 
 		woolab_icdic_process_shop_order( 123, null );
-
-		$this->assertConditionsMet();
 	}
 
 	public function testChangedValueIsWrittenViaSaveMetaData() {
@@ -103,11 +91,9 @@ class ProcessShopOrderTest extends TestCase {
 		$order->shouldReceive( 'save_meta_data' )->once();
 		$order->shouldNotReceive( 'save' );
 
-		WP_Mock::userFunction( 'wc_get_order', array( 'return' => $order ) );
+		Functions\when( 'wc_get_order' )->justReturn( $order );
 
 		woolab_icdic_process_shop_order( 123, null );
-
-		$this->assertConditionsMet();
 	}
 
 	public function testMissingFieldIsIgnored() {
@@ -121,18 +107,8 @@ class ProcessShopOrderTest extends TestCase {
 		$order->shouldNotReceive( 'save_meta_data' );
 		$order->shouldNotReceive( 'save' );
 
-		WP_Mock::userFunction( 'wc_get_order', array( 'return' => $order ) );
+		Functions\when( 'wc_get_order' )->justReturn( $order );
 
 		woolab_icdic_process_shop_order( 123, null );
-
-		$this->assertConditionsMet();
-	}
-
-	/**
-	 * WP_Mock's expectations are verified in WP_Mock::tearDown(); this keeps
-	 * PHPUnit from flagging the tests as risky (no assertions).
-	 */
-	private function assertConditionsMet() {
-		$this->addToAssertionCount( 1 );
 	}
 }

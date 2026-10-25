@@ -2,7 +2,7 @@
 
 namespace KybernautIcDic\Test;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * The SK branch of woolab_icdic_validate_checkout() against the Finančná správa
@@ -94,9 +94,7 @@ class ValidationSkTest extends TestCase {
 		);
 	}
 
-	/**
-	 * @dataProvider providerSk
-	 */
+	#[DataProvider( 'providerSk' )]
 	public function testSk( array $over, array $expected ) {
 		$this->assertSame( $expected, $this->codes( $this->run_sk( $over ) ) );
 	}

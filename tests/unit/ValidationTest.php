@@ -2,14 +2,14 @@
 
 namespace KybernautIcDic\Test;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Characterization tests for the pure checkout validation orchestrator in
  * includes/validation.php.
  *
  * woolab_icdic_validate_checkout() is pure (no WordPress, no network, no i18n),
- * so no WP_Mock setup is needed. Network is supplied via fake closures and
+ * so they need no WordPress functions. Network is supplied via fake closures and
  * assertions are made on returned error *codes*, never translated strings.
  */
 class ValidationTest extends TestCase {
@@ -291,9 +291,7 @@ class ValidationTest extends TestCase {
 		$this->assertSame( array( array( 'code' => 'vat_not_registered' ) ), $result['notices'] );
 	}
 
-	/**
-	 * @dataProvider taxNumbers
-	 */
+	#[DataProvider( 'taxNumbers' )]
 	public function testTaxNumberValid( $vat, $valid ) {
 		$this->assertSame( $valid, woolab_icdic_tax_number_valid( $vat ) );
 	}
@@ -311,9 +309,7 @@ class ValidationTest extends TestCase {
 		);
 	}
 
-	/**
-	 * @dataProvider notVatPayers
-	 */
+	#[DataProvider( 'notVatPayers' )]
 	public function testPlAndHuTaxNumbersNotInViesOrderWithVat( $country, $vat ) {
 		$result = woolab_icdic_validate_checkout( $this->input( array(
 			'country'    => $country,
@@ -331,9 +327,7 @@ class ValidationTest extends TestCase {
 		);
 	}
 
-	/**
-	 * @dataProvider domesticTaxNumbers
-	 */
+	#[DataProvider( 'domesticTaxNumbers' )]
 	public function testTaxNumberWithoutCountryCodeSkipsVies( $country, $number ) {
 		$result = woolab_icdic_validate_checkout( $this->input( array(
 			'country'    => $country,
@@ -452,9 +446,7 @@ class ValidationTest extends TestCase {
 
 	// --- "Required" company fields -----------------------------------------
 
-	/**
-	 * @dataProvider requiredModeCases
-	 */
+	#[DataProvider( 'requiredModeCases' )]
 	public function testRequiredMode( array $over, array $codes ) {
 		$base = array(
 			'require_company' => true,
@@ -560,9 +552,7 @@ class ValidationTest extends TestCase {
 
 	// --- VAT-exemption helpers (candidate 3) -------------------------------
 
-	/**
-	 * @dataProvider providerVatExemptFromState
-	 */
+	#[DataProvider( 'providerVatExemptFromState' )]
 	public function testVatExemptFromState( $state, $ignore, $expected ) {
 		$this->assertSame( $expected, woolab_icdic_vat_exempt_from_state( $state, $ignore ) );
 	}
@@ -580,9 +570,7 @@ class ValidationTest extends TestCase {
 		);
 	}
 
-	/**
-	 * @dataProvider providerSelectVatNumber
-	 */
+	#[DataProvider( 'providerSelectVatNumber' )]
 	public function testSelectVatNumber( $country, $dic, $dic_dph, $expected ) {
 		$this->assertSame( $expected, woolab_icdic_select_vat_number( $country, $dic, $dic_dph ) );
 	}
