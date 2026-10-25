@@ -379,16 +379,16 @@ msgid "Verified"
 msgstr "Ověřeno"
 
 #: includes/settings.php:215
-msgid "Padlock and checkmark. Leave empty for the WooCommerce success colour."
-msgstr "Zámek a fajfka. Nechte prázdné pro barvu úspěchu z WooCommerce."
+msgid "Padlock and checkmark. Leave empty for green (#007518)."
+msgstr "Zámek a fajfka. Nechte prázdné pro zelenou (#007518)."
 
 #: includes/settings.php:216
 msgid "Clear"
 msgstr "Vymazání"
 
 #: includes/settings.php:216
-msgid "The X the padlock turns into. Leave empty for the WooCommerce error colour."
-msgstr "X, na které se změní zámek. Nechte prázdné pro barvu chyby z WooCommerce."
+msgid "The X the padlock turns into. Leave empty for red (#a00)."
+msgstr "X, na které se změní zámek. Nechte prázdné pro červenou (#a00)."
 
 #: includes/settings.php:219
 msgid "Company name suggestions"

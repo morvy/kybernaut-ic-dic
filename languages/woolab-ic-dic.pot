@@ -16,31 +16,31 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: woolab-ic-dic.php:188
+#: woolab-ic-dic.php:190
 msgid "Business ID is invalid."
 msgstr ""
 
-#: woolab-ic-dic.php:189, includes/filters-actions.php:322, includes/rest.php:96, includes/rest.php:170
+#: woolab-ic-dic.php:191, includes/filters-actions.php:336, includes/rest.php:96, includes/rest.php:170
 msgid "Unexpected error occurred. Try it again."
 msgstr ""
 
-#: woolab-ic-dic.php:190
+#: woolab-ic-dic.php:192
 msgid "Information loaded succesfully from ARES."
 msgstr ""
 
-#: woolab-ic-dic.php:191
+#: woolab-ic-dic.php:193
 msgid "Validating data in ARES."
 msgstr ""
 
-#: woolab-ic-dic.php:192
+#: woolab-ic-dic.php:194
 msgid "Information loaded succesfully from Finančná správa."
 msgstr ""
 
-#: woolab-ic-dic.php:193
+#: woolab-ic-dic.php:195
 msgid "Validating data in Finančná správa."
 msgstr ""
 
-#: woolab-ic-dic.php:194
+#: woolab-ic-dic.php:196
 msgid "Clear company details"
 msgstr ""
 
@@ -52,19 +52,19 @@ msgstr ""
 msgid "Business ID must be a number and 8 digits long."
 msgstr ""
 
-#: includes/ares.php:74
+#: includes/ares.php:76
 msgid "Entity doesn't exist in ARES."
 msgstr ""
 
-#: includes/ares.php:79
+#: includes/ares.php:81
 msgid "ARES is not responding."
 msgstr ""
 
-#: includes/ares.php:88
+#: includes/ares.php:90
 msgid "An error occured while connecting to ARES, try it again later."
 msgstr ""
 
-#: includes/blocks.php:241, includes/filters-actions.php:74
+#: includes/blocks.php:243, includes/filters-actions.php:74
 msgid "Buying as a company"
 msgstr ""
 
@@ -96,83 +96,83 @@ msgstr ""
 msgid "Write a Review"
 msgstr ""
 
-#: includes/filters-actions.php:312, includes/filters-actions.php:315
+#: includes/filters-actions.php:326, includes/filters-actions.php:329
 msgid "Enter a valid Business ID"
 msgstr ""
 
-#: includes/filters-actions.php:338
+#: includes/filters-actions.php:352
 msgid "%s is not corresponding to Finančná správa."
 msgid_plural "%s are not corresponding to Finančná správa."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/filters-actions.php:340
+#: includes/filters-actions.php:354
 msgid "%s is not corresponding to ARES."
 msgid_plural "%s are not corresponding to ARES."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:346
+#: includes/filters-actions.php:360
 msgctxt "field label"
 msgid "The billing country does not correspond to the country of the %s."
 msgstr ""
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:350
+#: includes/filters-actions.php:364
 msgctxt "field label"
 msgid "The shipping country does not correspond to the country of the %s."
 msgstr ""
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:354
+#: includes/filters-actions.php:368
 msgctxt "field label"
 msgid "%s has not a correct format."
 msgstr ""
 
 #. translators: %s: field label, e.g. "VAT ID"
 #. translators: %s: field label, e.g. "Tax ID"
-#: includes/filters-actions.php:360, includes/filters-actions.php:368
+#: includes/filters-actions.php:374, includes/filters-actions.php:382
 msgctxt "field label"
 msgid "Enter a valid %s."
 msgstr ""
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:364
+#: includes/filters-actions.php:378
 msgctxt "field label"
 msgid "Could not validate %s."
 msgstr ""
 
 #. translators: 1: Tax ID label, 2: VAT ID label
-#: includes/filters-actions.php:372
+#: includes/filters-actions.php:386
 msgid "%1$s or %2$s is not valid."
 msgstr ""
 
-#: includes/filters-actions.php:375
+#: includes/filters-actions.php:389
 msgid "Tax ID does not belong to the entered Business ID."
 msgstr ""
 
-#: includes/filters-actions.php:378
+#: includes/filters-actions.php:392
 msgid "Could not validate Tax ID."
 msgstr ""
 
-#: includes/filters-actions.php:876, includes/filters-actions.php:904, includes/filters-actions.php:928, includes/filters-actions.php:965
+#: includes/filters-actions.php:891, includes/filters-actions.php:919, includes/filters-actions.php:943, includes/filters-actions.php:980
 msgid "Verification of VAT number has failed."
 msgstr ""
 
-#: includes/filters-actions.php:927, includes/filters-actions.php:964
+#: includes/filters-actions.php:942, includes/filters-actions.php:979
 msgid "Caution!"
 msgstr ""
 
-#: includes/filters-actions.php:929, includes/filters-actions.php:966
+#: includes/filters-actions.php:944, includes/filters-actions.php:981
 msgid "Please, make sure the VAT number is valid before processing the order."
 msgstr ""
 
-#: includes/filters-actions.php:981
+#: includes/filters-actions.php:996
 msgid "View Kybernaut IČO DIČ settings"
 msgstr ""
 
-#: includes/filters-actions.php:981
+#: includes/filters-actions.php:996
 msgid "Settings"
 msgstr ""
 
@@ -376,7 +376,7 @@ msgid "Verified"
 msgstr ""
 
 #: includes/settings.php:215
-msgid "Padlock and checkmark. Leave empty for the WooCommerce success colour."
+msgid "Padlock and checkmark. Leave empty for green (#007518)."
 msgstr ""
 
 #: includes/settings.php:216
@@ -384,7 +384,7 @@ msgid "Clear"
 msgstr ""
 
 #: includes/settings.php:216
-msgid "The X the padlock turns into. Leave empty for the WooCommerce error colour."
+msgid "The X the padlock turns into. Leave empty for red (#a00)."
 msgstr ""
 
 #: includes/settings.php:219

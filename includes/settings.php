@@ -212,8 +212,8 @@ function woolab_icdic_settings_appearance() {
 
 	return array(
 		array( 'title' => __( 'Status icons', 'woolab-ic-dic' ), 'type' => 'title', 'desc' => __( 'The padlock on the company name and Business ID after an autofill, and the checkmark on the other filled-in fields.', 'woolab-ic-dic' ), 'id' => 'woolab_icdic_icons' ),
-		$color( 'color_ok', __( 'Verified', 'woolab-ic-dic' ), __( 'Padlock and checkmark. Leave empty for the WooCommerce success colour.', 'woolab-ic-dic' ) ),
-		$color( 'color_clear', __( 'Clear', 'woolab-ic-dic' ), __( 'The X the padlock turns into. Leave empty for the WooCommerce error colour.', 'woolab-ic-dic' ) ),
+		$color( 'color_ok', __( 'Verified', 'woolab-ic-dic' ), __( 'Padlock and checkmark. Leave empty for green (#007518).', 'woolab-ic-dic' ) ),
+		$color( 'color_clear', __( 'Clear', 'woolab-ic-dic' ), __( 'The X the padlock turns into. Leave empty for red (#a00).', 'woolab-ic-dic' ) ),
 		array( 'type' => 'sectionend', 'id' => 'woolab_icdic_icons' ),
 
 		array( 'title' => __( 'Company name suggestions', 'woolab-ic-dic' ), 'type' => 'title', 'desc' => __( 'By default the list takes its colours from the company field.', 'woolab-ic-dic' ), 'id' => 'woolab_icdic_list' ),
