@@ -19,9 +19,20 @@
         "rector/rector": "^2.7",
         "fsylum/rector-wordpress": "^1.1",
         "php-stubs/wp-cli-stubs": "^2.12",
-        "morvy/rector-woocommerce": "^0.1"
+        "morvy/rector-woocommerce": "^0.1",
+        "wp-cli/i18n-command": "^2.6"
     },
     "scripts": {
+        "i18n:pot": "wp i18n make-pot . languages/woolab-ic-dic.pot --slug=woolab-ic-dic --domain=woolab-ic-dic --skip-js --exclude=assets,deps,docs,node_modules,src,tests,vendor --headers='{\"Report-Msgid-Bugs-To\":\"https://kybernaut.cz/kontakt/\",\"Language-Team\":\"Kybernaut <karolina@kybernaut.cz>\"}'",
+        "i18n:po": "wp i18n update-po languages/woolab-ic-dic.pot languages/",
+        "i18n:mo": "wp i18n make-mo languages/",
+        "i18n:php": "wp i18n make-php languages/",
+        "i18n": [
+            "@i18n:pot",
+            "@i18n:po",
+            "@i18n:mo",
+            "@i18n:php"
+        ],
         "test:unit": "vendor/bin/phpunit --testsuite Unit",
         "lint:phpcs": "phpcs",
         "lint:phpstan": "phpstan analyse --memory-limit=2G",

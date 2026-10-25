@@ -392,8 +392,10 @@ function woolab_icdic_checkout_error_message( array $error, $country = '' ) {
 				$missing_fields[] = $labels[ $field ];
 			}
 			if ( 'sk_mismatch' === $error['code'] ) {
+				/* translators: %s: list of field labels, e.g. "Company and Business ID" */
 				return sprintf( _n( '%s is not corresponding to Finančná správa.', '%s are not corresponding to Finančná správa.', count( $missing_fields ), 'woolab-ic-dic' ), wc_format_list_of_items( $missing_fields ) );
 			}
+			/* translators: %s: list of field labels, e.g. "Company and Business ID" */
 			return sprintf( _n( '%s is not corresponding to ARES.', '%s are not corresponding to ARES.', count( $missing_fields ), 'woolab-ic-dic' ), wc_format_list_of_items( $missing_fields ) );
 
 		// The VAT checks are on IČ DPH in Slovakia, on the DIČ field elsewhere; the
@@ -422,7 +424,7 @@ function woolab_icdic_checkout_error_message( array $error, $country = '' ) {
 			return sprintf( _x( 'Could not validate %s.', 'field label', 'woolab-ic-dic' ), $vat_label );
 
 		case 'invalid_tax_id_sk':
-			/* translators: %s: field label, e.g. "Tax ID" */
+			/* translators: %s: field label, e.g. "VAT ID" */
 			return sprintf( _x( 'Enter a valid %s.', 'field label', 'woolab-ic-dic' ), $labels['dic'] );
 
 		case 'dic_dph_mismatch':
