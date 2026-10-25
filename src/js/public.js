@@ -477,4 +477,24 @@
         woolab_add_class_wrong( ico_class );
     }
 
+    /**
+     * The checkout errors of these fields under the field, as WooCommerce puts its
+     * own (checkout.js show_inline_errors()). It reads only list notices; with a
+     * block theme WooCommerce 10.0 prints a banner instead, which it leaves out.
+     * WooCommerce removes these again on the next change and submit.
+     */
+    $( document.body ).on( 'checkout_error', function () {
+        $( '.woocommerce-NoticeGroup-checkout [data-id]' ).each( function () {
+            var id   = $( this ).attr( 'data-id' );
+            var $row = $( '#' + id + '_field' );
+
+            if ( ! /^billing_(company|ic|dic|dic_dph)$/.test( id ) || ! $row.length || $row.find( '.checkout-inline-error-message' ).length ) {
+                return;
+            }
+
+            $( '<p class="checkout-inline-error-message"></p>' ).attr( 'id', id + '_description' ).text( $( this ).text().trim() ).appendTo( $row );
+            $( '#' + id ).attr( { 'aria-describedby': id + '_description', 'aria-invalid': 'true' } );
+        } );
+    } );
+
 })( jQuery );
