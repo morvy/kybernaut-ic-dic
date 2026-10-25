@@ -51,9 +51,10 @@ final class IcDphTaxIdMatch extends AbstractCheck {
 	public function run( Context $context, Result $result ): void {
 		$dic_dph = $context->number( 'dic_dph' );
 		$dic     = $context->number( 'dic' );
-		$sk_dph  = $context->flag( 'sk_check' ) ? $context->sk_list( 'dph', $dic_dph ) : null;
+		// The IČO the services tie the IČ DPH to ('' when none does, e.g. VIES).
+		$dph_ico = $context->has( 'vat_id' ) ? (string) ( $context->vat_id( $dic_dph )['ico'] ?? '' ) : '';
 
-		if ( $sk_dph && SkLists::ico_differs( $sk_dph, $context->number( 'ic' ) ) ) {
+		if ( SkLists::ico_differs( array( 'ico' => $dph_ico ), $context->number( 'ic' ) ) ) {
 			$this->error( $result, 'dic_dph_mismatch' );
 			return;
 		}
@@ -62,9 +63,9 @@ final class IcDphTaxIdMatch extends AbstractCheck {
 			return;
 		}
 
-		// The DIČ's row, if TaxIdRegistry looked it up.
-		$sk_dic = TaxIdRegistry::looked_up( $context ) ? $context->sk_list( 'dic', $dic ) : null;
-		$linked = $sk_dph && $sk_dic && '' !== $sk_dph['ico'] && $sk_dph['ico'] === $sk_dic['ico'];
+		// Both tied to the same IČO, if TaxIdRegistry looked the DIČ up.
+		$dic_ico = TaxIdRegistry::looked_up( $context ) ? (string) ( $context->tax_id( $dic )['ico'] ?? '' ) : '';
+		$linked  = '' !== $dph_ico && $dph_ico === $dic_ico;
 
 		if ( ! $linked ) {
 			$this->error( $result, 'dic_dph_mismatch' );

@@ -13,7 +13,3 @@ if ( ! defined( 'WPINC' ) ) {
 if ( ! defined( 'DAY_IN_SECONDS' ) ) {
 	define( 'DAY_IN_SECONDS', 86400 );
 }
-
-require_once dirname( __DIR__ ) . '/includes/ares.php';
-require_once dirname( __DIR__ ) . '/includes/vies.php';
-require_once dirname( __DIR__ ) . '/includes/filters-actions.php';

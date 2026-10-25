@@ -13,8 +13,8 @@ use KybernautIcDic\Validation\Context;
 use KybernautIcDic\Validation\Result;
 
 /**
- * Errors invalid_vat_dph, vat_unverifiable when neither can answer. With both off,
- * the format and check digit.
+ * Errors invalid_vat_dph, vat_unverifiable when neither can answer. With no vat_id
+ * service, the format and check digit.
  */
 final class IcDphVerify extends AbstractCheck {
 
@@ -42,7 +42,7 @@ final class IcDphVerify extends AbstractCheck {
 	}
 
 	/**
-	 * Ask the list and VIES (the checkout's verify_vat does both), or check the digits.
+	 * Ask the vat_id services (the list, then VIES, by default), or check the digits.
 	 *
 	 * @param Context $context The checkout.
 	 * @param Result  $result  Where the findings go.
@@ -50,7 +50,7 @@ final class IcDphVerify extends AbstractCheck {
 	public function run( Context $context, Result $result ): void {
 		$dic_dph = $context->number( 'dic_dph' );
 
-		if ( ! $context->flag( 'vies_check' ) && ! $context->flag( 'sk_check' ) ) {
+		if ( ! $context->has( 'vat_id' ) ) {
 			if ( ! Checksum::dic_dph_sk( $dic_dph ) ) {
 				$this->error( $result, 'invalid_vat_dph' );
 			}

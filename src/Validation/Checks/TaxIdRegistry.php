@@ -1,6 +1,6 @@
 <?php
 /**
- * The Slovak DIČ in the Finančná správa DIČ list.
+ * The Slovak DIČ in the tax_id service: the Finančná správa DIČ list by default.
  *
  * @package KybernautIcDic
  */
@@ -34,13 +34,13 @@ final class TaxIdRegistry extends AbstractCheck {
 	}
 
 	/**
-	 * Whether the DIČ is looked up: a well-formed Slovak DIČ, the lists on. Also
-	 * what IcDphTaxIdMatch relies on.
+	 * Whether the DIČ is looked up: a well-formed Slovak DIČ with a tax_id service.
+	 * Also what IcDphTaxIdMatch relies on.
 	 *
 	 * @param Context $context The checkout.
 	 */
 	public static function looked_up( Context $context ): bool {
-		return TaxId::SK === TaxId::route( $context ) && $context->flag( 'sk_check' ) && Checksum::dic_sk( $context->number( 'dic' ) );
+		return TaxId::SK === TaxId::route( $context ) && $context->has( 'tax_id' ) && Checksum::dic_sk( $context->number( 'dic' ) );
 	}
 
 	/**
@@ -59,13 +59,14 @@ final class TaxIdRegistry extends AbstractCheck {
 	 * @param Result  $result  Where the findings go.
 	 */
 	public function run( Context $context, Result $result ): void {
-		$row = $context->sk_list( 'dic', $context->number( 'dic' ) );
+		$answer = (array) $context->tax_id( $context->number( 'dic' ) );
+		$state  = $answer['state'] ?? 'unverifiable';
 
-		if ( false === $row ) {
+		if ( 'unverifiable' === $state ) {
 			$this->unverifiable( $context, $result, 'sk_unverifiable' );
-		} elseif ( null === $row ) {
+		} elseif ( 'valid' !== $state ) {
 			$this->error( $result, 'invalid_tax_id_sk' );
-		} elseif ( SkLists::ico_differs( $row, $context->number( 'ic' ) ) ) {
+		} elseif ( SkLists::ico_differs( array( 'ico' => (string) ( $answer['ico'] ?? '' ) ), $context->number( 'ic' ) ) ) {
 			$this->error( $result, 'dic_ico_mismatch' );
 		}
 	}

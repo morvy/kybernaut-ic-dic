@@ -1,6 +1,6 @@
 <?php
 /**
- * The IČO's check digit, where no register checks it.
+ * The IČO's check digit, where no service looks it up.
  *
  * @package KybernautIcDic
  */
@@ -32,12 +32,12 @@ final class BusinessIdFormat extends AbstractCheck {
 	}
 
 	/**
-	 * A Czech or Slovak IČO that no register checks (BusinessIdRegistry).
+	 * A Czech or Slovak IČO that no service looks up (BusinessIdRegistry).
 	 *
 	 * @param Context $context The checkout.
 	 */
 	public function applies( Context $context ): bool {
-		if ( ! $context->entered( 'ic' ) || null !== BusinessIdRegistry::register( $context ) ) {
+		if ( ! $context->entered( 'ic' ) || $context->has( 'company_lookup' ) ) {
 			return false;
 		}
 

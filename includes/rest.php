@@ -25,9 +25,10 @@ add_action( 'rest_api_init', 'woolab_icdic_rest_routes' );
 
 function woolab_icdic_rest_routes() {
 
+	// Every country with a company lookup service (Services\Services).
 	$country = array(
 		'type'    => 'string',
-		'enum'    => array( 'CZ', 'SK' ),
+		'enum'    => array_values( array_unique( array_merge( array( 'CZ', 'SK' ), \KybernautIcDic\Services\Services::countries( 'company_lookup' ) ) ) ),
 		'default' => 'CZ',
 	);
 
@@ -85,11 +86,8 @@ function woolab_icdic_rest_lookup( $request ) {
 
 	$ico = wc_clean( $request['ico'] );
 
-	if ( 'SK' === $request['country'] ) {
-		$result = woolab_icdic_sk_check() ? woolab_icdic_sk_lookup( $ico ) : null;
-	} else {
-		$result = woolab_icdic_ares_check() ? woolab_icdic_ares( $ico ) : null;
-	}
+	$services = \KybernautIcDic\Services\Services::for_country( (string) $request['country'] )['company_lookup'] ?? array();
+	$result   = \KybernautIcDic\Services\Services::first( $services, 'lookup_company', (string) $ico );
 
 	// The register is switched off: nothing to look up for anyone.
 	if ( null === $result ) {
@@ -112,15 +110,12 @@ function woolab_icdic_rest_search( $request ) {
 		return $limited;
 	}
 
-	$search = 'SK' === $request['country']
-		? ( woolab_icdic_sk_check() && woolab_icdic_sk_fill() ? 'woolab_icdic_sk_search' : null )
-		: ( woolab_icdic_ares_check() && woolab_icdic_ares_fill() ? 'woolab_icdic_ares_search' : null );
+	$services = \KybernautIcDic\Services\Services::for_country( (string) $request['country'] )['company_search'] ?? array();
+	$results  = \KybernautIcDic\Services\Services::first( $services, 'search_companies', trim( wc_clean( $request['name'] ) ) );
 
-	if ( ! $search ) {
+	if ( null === $results ) {
 		return new WP_REST_Response( array( 'results' => array() ) );
 	}
-
-	$results = $search( trim( wc_clean( $request['name'] ) ) );
 
 	return new WP_REST_Response( false === $results ? array( 'results' => array(), 'internal_error' => true ) : array( 'results' => $results ) );
 }

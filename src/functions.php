@@ -8,8 +8,10 @@
  * @package KybernautIcDic
  */
 
+use KybernautIcDic\Checkout\Blocks;
 use KybernautIcDic\Checkout\VatExempt;
 use KybernautIcDic\Numbers\Checksum;
+use KybernautIcDic\Order\AdminScreen;
 use KybernautIcDic\Settings\Flags;
 use KybernautIcDic\Settings\Options;
 use KybernautIcDic\Validation\Context;
@@ -367,4 +369,184 @@ function woolab_icdic_checkout_error_field( $code, $country ) {
  */
 function woolab_icdic_checkout_error_message( array $error, $country = '' ) {
 	return \KybernautIcDic\Validation\Errors::message( $error, (string) $country );
+}
+
+const WOOLAB_ICDIC_SK_LISTS = \KybernautIcDic\Services\FinancnaSprava\Storage::LISTS;
+
+if ( ! function_exists( 'woolab_icdic_ares' ) ) {
+	/**
+	 * The company with this IČO in ARES. To replace ARES, use the
+	 * woolab_icdic_services filter.
+	 *
+	 * @param string|int $ico IČO.
+	 * @return array<string,mixed>
+	 */
+	function woolab_icdic_ares( $ico = '' ) {
+		return ( new \KybernautIcDic\Services\Ares\Ares() )->lookup_company( (string) $ico );
+	}
+}
+
+/**
+ * Companies by name in ARES.
+ *
+ * @param string $name Company name.
+ * @return array<int,array{ico:string,name:string,address:string}>|false
+ */
+function woolab_icdic_ares_search( $name ) {
+	return ( new \KybernautIcDic\Services\Ares\Ares() )->search_companies( (string) $name );
+}
+
+/**
+ * Ask VIES about a VAT number, uncached.
+ *
+ * @param string $vat         VAT number with its prefix.
+ * @param string $log_message sprintf format with %s, logged when VIES cannot answer.
+ * @return string 'valid', 'invalid' or 'unverifiable'.
+ */
+function woolab_icdic_vies_rest( $vat, $log_message = 'Could not validate VAT number: %s' ) {
+	return \KybernautIcDic\Services\Vies\Vies::ask( (string) $vat, (string) $log_message );
+}
+
+/**
+ * The VIES REST URL of a VAT number.
+ *
+ * @param string $vat VAT number with its prefix.
+ * @return string
+ */
+function woolab_icdic_vies_url( $vat ) {
+	return \KybernautIcDic\Services\Vies\Vies::url( (string) $vat );
+}
+
+/**
+ * A VIES REST answer as the verifier's state.
+ *
+ * @param int    $code HTTP status.
+ * @param string $body JSON body.
+ * @return string
+ */
+function woolab_icdic_vies_state( $code, $body ) {
+	return \KybernautIcDic\Services\Vies\Vies::state( (int) $code, (string) $body );
+}
+
+/**
+ * Where the Finančná správa SQLite files live.
+ *
+ * @return string
+ */
+function woolab_icdic_sk_dir() {
+	return \KybernautIcDic\Services\FinancnaSprava\Storage::dir();
+}
+
+/**
+ * What the Finančná správa import needs from PHP.
+ *
+ * @return array<string,bool>
+ */
+function woolab_icdic_sk_requirements() {
+	return \KybernautIcDic\Services\FinancnaSprava\Storage::requirements();
+}
+
+/**
+ * Whether PHP can run the Finančná správa import.
+ *
+ * @return bool
+ */
+function woolab_icdic_sk_import_supported() {
+	return \KybernautIcDic\Services\FinancnaSprava\Storage::supported();
+}
+
+/**
+ * The Finančná správa lists as the settings show them.
+ *
+ * @return array<string,mixed>
+ */
+function woolab_icdic_sk_status() {
+	return \KybernautIcDic\Services\FinancnaSprava\Storage::status();
+}
+
+/**
+ * Whether the imported lists are recent enough to trust.
+ *
+ * @return bool
+ */
+function woolab_icdic_sk_lists_fresh() {
+	return \KybernautIcDic\Services\FinancnaSprava\Storage::fresh();
+}
+
+/**
+ * Import the Finančná správa lists now.
+ *
+ * @return array{dic:int,dph:int}|false
+ */
+function woolab_icdic_sk_import() {
+	return \KybernautIcDic\Services\FinancnaSprava\Importer::import();
+}
+
+/**
+ * A DIČ ('dic') or IČ DPH ('dph') in the lists.
+ *
+ * @param string $which  'dic' or 'dph'.
+ * @param string $number The number.
+ * @return array{ico:string}|false|null
+ */
+function woolab_icdic_sk_find( $which, $number ) {
+	return \KybernautIcDic\Services\FinancnaSprava\FinancnaSprava::find( (string) $which, (string) $number );
+}
+
+/**
+ * The company with this IČO in the Finančná správa lists.
+ *
+ * @param string $ico IČO.
+ * @return array<string,mixed>
+ */
+function woolab_icdic_sk_lookup( $ico = '' ) {
+	return ( new \KybernautIcDic\Services\FinancnaSprava\FinancnaSprava() )->lookup_company( (string) $ico );
+}
+
+/**
+ * Companies by name in the Finančná správa lists.
+ *
+ * @param string $name Company name.
+ * @return array<int,array{ico:string,name:string,address:string}>|false
+ */
+function woolab_icdic_sk_search( $name ) {
+	return ( new \KybernautIcDic\Services\FinancnaSprava\FinancnaSprava() )->search_companies( (string) $name );
+}
+
+/**
+ * Save the company fields edited on the admin order screen.
+ *
+ * @param int         $post_id Post ID.
+ * @param object|null $post    Post object.
+ * @return void
+ */
+function woolab_icdic_process_shop_order( $post_id, $post ) {
+	AdminScreen::process_shop_order( $post_id, $post );
+}
+
+/**
+ * The block checkout's DIČ field id per billing country.
+ *
+ * @return array<string,string|null>
+ */
+function woolab_icdic_blocks_dic_fields() {
+	return Blocks::dic_fields();
+}
+
+/**
+ * Whether the company name belongs to the plugin's section of the block checkout.
+ *
+ * @return bool
+ */
+function woolab_icdic_blocks_owns_company() {
+	return Blocks::owns_company();
+}
+
+/**
+ * Whether the checkout page is built from the Checkout block.
+ *
+ * @return bool
+ */
+function woolab_icdic_blocks_checkout() {
+	return Blocks::checkout();
 }

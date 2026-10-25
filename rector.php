@@ -9,6 +9,7 @@ use Fsylum\RectorWordPress\Set\WordPressLevelSetList;
 use Morvy\RectorWooCommerce\Set\WooCommerceLevelSetList;
 use Rector\Config\RectorConfig;
 use Rector\Php54\Rector\Array_\LongArrayToShortArrayRector;
+use Rector\Php71\Rector\List_\ListToArrayDestructRector;
 use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 
 return RectorConfig::configure()
@@ -26,8 +27,8 @@ return RectorConfig::configure()
 	->withAutoloadPaths( array( __DIR__ . '/deps', __DIR__ . '/vendor/php-stubs/wordpress-stubs/wordpress-stubs.php', __DIR__ . '/vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php' ) )
 	->withSkip(
 		array_merge(
-			// The WordPress coding standards (phpcs.xml.dist) require array().
-			array( LongArrayToShortArrayRector::class ),
+			// The WordPress coding standards (phpcs.xml.dist) require array() and list().
+			array( LongArrayToShortArrayRector::class, ListToArrayDestructRector::class ),
 			// Hooks stay array( Class::class, 'method' ): a first-class callable is a new
 			// Closure, which remove_action() / remove_filter() cannot match.
 			array( ArrayToFirstClassCallableRector::class ),

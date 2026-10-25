@@ -1,6 +1,7 @@
 <?php
 /**
- * The IČO in its business register: ARES (CZ), the Finančná správa lists (SK).
+ * The IČO in the company_lookup service of the billing country: ARES (CZ),
+ * Finančná správa (SK), or a store's own (Services\Services).
  *
  * @package KybernautIcDic
  */
@@ -13,7 +14,7 @@ use KybernautIcDic\Validation\Result;
 
 /**
  * Errors invalid_business_id (not found), ares_unexpected (no answer), and with the
- * autofill on ares_mismatch / sk_mismatch for what differs from the register.
+ * autofill on ares_mismatch / sk_mismatch for what differs from the service.
  */
 final class BusinessIdRegistry extends AbstractCheck {
 
@@ -32,38 +33,27 @@ final class BusinessIdRegistry extends AbstractCheck {
 	}
 
 	/**
-	 * The register for the billing country, if it is switched on.
+	 * Whether the autofill compares the company with what the service has, and the
+	 * error code when it differs: ARES (CZ) and Finančná správa (SK) with their
+	 * autofill setting on.
 	 *
 	 * @param Context $context The checkout.
-	 * @return array{register:string,fill:bool,mismatch:string}|null
+	 * @return array{fill:bool,mismatch:string}
 	 */
-	public static function register( Context $context ): ?array {
-		if ( 'CZ' === $context->country() && $context->flag( 'ares_check' ) ) {
-			return array(
-				'register' => 'ares',
-				'fill'     => $context->flag( 'ares_fill' ),
-				'mismatch' => 'ares_mismatch',
-			);
-		}
-
-		if ( 'SK' === $context->country() && $context->flag( 'sk_check' ) ) {
-			return array(
-				'register' => 'sk',
-				'fill'     => $context->flag( 'sk_fill' ),
-				'mismatch' => 'sk_mismatch',
-			);
-		}
-
-		return null;
+	public static function comparison( Context $context ): array {
+		return array(
+			'fill'     => ( 'CZ' === $context->country() && $context->flag( 'ares_fill' ) ) || ( 'SK' === $context->country() && $context->flag( 'sk_fill' ) ),
+			'mismatch' => 'SK' === $context->country() ? 'sk_mismatch' : 'ares_mismatch',
+		);
 	}
 
 	/**
-	 * An IČO entered where a register checks it.
+	 * An IČO entered where a service looks companies up.
 	 *
 	 * @param Context $context The checkout.
 	 */
 	public function applies( Context $context ): bool {
-		return $context->entered( 'ic' ) && null !== self::register( $context );
+		return $context->entered( 'ic' ) && $context->has( 'company_lookup' );
 	}
 
 	/**
@@ -73,8 +63,8 @@ final class BusinessIdRegistry extends AbstractCheck {
 	 * @param Result  $result  Where the findings go.
 	 */
 	public function run( Context $context, Result $result ): void {
-		$register = (array) self::register( $context );
-		$subject  = $context->business( $register['register'], $context->number( 'ic' ) );
+		$register = self::comparison( $context );
+		$subject  = $context->company( $context->number( 'ic' ) );
 
 		if ( ! $subject ) {
 			$this->unverifiable( $context, $result, 'ares_unexpected' );

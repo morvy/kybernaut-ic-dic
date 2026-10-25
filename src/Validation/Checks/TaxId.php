@@ -23,12 +23,12 @@ final class TaxId {
 	public const DOMESTIC = 'domestic';
 
 	/**
-	 * A VAT number checked in VIES (VatIdCountry, VatIdVies).
+	 * A VAT number checked by the vat_id service, VIES by default (VatIdCountry, VatIdVies).
 	 */
 	public const VIES = 'vies';
 
 	/**
-	 * A Czech DIČ checked by its format, VIES off (TaxIdFormat).
+	 * A Czech DIČ checked by its format, no vat_id service (TaxIdFormat).
 	 */
 	public const CZ = 'cz';
 
@@ -39,7 +39,7 @@ final class TaxId {
 
 	/**
 	 * The route of the DIČ field, or null when it is empty, outside the EU, or a
-	 * country whose DIČ only VIES checks and VIES is off.
+	 * country whose DIČ only a vat_id service checks and none is assigned.
 	 *
 	 * @param Context $context The checkout.
 	 */
@@ -55,7 +55,7 @@ final class TaxId {
 		}
 
 		// The Slovak DIČ is no VAT number: VIES cannot (and should not) check it.
-		if ( $context->flag( 'vies_check' ) && 'SK' !== $country ) {
+		if ( $context->has( 'vat_id' ) && 'SK' !== $country ) {
 			return self::VIES;
 		}
 
