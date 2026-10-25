@@ -9,6 +9,14 @@
             "email": "karolina@kybernaut.cz"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "KybernautIcDic\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
     "require-dev": {
         "phpunit/phpunit": "^12.5",
         "brain/monkey": "^2.7",

@@ -26,7 +26,7 @@ class Woolab_Icdic_Blocks_Integration implements IntegrationInterface {
 		wp_register_script(
 			'woolab-icdic-blocks-js',
 			WOOLAB_IC_DIC_URL . 'assets/js/blocks' . $suffix . '.js',
-			array_merge( array( 'wp-data', 'wc-blocks-data-store', 'wc-settings', 'wc-blocks-checkout' ), woolab_icdic_register_suggest_script() ),
+			array_merge( array( 'wp-data', 'wc-blocks-data-store', 'wc-settings', 'wc-blocks-checkout' ), \KybernautIcDic\Assets::register_suggest_script() ),
 			WOOLAB_IC_DIC_VERSION,
 			array( 'in_footer' => true )
 		);
@@ -40,7 +40,12 @@ class Woolab_Icdic_Blocks_Integration implements IntegrationInterface {
 		return array();
 	}
 
+	/**
+	 * The settings blocks.js reads, as wcSettings 'woolab-ic-dic_data'.
+	 *
+	 * @return array<string,mixed>
+	 */
 	public function get_script_data() {
-		return woolab_icdic_script_data( true );
+		return \KybernautIcDic\Assets::script_data( true );
 	}
 }

@@ -9,6 +9,7 @@ use Fsylum\RectorWordPress\Set\WordPressLevelSetList;
 use Morvy\RectorWooCommerce\Set\WooCommerceLevelSetList;
 use Rector\Config\RectorConfig;
 use Rector\Php54\Rector\Array_\LongArrayToShortArrayRector;
+use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 
 return RectorConfig::configure()
 	->withPaths(
@@ -16,6 +17,7 @@ return RectorConfig::configure()
 			__DIR__ . '/woolab-ic-dic.php',
 			__DIR__ . '/uninstall.php',
 			__DIR__ . '/includes',
+			__DIR__ . '/src',
 		)
 	)
 	->withPhpSets( php81: true )
@@ -26,5 +28,8 @@ return RectorConfig::configure()
 		array_merge(
 			// The WordPress coding standards (phpcs.xml.dist) require array().
 			array( LongArrayToShortArrayRector::class ),
+			// Hooks stay array( Class::class, 'method' ): a first-class callable is a new
+			// Closure, which remove_action() / remove_filter() cannot match.
+			array( ArrayToFirstClassCallableRector::class ),
 		)
 	);

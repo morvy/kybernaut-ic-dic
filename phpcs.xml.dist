@@ -5,6 +5,7 @@
 	<file>woolab-ic-dic.php</file>
 	<file>uninstall.php</file>
 	<file>includes</file>
+	<file>src</file>
 
 	<arg name="extensions" value="php"/>
 	<arg name="colors"/>
@@ -17,6 +18,11 @@
 	<config name="minimum_wp_version" value="6.7"/>
 
 	<rule ref="WooCommerce-Core"/>
+
+	<!-- src/ is PSR-4 (KybernautIcDic\Settings\Options in src/Settings/Options.php), as in WooCommerce's own src/. -->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>src/*</exclude-pattern>
+	</rule>
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>

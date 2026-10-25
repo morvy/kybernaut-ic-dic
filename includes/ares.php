@@ -36,7 +36,6 @@ if ( ! function_exists( 'woolab_icdic_ares') ) {
 
         $url = 'https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/' . $ico;
         $response = wp_remote_get( $url );
-        $logger = Logger::getInstance();
 
         if ( ! is_wp_error( $response ) ) {
 
@@ -65,30 +64,29 @@ if ( ! function_exists( 'woolab_icdic_ares') ) {
                 $return['psc'] = (string) ( $data->sidlo->psc ?? '' );
                 $return['mesto'] = $data->sidlo->nazevMestskehoObvodu ?? $data->sidlo->nazevObce ?? '';
 
-                $logger->logInfo('Ares response:');
-                $logger->logInfo($body);
+				Logger::info( 'Ares response:' );
+				Logger::info( $body );
 
-            } elseif ( $status_code === 404 ) {                
-                $logger->log(sprintf('Entity doesn\'t exist in ARES: %s', $ico));
-                $logger->log($response);
-                $return = array( 'error' => __('Entity doesn\'t exist in ARES.', 'woolab-ic-dic'));
-            } else {
-                $logger->log(sprintf('Ares is not responding, used IČO: %s', $ico));
-                $logger->log($response);
-                $return = array(
-					'error'          => __('ARES is not responding.', 'woolab-ic-dic'),
-	                'internal_error' => true,
-                );
-            }
-
-        } else {
-            $logger->log(sprintf('An error occured while connecting to ARES: %s', $ico));
-            $logger->log($response);
-            $return = array(
-				'error'          => __('An error occured while connecting to ARES, try it again later.', 'woolab-ic-dic'),
+			} elseif ( 404 === $status_code ) {
+				Logger::log( sprintf( 'Entity doesn\'t exist in ARES: %s', $ico ) );
+				Logger::log( $response );
+				$return = array( 'error' => __( 'Entity doesn\'t exist in ARES.', 'woolab-ic-dic' ) );
+			} else {
+				Logger::log( sprintf( 'Ares is not responding, used IČO: %s', $ico ) );
+				Logger::log( $response );
+				$return = array(
+					'error'          => __( 'ARES is not responding.', 'woolab-ic-dic' ),
+					'internal_error' => true,
+				);
+			}
+		} else {
+			Logger::log( sprintf( 'An error occured while connecting to ARES: %s', $ico ) );
+			Logger::log( $response );
+			$return = array(
+				'error'          => __( 'An error occured while connecting to ARES, try it again later.', 'woolab-ic-dic' ),
 				'internal_error' => true,
-            );
-        }
+			);
+		}
 
         // Cache only definitive answers (a parsed subject or a confirmed 404).
         // Transient failures (network error, ARES down) carry 'internal_error'
@@ -132,11 +130,11 @@ function woolab_icdic_ares_search( $name ) {
         return array();
     }
 
-    if ( 200 !== $code || ! isset( $data['ekonomickeSubjekty'] ) ) {
-        Logger::getInstance()->log( sprintf( 'ARES search is not responding, used name: %s', $name ) );
-        Logger::getInstance()->log( $response );
-        return false;
-    }
+	if ( 200 !== $code || ! isset( $data['ekonomickeSubjekty'] ) ) {
+		Logger::log( sprintf( 'ARES search is not responding, used name: %s', $name ) );
+		Logger::log( $response );
+		return false;
+	}
 
     $results = array();
     foreach ( $data['ekonomickeSubjekty'] as $subject ) {

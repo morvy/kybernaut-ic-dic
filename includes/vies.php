@@ -47,9 +47,8 @@ function woolab_icdic_vies_rest( $vat, $log_message = 'Could not validate VAT nu
 	$state    = woolab_icdic_vies_state( $code, $body );
 
 	if ( 'unverifiable' === $state ) {
-		$logger = Logger::getInstance();
-		$logger->log( sprintf( $log_message, $vat ) );
-		$logger->log( is_wp_error( $response ) ? $response->get_error_message() : $code . ' ' . $body );
+		Logger::log( sprintf( $log_message, $vat ) );
+		Logger::log( is_wp_error( $response ) ? $response->get_error_message() : $code . ' ' . $body );
 	}
 
 	return $state;

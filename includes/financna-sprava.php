@@ -142,7 +142,7 @@ function woolab_icdic_sk_import_error( $message = null ) {
 
 	if ( null !== $message ) {
 		$last = $message;
-		Logger::getInstance()->logError( $message );
+		Logger::error( $message );
 	}
 
 	return $last;
@@ -190,7 +190,6 @@ function woolab_icdic_sk_import() {
  * @return array|false
  */
 function woolab_icdic_sk_import_locked() {
-	$logger = Logger::getInstance();
 
 	if ( ! woolab_icdic_sk_import_supported() ) {
 		woolab_icdic_sk_import_error( 'Finančná správa lists import needs the zip, xmlreader and pdo_sqlite (with FTS5) PHP extensions.' );
@@ -228,8 +227,16 @@ function woolab_icdic_sk_import_locked() {
 
 	if ( $counts ) {
 		$previous = get_option( 'woolab_icdic_sk_updated' );
-		update_option( 'woolab_icdic_sk_updated', array( 'time' => time(), 'counts' => $counts, 'file' => $file ), false );
-		$logger->logInfo( sprintf( 'Finančná správa lists imported: %d DIČ, %d IČ DPH.', $counts['dic'], $counts['dph'] ) );
+		update_option(
+			'woolab_icdic_sk_updated',
+			array(
+				'time'   => time(),
+				'counts' => $counts,
+				'file'   => $file,
+			),
+			false
+		);
+		Logger::info( sprintf( 'Finančná správa lists imported: %d DIČ, %d IČ DPH.', $counts['dic'], $counts['dph'] ) );
 
 		// Requests still reading the old file keep their open handle.
 		if ( ! empty( $previous['file'] ) ) {
@@ -385,7 +392,7 @@ function woolab_icdic_sk_query( $sql, array $params ) {
 		$statement->execute( $params );
 		return $statement->fetchAll( PDO::FETCH_NUM );
 	} catch ( PDOException $e ) {
-		Logger::getInstance()->logError( 'Finančná správa lists lookup failed: ' . $e->getMessage() );
+		Logger::error( 'Finančná správa lists lookup failed: ' . $e->getMessage() );
 		return false;
 	}
 }
