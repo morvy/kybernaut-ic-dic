@@ -1,25 +1,30 @@
 <?php
 /**
- * Remove the plugin settings and the imported Slovak lists (includes/financna-sprava.php).
+ * Remove the plugin settings and the imported Slovak lists
+ * (Services\FinancnaSprava\Storage).
+ *
+ * @package KybernautIcDic
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	die;
 }
 
-$dir = wp_upload_dir( null, false )['basedir'] . '/woolab-ic-dic';
+$woolab_icdic_dir   = wp_upload_dir( null, false )['basedir'] . '/woolab-ic-dic';
+$woolab_icdic_files = glob( $woolab_icdic_dir . '/{*,.htaccess}', GLOB_BRACE );
 
-foreach ( glob( $dir . '/{*,.htaccess}', GLOB_BRACE ) ?: array() as $file ) {
-	wp_delete_file( $file );
+foreach ( false === $woolab_icdic_files ? array() : $woolab_icdic_files as $woolab_icdic_file ) {
+	wp_delete_file( $woolab_icdic_file );
 }
 
-if ( is_dir( $dir ) ) {
-	rmdir( $dir );
+if ( is_dir( $woolab_icdic_dir ) ) {
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- the plugin's own, now empty, directory; WP_Filesystem may ask for FTP credentials here.
+	rmdir( $woolab_icdic_dir );
 }
 
-// The settings array (includes/options.php), the 1.x options it was migrated from,
+// The settings array (Settings\Options), the 1.x options it was migrated from,
 // and the Slovak import state.
-$options = array(
+$woolab_icdic_options = array(
 	'woolab_icdic_settings',
 	'woolab_icdic_sk_updated',
 	'woolab_icdic_ares_check',
@@ -35,6 +40,6 @@ $options = array(
 	'woolab_icdic_notice_settings',
 );
 
-foreach ( $options as $option ) {
-	delete_option( $option );
+foreach ( $woolab_icdic_options as $woolab_icdic_option ) {
+	delete_option( $woolab_icdic_option );
 }

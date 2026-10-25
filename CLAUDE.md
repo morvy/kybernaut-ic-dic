@@ -72,6 +72,9 @@ composer lint:phpstan    # level 6, WordPress / WooCommerce / WP-CLI stubs, WooC
 composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10.0 deprecations (rector.php)
 ```
 
+The whole codebase passes all three, without baselines: fix a finding, or skip a rule in
+the tool's config with the reason (rector.php skips three, see there).
+
 ## Architecture
 
 ### Code Organization

@@ -25,11 +25,12 @@ return RectorConfig::configure()
 	->withBootstrapFiles( array( __DIR__ . '/tests/phpstan/bootstrap.php' ) )
 	->withAutoloadPaths( array( __DIR__ . '/deps', __DIR__ . '/vendor/php-stubs/wordpress-stubs/wordpress-stubs.php', __DIR__ . '/vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php' ) )
 	->withSkip(
-		array_merge(
+		array(
 			// The WordPress coding standards (phpcs.xml.dist) require array() and list().
-			array( LongArrayToShortArrayRector::class, ListToArrayDestructRector::class ),
+			LongArrayToShortArrayRector::class,
+			ListToArrayDestructRector::class,
 			// Hooks stay array( Class::class, 'method' ): a first-class callable is a new
 			// Closure, which remove_action() / remove_filter() cannot match.
-			array( ArrayToFirstClassCallableRector::class ),
+			ArrayToFirstClassCallableRector::class,
 		)
 	);

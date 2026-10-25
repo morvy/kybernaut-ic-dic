@@ -9,3 +9,7 @@ deps
 test-results
 playwright-report
 tests/e2e/.blueprint.json
+# Local tool state
+.omc/
+.omx/
+.serena/
