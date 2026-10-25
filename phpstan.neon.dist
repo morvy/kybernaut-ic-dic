@@ -15,3 +15,8 @@ parameters:
 	bootstrapFiles:
 		- tests/phpstan/bootstrap.php
 	treatPhpDocTypesAsCertain: false
+	# morvy/rector-woocommerce's feature checks (HPOS, Cart and Checkout blocks,
+	# legacy REST API…), registered by phpstan/extension-installer: the newest
+	# WooCommerce the plugin is tested with ("WC tested up to").
+	woocommerce:
+		targetVersion: '11.0'

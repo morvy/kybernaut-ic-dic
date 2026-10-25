@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9205ca137449b99381e1d3d051d09c5a",
+    "content-hash": "0440a12e7000e3147e7bb943ab17ee8d",
     "packages": [],
     "packages-dev": [
         {
@@ -370,29 +370,28 @@
         },
         {
             "name": "mockery/mockery",
-            "version": "1.6.7",
+            "version": "1.6.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mockery/mockery.git",
-                "reference": "0cc058854b3195ba21dc6b1f7b1f60f4ef3a9c06"
+                "reference": "967a801bd188989a5669bd280f252d51c0fdc9ee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mockery/mockery/zipball/0cc058854b3195ba21dc6b1f7b1f60f4ef3a9c06",
-                "reference": "0cc058854b3195ba21dc6b1f7b1f60f4ef3a9c06",
+                "url": "https://api.github.com/repos/mockery/mockery/zipball/967a801bd188989a5669bd280f252d51c0fdc9ee",
+                "reference": "967a801bd188989a5669bd280f252d51c0fdc9ee",
                 "shasum": ""
             },
             "require": {
-                "hamcrest/hamcrest-php": "^2.0.1",
-                "lib-pcre": ">=7.0",
+                "hamcrest/hamcrest-php": "^2.0 || ^3.0",
                 "php": ">=7.3"
             },
             "conflict": {
                 "phpunit/phpunit": "<8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^8.5 || ^9.6.10",
-                "symplify/easy-coding-standard": "^12.0.8"
+                "phpunit/phpunit": "^9.6.36",
+                "symplify/easy-coding-standard": "^13.2.17"
             },
             "type": "library",
             "autoload": {
@@ -449,7 +448,80 @@
                 "security": "https://github.com/mockery/mockery/security/advisories",
                 "source": "https://github.com/mockery/mockery"
             },
-            "time": "2023-12-10T02:24:34+00:00"
+            "time": "2026-08-19T19:37:52+00:00"
+        },
+        {
+            "name": "morvy/rector-woocommerce",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/morvy/rector-woocommerce.git",
+                "reference": "33eb54d5952655fee273bb16508835fe6f80d7d0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/morvy/rector-woocommerce/zipball/33eb54d5952655fee273bb16508835fe6f80d7d0",
+                "reference": "33eb54d5952655fee273bb16508835fe6f80d7d0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2",
+                "php-stubs/woocommerce-stubs": "^10.0 || ^11.0",
+                "rector/rector": "^2.0",
+                "webmozart/assert": "^1.11"
+            },
+            "require-dev": {
+                "ergebnis/composer-normalize": "^2.41",
+                "laravel/pint": "^1.25",
+                "phpstan/extension-installer": "^1.4",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpstan/phpstan-webmozart-assert": "^2.0",
+                "phpunit/phpunit": "^10.5"
+            },
+            "type": "rector-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "extension.neon"
+                    ]
+                },
+                "composer-normalize": {
+                    "indent-size": 4,
+                    "indent-style": "space"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Morvy\\RectorWooCommerce\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "morvy",
+                    "email": "moped@jepan.sk"
+                }
+            ],
+            "description": "Rector upgrade rules for WooCommerce",
+            "homepage": "https://github.com/morvy/rector-woocommerce",
+            "keywords": [
+                "PHPStan",
+                "hpos",
+                "phpstan-extension",
+                "rector",
+                "refactoring",
+                "upgrade",
+                "woocommerce"
+            ],
+            "support": {
+                "issues": "https://github.com/morvy/rector-woocommerce/issues",
+                "source": "https://github.com/morvy/rector-woocommerce"
+            },
+            "time": "2026-10-25T00:09:33+00:00"
         },
         {
             "name": "myclabs/deep-copy",

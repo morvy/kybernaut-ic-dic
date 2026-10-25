@@ -18,7 +18,8 @@
         "php-stubs/woocommerce-stubs": "^11.2",
         "rector/rector": "^2.7",
         "fsylum/rector-wordpress": "^1.1",
-        "php-stubs/wp-cli-stubs": "^2.12"
+        "php-stubs/wp-cli-stubs": "^2.12",
+        "morvy/rector-woocommerce": "^0.1"
     },
     "scripts": {
         "test:unit": "vendor/bin/phpunit --testsuite Unit",
