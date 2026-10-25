@@ -76,19 +76,31 @@ function woolab_icdic_checkout_fields( $fields ) {
 			'clear'       => true,
 			'priority'    => 29
 		);
-		array_push($fields['billing']['billing_ic']['class'], 'woolab-ic-dic-toggle');
-		array_push($fields['billing']['billing_dic']['class'], 'woolab-ic-dic-toggle');
-		array_push($fields['billing']['billing_dic_dph']['class'], 'woolab-ic-dic-toggle');
-
-		if ( is_array($fields['billing']['billing_company']['class'])) {
-			array_push($fields['billing']['billing_company']['class'], 'woolab-ic-dic-toggle');
-		} else {
-			$fields['billing']['billing_company']['class'] = ['woolab-ic-dic-toggle'];
-		}
+		array_push( $fields['billing']['billing_ic']['class'], 'woolab-ic-dic-toggle' );
+		array_push( $fields['billing']['billing_dic']['class'], 'woolab-ic-dic-toggle' );
+		array_push( $fields['billing']['billing_dic_dph']['class'], 'woolab-ic-dic-toggle' );
 	}
 
-	// Why there is no placeholder for Company field by default ?!
-	$fields['billing']['billing_company']['placeholder'] = __( 'Company', 'woocommerce' );
+	// WooCommerce leaves the Company field out when its "Company name field" setting is
+	// "Hidden", the default once a store has used the Checkout block. The toggle needs
+	// it, so it brings WooCommerce's own field back, as the block checkout does
+	// (kybernaut/company); without the toggle WooCommerce's setting stands.
+	if ( woolab_icdic_toggle_enabled() ) {
+		$fields['billing']['billing_company'] ??= array(
+			'label'        => __( 'Company name', 'woocommerce' ),
+			'class'        => array( 'form-row-wide' ),
+			'autocomplete' => 'organization',
+			'priority'     => 30,
+		);
+
+		$fields['billing']['billing_company']['class']   = (array) ( $fields['billing']['billing_company']['class'] ?? array() );
+		$fields['billing']['billing_company']['class'][] = 'woolab-ic-dic-toggle';
+	}
+
+	if ( isset( $fields['billing']['billing_company'] ) ) {
+		// Why there is no placeholder for Company field by default ?!
+		$fields['billing']['billing_company']['placeholder'] = __( 'Company', 'woocommerce' );
+	}
 
 	return $fields;
 
