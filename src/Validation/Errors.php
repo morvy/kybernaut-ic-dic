@@ -32,6 +32,7 @@ final class Errors {
 			'ares_unexpected'     => 'billing_ic',
 			'ares_mismatch'       => 'billing_ic',
 			'sk_mismatch'         => 'billing_ic',
+			'company_mismatch'    => 'billing_ic',
 			'invalid_dic_cz'      => 'billing_dic',
 			'missing_dic'         => 'billing_dic',
 			'invalid_tax_id_sk'   => 'billing_dic',
@@ -80,6 +81,7 @@ final class Errors {
 
 			case 'ares_mismatch':
 			case 'sk_mismatch':
+			case 'company_mismatch':
 				$names          = array(
 					'tax_id'   => $labels['dic'],
 					'company'  => __( 'Company', 'woocommerce' ),
@@ -90,6 +92,10 @@ final class Errors {
 				$missing_fields = array();
 				foreach ( $error['data']['fields'] as $field ) {
 					$missing_fields[] = $names[ $field ];
+				}
+				if ( 'company_mismatch' === $error['code'] ) {
+					/* translators: 1: list of field labels, e.g. "Company and Address", 2: name of the company register, e.g. "GUS" */
+					return sprintf( _n( '%1$s is not corresponding to %2$s.', '%1$s are not corresponding to %2$s.', count( $missing_fields ), 'woolab-ic-dic' ), wc_format_list_of_items( $missing_fields ), $error['data']['service'] ?? '' );
 				}
 				if ( 'sk_mismatch' === $error['code'] ) {
 					/* translators: %s: list of field labels, e.g. "Company and Business ID" */

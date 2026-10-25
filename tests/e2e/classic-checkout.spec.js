@@ -1,7 +1,7 @@
 // Classic (shortcode) checkout: the same rules as the block checkout, on
 // /classic-checkout/ (tests/e2e/mu-plugin.php makes it WooCommerce's checkout page).
 const { test, expect } = require( '@playwright/test' );
-const { fillCart, expectIdentifiersOnce, COMPANY, SHOPPER } = require( './helpers' );
+const { fillCart, expectIdentifiersOnce, COMPANY, PL_COMPANY, SHOPPER } = require( './helpers' );
 
 const row = ( page, id ) => page.locator( `#billing_${ id }_field` );
 const input = ( page, id ) => page.locator( `#billing_${ id }` );
@@ -179,4 +179,37 @@ test( 'a Czech DIČ VIES does not list orders with VAT, and says why', async ( {
 	await page.locator( '#place_order' ).click();
 	await expect( page ).toHaveURL( /order-received/, { timeout: 30000 } );
 	await expect( page.locator( 'body' ) ).toContainText( /12[.,]30/ );
+} );
+
+// A store's own register (woolab_icdic_services, tests/e2e/mu-plugin.php) works like
+// ARES.
+async function withPolishRegister( page, context, baseURL ) {
+	await context.addCookies( [ { name: 'woolab_e2e_service', value: 'pl', url: baseURL } ] );
+	await page.goto( '/classic-checkout/' );
+	await setCountry( page, 'PL' );
+	await asCompany( page );
+}
+
+async function expectPolishCompany( page ) {
+	await expect( input( page, 'company' ) ).toHaveValue( PL_COMPANY.name );
+	await expect( input( page, 'address_1' ) ).toHaveValue( PL_COMPANY.address_1 );
+	await expect( input( page, 'postcode' ) ).toHaveValue( PL_COMPANY.postcode );
+	await expect( input( page, 'city' ) ).toHaveValue( PL_COMPANY.city );
+}
+
+test( 'a national register fills the company and the address from its IČO', async ( { page, context, baseURL } ) => {
+	await withPolishRegister( page, context, baseURL );
+	await input( page, 'ic' ).fill( PL_COMPANY.ico );
+	await input( page, 'ic' ).blur();
+	await expectPolishCompany( page );
+} );
+
+test( 'a national register suggests companies by name', async ( { page, context, baseURL } ) => {
+	await withPolishRegister( page, context, baseURL );
+	await input( page, 'company' ).pressSequentially( 'Polska' );
+	const suggestion = page.locator( '#woolab-ic-dic-suggest li' ).filter( { hasText: PL_COMPANY.name } );
+	await expect( suggestion ).toBeVisible();
+	await suggestion.click();
+	await expect( input( page, 'ic' ) ).toHaveValue( PL_COMPANY.ico );
+	await expectPolishCompany( page );
 } );

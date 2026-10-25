@@ -7,7 +7,7 @@
 /README.md
 /package-lock.json
 /package.json
-/gulpfile.js
+/webpack.config.js
 .DS_Store
 phpunit.cache
 .phpunit.result.cache

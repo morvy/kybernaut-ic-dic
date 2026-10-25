@@ -33,15 +33,8 @@ final class BlocksIntegration implements IntegrationInterface {
 	 * @return void
 	 */
 	public function initialize() {
-		$suffix = SCRIPT_DEBUG ? '' : '.min';
-
-		wp_register_script(
-			'woolab-icdic-blocks-js',
-			WOOLAB_IC_DIC_URL . 'assets/js/blocks' . $suffix . '.js',
-			array_merge( array( 'wp-data', 'wc-blocks-data-store', 'wc-settings', 'wc-blocks-checkout' ), Assets::register_suggest_script() ),
-			WOOLAB_IC_DIC_VERSION,
-			array( 'in_footer' => true )
-		);
+		// wp-data comes from the build (blocks.asset.php); WooCommerce's globals do not.
+		Assets::register_script( 'woolab-icdic-blocks-js', 'blocks', array( 'wc-blocks-data-store', 'wc-settings', 'wc-blocks-checkout' ) );
 	}
 
 	/**

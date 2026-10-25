@@ -25,6 +25,13 @@ final class FinancnaSprava extends AbstractService {
 	}
 
 	/**
+	 * Display name, for the messages.
+	 */
+	public function name(): string {
+		return 'Finančná správa';
+	}
+
+	/**
 	 * Whether the DIČ is in the DIČ list, and under which IČO.
 	 *
 	 * @param string $dic DIČ.

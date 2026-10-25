@@ -2,7 +2,7 @@
 // a company" toggle, the billing country behind "Use same address for billing",
 // the ARES autofill, the live intra-EU VAT exemption, and the order it places.
 const { test, expect } = require( '@playwright/test' );
-const { fillCart, expectIdentifiersOnce, COMPANY, SHOPPER } = require( './helpers' );
+const { fillCart, expectIdentifiersOnce, COMPANY, PL_COMPANY, SHOPPER } = require( './helpers' );
 
 const field = ( page, id ) => page.locator( `#order-kybernaut-${ id }` );
 
@@ -292,4 +292,37 @@ test( 'a Polish NIP without "PL" is a valid tax number, the order with VAT', asy
 	await field( page, 'dic' ).blur();
 	await expect( page.getByText( 'This tax number is valid' ).first() ).toBeVisible( { timeout: 30000 } );
 	expect( await taxTotal( page ) ).not.toBe( '0' );
+} );
+
+// A store's own register (woolab_icdic_services, tests/e2e/mu-plugin.php) works like
+// ARES: in Poland the IČO field is kybernaut/ic-eu.
+async function withPolishRegister( page, context, baseURL ) {
+	await context.addCookies( [ { name: 'woolab_e2e_service', value: 'pl', url: baseURL } ] );
+	await page.goto( '/checkout/' );
+	await setCountry( page, 'PL' );
+	await asCompany( page );
+}
+
+async function expectPolishCompany( page ) {
+	await expect( field( page, 'company' ) ).toHaveValue( PL_COMPANY.name );
+	await expect( page.locator( '#shipping-address_1' ) ).toHaveValue( PL_COMPANY.address_1 );
+	await expect( page.locator( '#shipping-postcode' ) ).toHaveValue( PL_COMPANY.postcode );
+	await expect( page.locator( '#shipping-city' ) ).toHaveValue( PL_COMPANY.city );
+}
+
+test( 'a national register fills the company from its IČO', async ( { page, context, baseURL } ) => {
+	await withPolishRegister( page, context, baseURL );
+	await field( page, 'ic-eu' ).fill( PL_COMPANY.ico );
+	await field( page, 'ic-eu' ).blur();
+	await expectPolishCompany( page );
+} );
+
+test( 'a national register suggests companies by name', async ( { page, context, baseURL } ) => {
+	await withPolishRegister( page, context, baseURL );
+	await field( page, 'company' ).pressSequentially( 'Polska' );
+	const suggestion = page.locator( '#woolab-ic-dic-suggest li' ).filter( { hasText: PL_COMPANY.name } );
+	await expect( suggestion ).toBeVisible();
+	await suggestion.click();
+	await expect( field( page, 'ic-eu' ) ).toHaveValue( PL_COMPANY.ico );
+	await expectPolishCompany( page );
 } );

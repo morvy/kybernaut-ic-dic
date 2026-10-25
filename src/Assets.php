@@ -9,11 +9,14 @@
 
 namespace KybernautIcDic;
 
+use KybernautIcDic\Services\Services;
 use KybernautIcDic\Settings\Flags;
 use KybernautIcDic\Settings\Options;
 
 /**
- * Handles and file names are the 1.x ones.
+ * Handles and file names are the 1.x ones, without the .min copies: the scripts
+ * are built minified (npm run build, webpack.config.js; npm run start for a
+ * readable build), suggest.js bundled into both checkout scripts.
  */
 final class Assets {
 
@@ -31,12 +34,25 @@ final class Assets {
 	}
 
 	/**
-	 * A built file's URL: the minified one unless SCRIPT_DEBUG.
+	 * Register a built script (npm run build, @wordpress/scripts) with the
+	 * dependencies and version from its .asset.php.
 	 *
-	 * @param string $name File name without the extension, e.g. 'public'.
+	 * @param string              $handle Script handle.
+	 * @param string              $name   File name in assets/js without the extension, e.g. 'public'.
+	 * @param string[]            $deps   Dependencies the build does not see (globals: jQuery, wc.*).
+	 * @param array<string,mixed> $args   wp_register_script() arguments.
 	 */
-	private static function js( string $name ): string {
-		return WOOLAB_IC_DIC_URL . 'assets/js/' . $name . ( SCRIPT_DEBUG ? '' : '.min' ) . '.js';
+	public static function register_script( string $handle, string $name, array $deps, array $args = array( 'in_footer' => true ) ): void {
+		$file  = WOOLAB_IC_DIC_ABSPATH . 'assets/js/' . $name . '.asset.php';
+		$asset = is_readable( $file ) ? (array) require $file : array();
+
+		wp_register_script(
+			$handle,
+			WOOLAB_IC_DIC_URL . 'assets/js/' . $name . '.js',
+			array_values( array_unique( array_merge( $deps, (array) ( $asset['dependencies'] ?? array() ) ) ) ),
+			(string) ( $asset['version'] ?? WOOLAB_IC_DIC_VERSION ),
+			$args
+		);
 	}
 
 	/**
@@ -44,34 +60,10 @@ final class Assets {
 	 * colours from Settings → IČO DIČ → Appearance. Shared by both checkouts.
 	 */
 	public static function enqueue_lookup_style(): void {
-		if ( Flags::ares_check() || Flags::sk_check() ) {
+		if ( Services::countries( 'company_lookup' ) ) {
 			wp_enqueue_style( 'woolab-icdic-lookup-css', WOOLAB_IC_DIC_URL . 'assets/css/lookup.css', array(), WOOLAB_IC_DIC_VERSION );
 			wp_add_inline_style( 'woolab-icdic-lookup-css', self::lookup_colors_css() );
 		}
-	}
-
-	/**
-	 * Register suggest.js, shared by both checkout scripts, when the search runs.
-	 *
-	 * @return string[] The handle as a dependency, or none.
-	 */
-	public static function register_suggest_script(): array {
-		if ( ! Flags::suggest() ) {
-			return array();
-		}
-
-		wp_register_script(
-			'woolab-icdic-suggest-js',
-			self::js( 'suggest' ),
-			array(),
-			WOOLAB_IC_DIC_VERSION,
-			array(
-				'in_footer' => true,
-				'strategy'  => 'defer',
-			)
-		);
-
-		return array( 'woolab-icdic-suggest-js' );
 	}
 
 	/**
@@ -84,28 +76,22 @@ final class Assets {
 	public static function script_data( bool $blocks ): array {
 		$data = array(
 			// The lookups (Rest\Routes).
-			'rest'               => woolab_icdic_rest_url(),
-			'l18n_not_valid'     => __( 'Business ID is invalid.', 'woolab-ic-dic' ),
-			'l18n_error'         => __( 'Unexpected error occurred. Try it again.', 'woolab-ic-dic' ),
-			'l18n_ok'            => __( 'Information loaded succesfully from ARES.', 'woolab-ic-dic' ),
-			'l18n_validating'    => __( 'Validating data in ARES.', 'woolab-ic-dic' ),
-			'l18n_ok_sk'         => __( 'Information loaded succesfully from Finančná správa.', 'woolab-ic-dic' ),
-			'l18n_validating_sk' => __( 'Validating data in Finančná správa.', 'woolab-ic-dic' ),
-			'l18n_clear'         => __( 'Clear company details', 'woolab-ic-dic' ),
-			'ares_check'         => Flags::ares_check(),
-			'ares_fill'          => Flags::ares_fill(),
-			'sk_check'           => Flags::sk_check(),
-			'sk_fill'            => Flags::sk_fill(),
-			'ignore_check_fail'  => Flags::ignore_check_fail(),
+			'rest'              => woolab_icdic_rest_url(),
+			'l18n_not_valid'    => __( 'Business ID is invalid.', 'woolab-ic-dic' ),
+			'l18n_error'        => __( 'Unexpected error occurred. Try it again.', 'woolab-ic-dic' ),
+			'l18n_clear'        => __( 'Clear company details', 'woolab-ic-dic' ),
+			'ignore_check_fail' => Flags::ignore_check_fail(),
+			'services'          => self::services(),
 		);
 
 		if ( $blocks ) {
 			// Ask the server to recalculate the exemption as the VAT fields change.
 			$data['vat_exempt'] = Flags::vat_exempt();
-			// Where the IČO field is kybernaut/ic, the one blocks.js checks.
+			// Where the IČO field is kybernaut/ic; elsewhere it is ic_eu, '' when hidden there.
 			$data['ic_home'] = woolab_icdic_ic_home_countries();
 			$data['fields']  = array(
 				'ic'      => 'kybernaut/ic',
+				'ic_eu'   => null === woolab_icdic_ic_countries() ? 'kybernaut/ic-eu' : '',
 				// Country => field: the DIČ field is one per label.
 				'dic'     => woolab_icdic_blocks_dic_fields(),
 				'dic_dph' => 'kybernaut/dic-dph',
@@ -125,6 +111,51 @@ final class Assets {
 	}
 
 	/**
+	 * The countries whose company the checkouts look up or search, from
+	 * Services::map() ('*' not included): country => 'lookup' (a company_lookup
+	 * service), 'search' and 'autofill' (a company_search service), and the status
+	 * texts naming the service.
+	 *
+	 * @return array<string,array<string,bool|string>>
+	 */
+	public static function services(): array {
+		$services = array();
+
+		foreach ( Services::map() as $country => $features ) {
+			$service = $features['company_lookup'][0] ?? $features['company_search'][0] ?? null;
+			if ( '*' === $country || ! $service ) {
+				continue;
+			}
+
+			switch ( $service->id() ) {
+				case 'ares':
+					$validating = __( 'Validating data in ARES.', 'woolab-ic-dic' );
+					$ok         = __( 'Information loaded succesfully from ARES.', 'woolab-ic-dic' );
+					break;
+				case 'financna_sprava':
+					$validating = __( 'Validating data in Finančná správa.', 'woolab-ic-dic' );
+					$ok         = __( 'Information loaded succesfully from Finančná správa.', 'woolab-ic-dic' );
+					break;
+				default:
+					/* translators: %s: name of the company register, e.g. "GUS" */
+					$validating = sprintf( __( 'Validating data in %s.', 'woolab-ic-dic' ), $service->name() );
+					/* translators: %s: name of the company register, e.g. "GUS" */
+					$ok = sprintf( __( 'Information loaded successfully from %s.', 'woolab-ic-dic' ), $service->name() );
+			}
+
+			$services[ $country ] = array(
+				'lookup'     => ! empty( $features['company_lookup'] ),
+				'search'     => ! empty( $features['company_search'] ),
+				'autofill'   => ! empty( $features['company_search'] ),
+				'validating' => $validating,
+				'ok'         => $ok,
+			);
+		}
+
+		return $services;
+	}
+
+	/**
 	 * The classic checkout's script and styles. Only on the checkout form itself:
 	 * the block checkout loads blocks.js through its integration, and the
 	 * order-received and pay pages need neither.
@@ -136,16 +167,16 @@ final class Assets {
 
 		self::enqueue_lookup_style();
 
-		wp_enqueue_script(
+		self::register_script(
 			'woolab-icdic-public-js',
-			self::js( 'public' ),
-			array_merge( array( 'jquery' ), self::register_suggest_script() ),
-			WOOLAB_IC_DIC_VERSION,
+			'public',
+			array( 'jquery' ),
 			array(
 				'in_footer' => true,
 				'strategy'  => 'defer',
 			)
 		);
+		wp_enqueue_script( 'woolab-icdic-public-js' );
 		wp_localize_script( 'woolab-icdic-public-js', 'woolab', self::script_data( false ) );
 
 		// In the head: it hides the toggled fields before the page paints.
@@ -196,7 +227,8 @@ final class Assets {
 		$screen = get_current_screen();
 		if ( $screen && in_array( $screen->id, array( 'shop_order', wc_get_page_screen_id( 'shop-order' ) ), true ) ) {
 			wp_enqueue_style( 'woolab-ic-dic-admin', WOOLAB_IC_DIC_URL . 'assets/css/admin.css', array(), WOOLAB_IC_DIC_VERSION );
-			wp_enqueue_script( 'woolab-ic-dic-admin-edit', self::js( 'admin-edit' ), array( 'jquery' ), WOOLAB_IC_DIC_VERSION, true );
+			self::register_script( 'woolab-ic-dic-admin-edit', 'admin-edit', array( 'jquery' ) );
+			wp_enqueue_script( 'woolab-ic-dic-admin-edit' );
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only picks the screen.
@@ -204,7 +236,8 @@ final class Assets {
 			return;
 		}
 
-		wp_enqueue_script( 'woolab-ic-dic-admin', self::js( 'admin' ), array( 'jquery' ), WOOLAB_IC_DIC_VERSION, true );
+		self::register_script( 'woolab-ic-dic-admin', 'admin', array( 'jquery' ) );
+		wp_enqueue_script( 'woolab-ic-dic-admin' );
 		/* translators: %s: name of the setting, e.g. "CZ: Validate Business ID in ARES" */
 		$needs = __( 'Turn on "%s" first.', 'woolab-ic-dic' );
 		// Why admin.js disables an option: the check it needs is off.

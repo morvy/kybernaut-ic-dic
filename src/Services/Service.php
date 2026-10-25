@@ -21,6 +21,13 @@ interface Service {
 	public function id(): string;
 
 	/**
+	 * Display name, for the messages: 'ARES', 'Finančná správa', 'VIES'.
+	 *
+	 * @since 2.0.0
+	 */
+	public function name(): string;
+
+	/**
 	 * Companies by name, for the checkout suggestions.
 	 *
 	 * @param string $name Three letters or more.

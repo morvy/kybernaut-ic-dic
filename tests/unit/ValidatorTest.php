@@ -3,12 +3,15 @@
 namespace KybernautIcDic\Test;
 
 use Brain\Monkey\Filters;
+use KybernautIcDic\Assets;
 use KybernautIcDic\Services\AbstractService;
+use KybernautIcDic\Services\CallbackService;
 use KybernautIcDic\Services\FinancnaSprava\Importer;
 use KybernautIcDic\Services\Services;
 use KybernautIcDic\Validation\AbstractCheck;
 use KybernautIcDic\Validation\Check;
 use KybernautIcDic\Validation\Context;
+use KybernautIcDic\Validation\Errors;
 use KybernautIcDic\Validation\Result;
 use KybernautIcDic\Validation\Validator;
 
@@ -43,6 +46,10 @@ final class FakeGus extends AbstractService {
 
 	public function id(): string {
 		return 'gus';
+	}
+
+	public function name(): string {
+		return 'GUS';
 	}
 
 	public function lookup_company( string $ico ): ?array {
@@ -230,5 +237,89 @@ class ValidatorTest extends TestCase {
 		$this->assertSame( array( 'CZ', 'SK' ), Services::countries( 'company_lookup' ) ); // ARES is on by default.
 		// No feature uses the lists any more: their import is not needed.
 		$this->assertFalse( Importer::needed() );
+	}
+
+	/**
+	 * A Polish register assigned to lookup and search, knowing one company.
+	 */
+	private static function polish_register(): void {
+		$gus = new CallbackService(
+			'gus',
+			array(
+				'company_lookup' => static fn () => array(
+					'error'      => false,
+					'spolecnost' => 'Test Polska sp. z o.o.',
+					'dic'        => null,
+					'adresa'     => 'ul. Testowa 1',
+					'psc'        => '00-001',
+					'mesto'      => 'Warszawa',
+				),
+				'company_search' => static fn () => array(),
+			),
+			'GUS'
+		);
+		Filters\expectApplied( 'woolab_icdic_services' )->andReturnUsing(
+			static function ( array $map ) use ( $gus ) {
+				$map['PL']['company_lookup'] = array( $gus );
+				$map['PL']['company_search'] = array( $gus );
+				return $map;
+			}
+		);
+	}
+
+	public function testAServiceNamesItself(): void {
+		$this->assertSame( 'GUS', ( new FakeGus() )->name() );
+		$this->assertSame( 'mine', ( new CallbackService( 'mine', array() ) )->name() );
+		$this->assertSame( 'Mine', ( new CallbackService( 'mine', array(), 'Mine' ) )->name() );
+	}
+
+	public function testAutofillWhereACompanySearchIsAssigned(): void {
+		\Brain\Monkey\Functions\when( 'get_option' )->justReturn( array( 'ares_check' => 'yes', 'ares_fill' => 'yes', 'sk_check' => 'yes' ) );
+		self::polish_register();
+
+		$this->assertTrue( Services::autofill( 'CZ' ) );
+		$this->assertFalse( Services::autofill( 'SK' ) ); // sk_fill off.
+		$this->assertTrue( Services::autofill( 'PL' ) );
+		$this->assertFalse( Services::autofill( 'DE' ) );
+	}
+
+	public function testANationalServiceComparesTheCompanyWithAutofill(): void {
+		\Brain\Monkey\Functions\when( 'get_option' )->justReturn( array() );
+		self::polish_register();
+		$input = array(
+			'ic'        => '5260250995',
+			'dic'       => '',
+			'company'   => 'Test Polska sp. z o.o.',
+			'address_1' => 'ul. Testowa 1',
+			'postcode'  => '00-001',
+			'city'      => 'Kraków',
+			'services'  => Services::for_country( 'PL' ),
+		);
+
+		// Without autofill, nothing to compare.
+		$this->assertSame( array(), self::codes( Validator::run( $this->context( $input ) ) ) );
+
+		$errors = Validator::run( $this->context( array( 'autofill' => true ) + $input ) )->errors();
+		$this->assertSame( array( 'company_mismatch' ), array_column( $errors, 'code' ) );
+		$this->assertSame( array( 'city' ), $errors[0]['data']['fields'] );
+		$this->assertSame( 'GUS', $errors[0]['data']['service'] );
+		$this->assertSame( 'billing_ic', Errors::field( $errors[0], 'PL' ) );
+
+		\Brain\Monkey\Functions\when( 'wc_format_list_of_items' )->alias( static fn ( $items ) => implode( ', ', $items ) );
+		$this->assertSame( 'Town / City is not corresponding to GUS.', Errors::message( $errors[0], 'PL' ) );
+	}
+
+	public function testTheScriptDataListsTheCountriesWithACompanyService(): void {
+		\Brain\Monkey\Functions\when( 'get_option' )->justReturn( array( 'ares_check' => 'yes', 'ares_fill' => 'yes', 'sk_check' => 'yes', 'vies_check' => 'yes' ) );
+		self::polish_register();
+
+		$services = Assets::services();
+		$this->assertSame( array( 'CZ', 'SK', 'PL' ), array_keys( $services ) ); // '*' (VIES) is no company service.
+		$this->assertSame( array( true, true, true ), array( $services['CZ']['lookup'], $services['CZ']['search'], $services['CZ']['autofill'] ) );
+		$this->assertSame( array( true, false, false ), array( $services['SK']['lookup'], $services['SK']['search'], $services['SK']['autofill'] ) );
+		$this->assertSame( array( true, true, true ), array( $services['PL']['lookup'], $services['PL']['search'], $services['PL']['autofill'] ) );
+		$this->assertSame( 'Validating data in ARES.', $services['CZ']['validating'] );
+		$this->assertSame( 'Validating data in Finančná správa.', $services['SK']['validating'] );
+		$this->assertSame( 'Information loaded successfully from GUS.', $services['PL']['ok'] );
 	}
 }

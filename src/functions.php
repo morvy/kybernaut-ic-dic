@@ -269,6 +269,7 @@ function woolab_icdic_get_vat_number_country_code( $vat_number ) {
  *     @type bool        vies_check
  *     @type bool        sk_check           Optional. Check SK numbers in the Finančná správa lists.
  *     @type bool        sk_fill            Optional. Compare the SK company and address with those lists.
+ *     @type bool        autofill           Optional. Outside CZ and SK: compare the company and address with the lookup service (Services::autofill()).
  *     @type bool        ignore_check_fail
  *     @type bool        check_country_match
  *     @type bool        require_dic_for_firms A company from this country needs a DIČ (woolab_icdic_dic_required()).

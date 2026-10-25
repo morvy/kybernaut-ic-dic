@@ -14,7 +14,8 @@ use KybernautIcDic\Validation\Result;
 
 /**
  * Errors invalid_business_id (not found), ares_unexpected (no answer), and with the
- * autofill on ares_mismatch / sk_mismatch for what differs from the service.
+ * autofill on ares_mismatch / sk_mismatch / company_mismatch for what differs from
+ * the service.
  */
 final class BusinessIdRegistry extends AbstractCheck {
 
@@ -35,15 +36,29 @@ final class BusinessIdRegistry extends AbstractCheck {
 	/**
 	 * Whether the autofill compares the company with what the service has, and the
 	 * error code when it differs: ARES (CZ) and Finančná správa (SK) with their
-	 * autofill setting on.
+	 * autofill setting on; any other country's lookup service when the checkout
+	 * fills the company in there (the input's 'autofill', Services::autofill()).
 	 *
 	 * @param Context $context The checkout.
-	 * @return array{fill:bool,mismatch:string}
+	 * @return array{fill:bool,mismatch:string,data:array<string,string>}
 	 */
 	public static function comparison( Context $context ): array {
+		$country = $context->country();
+
+		if ( 'CZ' === $country || 'SK' === $country ) {
+			return array(
+				'fill'     => ( 'CZ' === $country && $context->flag( 'ares_fill' ) ) || ( 'SK' === $country && $context->flag( 'sk_fill' ) ),
+				'mismatch' => 'SK' === $country ? 'sk_mismatch' : 'ares_mismatch',
+				'data'     => array(),
+			);
+		}
+
+		$service = $context->service( 'company_lookup' );
+
 		return array(
-			'fill'     => ( 'CZ' === $context->country() && $context->flag( 'ares_fill' ) ) || ( 'SK' === $context->country() && $context->flag( 'sk_fill' ) ),
-			'mismatch' => 'SK' === $context->country() ? 'sk_mismatch' : 'ares_mismatch',
+			'fill'     => $context->flag( 'autofill' ),
+			'mismatch' => 'company_mismatch',
+			'data'     => array( 'service' => $service ? $service->name() : '' ),
 		);
 	}
 
@@ -109,7 +124,7 @@ final class BusinessIdRegistry extends AbstractCheck {
 		}
 
 		if ( $differs ) {
-			$this->error( $result, $register['mismatch'], array( 'fields' => $differs ) );
+			$this->error( $result, $register['mismatch'], array( 'fields' => $differs ) + $register['data'] );
 		}
 	}
 }

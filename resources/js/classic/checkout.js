@@ -1,19 +1,18 @@
-(function($) {
+/**
+ * Classic checkout: the company fields by billing country, the IČO lookup and
+ * autofill, the company name suggestions, through jQuery and WooCommerce's
+ * checkout events. Settings in window.woolab (src/Assets.php script_data()).
+ */
+import { anywhere, lookup, service } from '../shared/lookup';
+import { busy as busyField, debounce } from '../shared/status';
+import suggest from '../shared/suggest';
+
+(function($, woolab) {
 
     var last_ico_value = '';
     // Whether the company fields hold what the last lookup filled in.
     var filled = false;
     var filled_fields = '#billing_ic, #billing_dic, #billing_dic_dph, #billing_postcode, #billing_city, #billing_address_1';
-
-    // Debounce function to replace donetyping
-    function debounce(func, wait) {
-        let timeout;
-        return function (...args) {
-            const context = this;
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, args), wait);
-        };
-    }
 
     $(document).ready(function() {
 
@@ -24,7 +23,7 @@
         });
 
         /** Look the IČO up as it is typed; ares_check() decides whether a register applies */
-        if ( woolab.ares_check || woolab.sk_check ) {
+        if ( anywhere( woolab, 'lookup' ) ) {
             $( document.body ).on( 'focusin', '#billing_ic', function () {
                 last_ico_value = $(this).val();
             });
@@ -83,15 +82,16 @@
         });
 
         /** Company name suggestions: picking one looks its IČO up like a typed one */
-        if ( window.woolabSuggest ) {
-            woolabSuggest({
+        if ( anywhere( woolab, 'search' ) ) {
+            suggest({
                 rest: woolab.rest,
                 selector: '#billing_company',
                 country: function () {
                     return $("#billing_country").val();
                 },
+                // Not where the Business ID is hidden (woolab_icdic_ic_countries()).
                 enabled: function ( country ) {
-                    return country === 'CZ' && woolab.ares_check && woolab.ares_fill || country === 'SK' && woolab.sk_check && woolab.sk_fill;
+                    return !! service( woolab, country ).search && ( ! woolab.ic_countries || woolab.ic_countries.indexOf( country ) !== -1 );
                 },
                 pick: function ( item ) {
                     $('#billing_ic').val( item.ico );
@@ -101,20 +101,19 @@
         }
     });
 
-    /** ARES for CZ, the Slovak lists for SK */
+    /** The billing country's company_lookup service: ARES for CZ, the Slovak lists for SK, a store's own */
     function registry_check() {
-        var country = $("#billing_country").val();
-        return country === 'CZ' && woolab.ares_check || country === 'SK' && woolab.sk_check;
+        return !! service( woolab, $("#billing_country").val() ).lookup;
     }
 
     function registry_fill() {
-        return $("#billing_country").val() === 'SK' ? woolab.sk_fill : woolab.ares_fill;
+        return !! service( woolab, $("#billing_country").val() ).autofill;
     }
 
     /** Show/Hide logic for woolab-ic-dic fields */
     function based_on_country() {
 
-        if (woolab.ares_fill || woolab.sk_fill) {
+        if ( anywhere( woolab, 'autofill' ) ) {
             clear_validation();
         }
 
@@ -135,7 +134,7 @@
         } else {
             $("#billing_dic_dph_field").slideUp();
         }
-        if (woolab.ares_check || woolab.sk_check) {
+        if ( anywhere( woolab, 'lookup' ) ) {
             // The country decides the register, so look the same IČO up again.
             last_ico_value = '';
             enable_ares_check();
@@ -144,7 +143,7 @@
     }
 
     /**
-     * Labels follow the billing country (includes/labels.php): in SK the DIČ is the
+     * Labels follow the billing country (src/Fields/Labels.php): in SK the DIČ is the
      * tax ID, everywhere else it is the VAT ID, and so do their marks
      * (woolab_icdic_field_mark()). Escaped HTML, from PHP.
      */
@@ -205,7 +204,7 @@
 
     /**
      * Green padlock on the company name and IČO (its X clears them), a checkmark
-     * on the rest of what the lookup filled in (src/css/lookup.css).
+     * on the rest of what the lookup filled in (resources/css/lookup.css).
      */
     function mark_filled() {
         unmark_filled();
@@ -282,7 +281,9 @@
             return;
         }
 
-        var sk = $("#billing_country").val() === 'SK';
+        var country = $("#billing_country").val();
+        var sk = country === 'SK';
+        var texts = service( woolab, country );
 
         var value = ico.val();
         if ( value !== last_ico_value ) {
@@ -295,28 +296,18 @@
             woolab_remove_class_wrong( ico_class );
             woolab_remove_class_ok( ico_class );
 
-            if ( (value.length == 7 || value.length == 8) && value.match(/^[0-9]+$/) != null ) {
+            // A Czech or Slovak IČO has 7 or 8 digits; another country's service checks its own numbers.
+            if ( country === 'CZ' || sk ? (value.length == 7 || value.length == 8) && value.match(/^[0-9]+$/) != null : value.length > 0 ) {
 
-                $.ajax({
-                    // GET woolab-ic-dic/v1/lookup (includes/rest.php)
-                    url: woolab.rest + 'lookup',
-                    data: {
-                        'ico' : value,
-                        'country' : sk ? 'SK' : 'CZ',
-                    },
+                var request = {
                     beforeSend: function() {
                         busy( ico, true );
                         ico_class.addClass( 'kbnt-validating' );
-                        ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+( sk ? woolab.l18n_validating_sk : woolab.l18n_validating )+'</span>' );
+                        ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+texts.validating+'</span>' );
                     },
                     success: function ( data ) {
                         ico_class.removeClass( 'kbnt-validating' );
                         if ( data ) {
-                            // The endpoint responds with a JSON content type, so
-                            // jQuery may have parsed the payload already.
-                            if ( typeof data === 'string' ) {
-                                data = JSON.parse( data );
-                            }
 
                             if ( data.unlisted ) {
 
@@ -377,8 +368,8 @@
                                     // Update values
                                     filled = true;
                                     $('#billing_company').val(data.spolecnost);
-                                    // Slovak lists: null when unknown, leave the field to the shopper.
-                                    if ( ! sk || data.dic ) {
+                                    // Slovak lists (and other services): null when unknown, leave the field to the shopper.
+                                    if ( country === 'CZ' || data.dic ) {
                                         $('#billing_dic').val(data.dic).attr('readonly', true);
                                     }
                                     if ( sk && data.dic_dph ) {
@@ -387,7 +378,7 @@
                                     $('#billing_address_1').val(data.adresa).attr('readonly', true);
                                     $('#billing_postcode').val(data.psc).attr('readonly', true);
                                     $('#billing_city').val(data.mesto).attr('readonly', true);
-                                    ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+( sk ? woolab.l18n_ok_sk : woolab.l18n_ok )+'</span>' );
+                                    ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+texts.ok+'</span>' );
 
                                     mark_filled();
 
@@ -424,21 +415,20 @@
                     complete: function () {
                         busy( ico, false );
                     },
-                    error: function( xhr ){
-                        // A refusal with a reason (rate limited, register off) is an
-                        // answer like any other, not a broken connection.
-                        if ( xhr.responseJSON && xhr.responseJSON.error ) {
-                            ico_class.removeClass( 'kbnt-validating' );
-                            this.success( xhr.responseJSON );
-                            return;
-                        }
+                    // A refusal with a reason (rate limited, register off) is an
+                    // answer like any other (shared/lookup.js), not a broken connection.
+                    error: function(){
                         if ( $('.woolab-ic-dic-tip').length == 0 ) {
                             ico.val('');
                             ares_error( ico_class );
                             ico_class.append( '<span role="alert" class="woolab-ic-dic-tip error">'+woolab.l18n_error+'</span>' );
                         }
                     }
-                });
+                };
+
+                // GET woolab-ic-dic/v1/lookup (src/Rest/Routes.php)
+                request.beforeSend();
+                lookup( woolab.rest, value, country ).then( request.success, request.error ).finally( request.complete );
 
             } else {
                 ares_remove_disabled_from_input();
@@ -452,10 +442,11 @@
         }
     }
 
-    /** Spinner in the field while a lookup runs (src/css/lookup.css) */
+    /** Spinner in the field while a lookup runs (resources/css/lookup.css) */
     function busy( input, on ) {
-        input.parent().toggleClass( 'woolab-ic-dic-loading', on );
-        input.attr( 'aria-busy', on ? 'true' : 'false' );
+        if ( input.length ) {
+            busyField( input[0], on );
+        }
     }
 
     function ares_error ( ico_class ) {
@@ -502,4 +493,4 @@
         } );
     }
 
-})( jQuery );
+})( jQuery, window.woolab );

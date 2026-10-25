@@ -84,3 +84,51 @@ if ( ! empty( $_SERVER['HTTP_X_WOOLAB_E2E_RATE_LIMIT'] ) ) {
 		}
 	);
 }
+
+// With the cookie woolab_e2e_service=pl, a store's own Polish register (the
+// woolab_icdic_services filter) for the company lookup and search, knowing one
+// company (tests/e2e/block-checkout.spec.js, classic-checkout.spec.js).
+if ( isset( $_COOKIE['woolab_e2e_service'] ) && 'pl' === $_COOKIE['woolab_e2e_service'] ) {
+	add_filter(
+		'woolab_icdic_services',
+		function ( array $map ) {
+			$company  = array(
+				'ico'      => '5260250995',
+				'name'     => 'Test Polska sp. z o.o.',
+				'address'  => 'ul. Testowa 1',
+				'postcode' => '00-001',
+				'city'     => 'Warszawa',
+			);
+			$register = new \KybernautIcDic\Services\CallbackService(
+				'e2e_pl',
+				array(
+					'company_lookup' => static fn ( $ico ) => $company['ico'] === $ico
+						? array(
+							'error'      => false,
+							'spolecnost' => $company['name'],
+							'ico'        => $company['ico'],
+							'dic'        => null,
+							'adresa'     => $company['address'],
+							'psc'        => $company['postcode'],
+							'mesto'      => $company['city'],
+						)
+						: array( 'error' => 'E2E: not in the register.' ),
+					'company_search' => static fn ( $name ) => false !== stripos( $company['name'], $name )
+						? array(
+							array(
+								'ico'     => $company['ico'],
+								'name'    => $company['name'],
+								'address' => $company['address'] . ', ' . $company['postcode'] . ' ' . $company['city'],
+							),
+						)
+						: array(),
+				),
+				'E2E register'
+			);
+
+			$map['PL']['company_lookup'] = array( $register );
+			$map['PL']['company_search'] = array( $register );
+			return $map;
+		}
+	);
+}

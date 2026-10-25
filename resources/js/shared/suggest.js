@@ -1,17 +1,27 @@
-"use strict";
-
 /**
- * Company name suggestions, shared by public.js (classic checkout) and blocks.js.
+ * Company name suggestions, shared by both checkouts.
  *
- * Typing into the company field lists matching subjects from ARES (CZ) or the Slovak lists (SK)
- * (woolab_icdic_rest_search()); picking one hands its IČO to the caller, whose IČO
- * lookup then fills the company, tax IDs and address as if the IČO had been typed.
- *
- * Loaded before the script that calls it, which passes the REST base URL.
+ * Typing into the company field lists matching subjects from the country's
+ * company_search service (ARES, the Slovak lists, a store's own; GET /search);
+ * picking one hands its IČO to the caller, whose IČO lookup then fills the
+ * company, tax IDs and address as if the IČO had been typed.
  *
  * @since 2.0.0
  */
-window.woolabSuggest = function ( options ) {
+import { search as searchCompanies } from './lookup';
+import { busy } from './status';
+
+/**
+ * Attach the suggestions to the company field.
+ *
+ * @param {Object}   options          Options.
+ * @param {string}   options.rest     REST base URL.
+ * @param {string}   options.selector The company field(s).
+ * @param {Function} options.country  Returns the billing country.
+ * @param {Function} options.enabled  Whether a country is searched.
+ * @param {Function} options.pick     Takes the picked { ico, name, address }.
+ */
+export default function suggest( options ) {
 
 	var list = document.createElement( 'ul' );
 	list.id = 'woolab-ic-dic-suggest';
@@ -27,14 +37,6 @@ window.woolabSuggest = function ( options ) {
 
 	function matches( el ) {
 		return el && el.matches && el.matches( options.selector );
-	}
-
-	/**
-	 * Spinner in the field while a lookup runs (src/css/lookup.css).
-	 */
-	function busy( el, on ) {
-		el.parentNode.classList.toggle( 'woolab-ic-dic-loading', on );
-		el.setAttribute( 'aria-busy', on ? 'true' : 'false' );
 	}
 
 	function close() {
@@ -133,12 +135,7 @@ window.woolabSuggest = function ( options ) {
 		var id = ++request;
 		busy( el, true );
 
-		// GET woolab-ic-dic/v1/search (includes/rest.php)
-		var url = options.rest + 'search' + ( options.rest.indexOf( '?' ) === -1 ? '?' : '&' ) + 'name=' + encodeURIComponent( name ) + '&country=' + encodeURIComponent( country );
-
-		fetch( url ).then( function ( response ) {
-			return response.json();
-		} ).then( function ( data ) {
+		searchCompanies( options.rest, name, country ).then( function ( data ) {
 			// A newer keystroke, or the shopper has left the field.
 			if ( id !== request || document.activeElement !== el ) {
 				return;
@@ -203,4 +200,4 @@ window.woolabSuggest = function ( options ) {
 			choose( Number( li.dataset.index ) );
 		}
 	} );
-};
+}

@@ -120,6 +120,15 @@ final class Context {
 	}
 
 	/**
+	 * The first service of a feature, e.g. to name it in a message.
+	 *
+	 * @param string $feature A Services::FEATURES value.
+	 */
+	public function service( string $feature ): ?Service {
+		return $this->services[ $feature ][0] ?? null;
+	}
+
+	/**
 	 * The company with this IČO (Service::lookup_company()).
 	 *
 	 * @param string $ico IČO.

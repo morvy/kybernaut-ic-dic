@@ -21,8 +21,9 @@ final class CallbackService implements Service {
 	 *
 	 * @param string                 $id        Unique id.
 	 * @param array<string,callable> $callables 'company_search', 'company_lookup', 'tax_id', 'vat_id'.
+	 * @param string                 $name      Display name, the id when empty.
 	 */
-	public function __construct( private readonly string $id, private readonly array $callables ) {
+	public function __construct( private readonly string $id, private readonly array $callables, private readonly string $name = '' ) {
 	}
 
 	/**
@@ -30,6 +31,13 @@ final class CallbackService implements Service {
 	 */
 	public function id(): string {
 		return $this->id;
+	}
+
+	/**
+	 * Display name.
+	 */
+	public function name(): string {
+		return '' !== $this->name ? $this->name : $this->id;
 	}
 
 	/**

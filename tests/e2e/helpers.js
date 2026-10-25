@@ -12,6 +12,10 @@ async function fillCart( page ) {
 // Alza.cz a.s.: a real Czech company in ARES; VIES is answered by mu-plugin.php.
 const COMPANY = { ico: '27082440', dic: 'CZ27082440', name: /Alza\.cz/ };
 
+// The one company of the Polish register tests/e2e/mu-plugin.php plugs in with the
+// cookie woolab_e2e_service=pl.
+const PL_COMPANY = { ico: '5260250995', name: 'Test Polska sp. z o.o.', address_1: 'ul. Testowa 1', postcode: '00-001', city: 'Warszawa' };
+
 const SHOPPER = {
 	email: 'e2e@woolab-test.local',
 	first_name: 'Jana',
@@ -30,4 +34,4 @@ async function expectIdentifiersOnce( page ) {
 	expect( text.match( new RegExp( 'VAT ID: ' + COMPANY.dic, 'g' ) ) ).toHaveLength( 1 );
 }
 
-module.exports = { fillCart, expectIdentifiersOnce, COMPANY, SHOPPER };
+module.exports = { fillCart, expectIdentifiersOnce, COMPANY, PL_COMPANY, SHOPPER };

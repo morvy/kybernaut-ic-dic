@@ -272,6 +272,7 @@ final class Classic {
 			'vies_check'            => Flags::vies_check(),
 			'sk_check'              => Flags::sk_check(),
 			'sk_fill'               => Flags::sk_fill(),
+			'autofill'              => Services::autofill( $country ),
 			'ignore_check_fail'     => Flags::ignore_check_fail(),
 			/**
 			 * Match the VAT number's country prefix to the billing and shipping country.

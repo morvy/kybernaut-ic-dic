@@ -589,6 +589,7 @@ final class Blocks {
 			'vies_check'            => Flags::vies_check(),
 			'sk_check'              => Flags::sk_check(),
 			'sk_fill'               => Flags::sk_fill(),
+			'autofill'              => Services::autofill( $country ),
 			'ignore_check_fail'     => Flags::ignore_check_fail(),
 			/** This filter is documented in src/Checkout/Classic.php */
 			'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),

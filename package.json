@@ -2,21 +2,14 @@
   "name": "woolab-ic-dic",
   "version": "1.0.0",
   "description": "[![plugin version](https://img.shields.io/wordpress/plugin/v/woolab-ic-dic.svg)](https://wordpress.org/plugins/woolab-ic-dic)",
-  "main": "gulpfile.js",
   "devDependencies": {
-    "@babel/core": "^7.13.10",
-    "@babel/preset-env": "^7.23.3",
     "@playwright/test": "1.64.1",
-    "@wp-playground/cli": "3.1.60",
-    "gulp": "^5.0.0",
-    "gulp-autoprefixer": "^8.0.0",
-    "gulp-babel": "^8.0.0",
-    "gulp-clean-css": "^4.3.0",
-    "gulp-group-css-media-queries": "^1.2.2",
-    "gulp-minify": "^3.1.0"
+    "@wordpress/scripts": "36.1.0",
+    "@wp-playground/cli": "3.1.60"
   },
   "scripts": {
-    "test": "js",
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
     "test:e2e": "npm run test:e2e:min && npm run test:e2e:latest",
     "test:e2e:min": "node tests/e2e/stack.js min && playwright test -c tests/e2e/playwright.config.js",
     "test:e2e:latest": "node tests/e2e/stack.js latest && playwright test -c tests/e2e/playwright.config.js",

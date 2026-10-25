@@ -32,7 +32,7 @@
         "wp-cli/i18n-command": "^2.6"
     },
     "scripts": {
-        "i18n:pot": "wp i18n make-pot . languages/woolab-ic-dic.pot --slug=woolab-ic-dic --domain=woolab-ic-dic --skip-js --exclude=assets,deps,docs,node_modules,src,tests,vendor --headers='{\"Report-Msgid-Bugs-To\":\"https://kybernaut.cz/kontakt/\",\"Language-Team\":\"Kybernaut <karolina@kybernaut.cz>\"}'",
+        "i18n:pot": "wp i18n make-pot . languages/woolab-ic-dic.pot --slug=woolab-ic-dic --domain=woolab-ic-dic --skip-js --exclude=assets,deps,docs,node_modules,resources,tests,vendor --headers='{\"Report-Msgid-Bugs-To\":\"https://kybernaut.cz/kontakt/\",\"Language-Team\":\"Kybernaut <karolina@kybernaut.cz>\"}'",
         "i18n:po": "wp i18n update-po languages/woolab-ic-dic.pot languages/",
         "i18n:mo": "wp i18n make-mo languages/",
         "i18n:php": "wp i18n make-php languages/",

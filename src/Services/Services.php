@@ -105,6 +105,16 @@ final class Services {
 	}
 
 	/**
+	 * Whether the checkouts fill the company in for a country: a company_search
+	 * service is assigned (CZ and SK: their autofill settings decide that).
+	 *
+	 * @param string $country Billing country.
+	 */
+	public static function autofill( string $country ): bool {
+		return ! empty( self::for_country( $country )['company_search'] );
+	}
+
+	/**
 	 * Whether a service is assigned to any feature anywhere, e.g. whether the
 	 * Finančná správa lists are needed (their import runs only then).
 	 *

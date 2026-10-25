@@ -1,18 +1,16 @@
-.PHONY: build styles scripts translate version-bump install test release
+.PHONY: build start translate version-bump install test release
 
-# Build all assets
+# Build all assets (@wordpress/scripts, webpack.config.js)
 build:
-	gulp build
+	npm run build
 
-# Individual build tasks
-styles:
-	gulp styles
+# Rebuild on change, unminified
+start:
+	npm run start
 
-scripts:
-	gulp scripts
-
+# Translations: .pot, .po, .mo, .l10n.php
 translate:
-	gulp translate
+	composer i18n
 
 # Install dependencies
 install:

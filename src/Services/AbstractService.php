@@ -8,7 +8,7 @@
 namespace KybernautIcDic\Services;
 
 /**
- * Override the features the service supports.
+ * Override the features the service supports; id() and name() are each service's own.
  */
 abstract class AbstractService implements Service {
 

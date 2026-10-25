@@ -26,6 +26,13 @@ final class Ares extends AbstractService {
 	}
 
 	/**
+	 * Display name, for the messages.
+	 */
+	public function name(): string {
+		return 'ARES';
+	}
+
+	/**
 	 * The company with this IČO.
 	 *
 	 * @param string $ico IČO.

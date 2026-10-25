@@ -1,23 +1,27 @@
-"use strict";
-
 /**
- * Block checkout companion for assets/js/public.js.
+ * Block checkout companion for the classic checkout script (classic/checkout.js).
  *
- * public.js drives the classic checkout through jQuery and #billing_* selectors,
+ * That one drives the classic checkout through jQuery and #billing_* selectors,
  * none of which exist in the block checkout. This does the same two jobs against the
  * WooCommerce Blocks data stores instead: check the Business ID as it is typed, and
- * fill the address from ARES (CZ) or the Finančná správa lists (SK).
+ * fill the address from the country's company service: ARES (CZ), the Finančná
+ * správa lists (SK), a store's own (woolab_icdic_services).
  *
  * Everything else the classic script does is handled elsewhere here: showing and
- * hiding the fields is a `hidden` rule WooCommerce evaluates itself (includes/blocks.php),
+ * hiding the fields is a `hidden` rule WooCommerce evaluates itself (src/Checkout/Blocks.php),
  * and the checkout refresh that revalidates the VAT number happens on its own —
  * WooCommerce pushes changed fields to the draft order and recalculates the totals.
  *
  * @since 2.0.0
  */
+import * as data from '@wordpress/data';
+import { lookup, service } from '../shared/lookup';
+import { busy as busyField, debounce } from '../shared/status';
+import suggest from '../shared/suggest';
+
 ( function ( wp, wc ) {
 
-	if ( ! wp || ! wp.data || ! wc || ! wc.wcBlocksData || ! wc.wcSettings ) {
+	if ( ! wc || ! wc.wcBlocksData || ! wc.wcSettings ) {
 		return;
 	}
 
@@ -33,25 +37,15 @@
 	var VALIDATION = wc.wcBlocksData.VALIDATION_STORE_KEY;
 
 	var IC = woolab.fields.ic;
+	var IC_EU = woolab.fields.ic_eu;
 	var DIC = woolab.fields.dic;
 	var DIC_DPH = woolab.fields.dic_dph;
 	var COMPANY = woolab.fields.company;
 
 	var lastIco = null;
 
-	function debounce( fn, wait ) {
-		var timeout;
-		return function () {
-			var args = arguments;
-			clearTimeout( timeout );
-			timeout = setTimeout( function () {
-				fn.apply( null, args );
-			}, wait );
-		};
-	}
-
 	/**
-	 * The modulo-11 checksum from woolab_icdic_verify_ic() (includes/helpers.php),
+	 * The modulo-11 checksum from Numbers\Checksum::ic() (src/Numbers/Checksum.php),
 	 * so a mistyped Business ID is caught before anything is sent anywhere.
 	 */
 	function verifyIc( ico ) {
@@ -79,8 +73,16 @@
 		return document.querySelector( '[id$="' + field.replace( '/', '-' ) + '"]' );
 	}
 
+	/**
+	 * The IČO field shown for a billing country: kybernaut/ic in the IČO home
+	 * countries, kybernaut/ic-eu elsewhere ('' when there is none).
+	 */
+	function icField( country ) {
+		return woolab.ic_home.indexOf( country ) !== -1 ? IC : IC_EU;
+	}
+
 	function icInput() {
-		return fieldInput( IC );
+		return fieldInput( icField( billingCountry() ) );
 	}
 
 	/**
@@ -92,18 +94,13 @@
 		return input && input.name ? input.name : 'order_' + field;
 	}
 
-	function errorId() {
-		return fieldErrorId( IC );
-	}
-
 	/**
-	 * Spinner in the field while a lookup runs (src/css/lookup.css).
+	 * Spinner in the field while a lookup runs (resources/css/lookup.css).
 	 */
 	function busy( on ) {
 		var input = icInput();
 		if ( input ) {
-			input.parentNode.classList.toggle( 'woolab-ic-dic-loading', on );
-			input.setAttribute( 'aria-busy', on ? 'true' : 'false' );
+			busyField( input, on );
 		}
 	}
 
@@ -112,23 +109,25 @@
 	 * Business ID required (woolab_icdic_fields_mode()) WooCommerce's own "enter a
 	 * valid Business ID" is on it too.
 	 */
-	var ownError = false;
+	var ownError = null;
 
 	function setError( message ) {
-		var id = errorId();
+		var field = icField( billingCountry() );
+		var id = message && field ? fieldErrorId( field ) : null;
 
-		if ( ! message ) {
-			if ( ownError ) {
-				wp.data.dispatch( VALIDATION ).clearValidationError( id );
-			}
-			ownError = false;
+		// Cleared where it was set: the country may show the other IČO field now.
+		if ( ownError && ownError !== id ) {
+			wp.data.dispatch( VALIDATION ).clearValidationError( ownError );
+		}
+		ownError = id;
+
+		if ( ! id ) {
 			return;
 		}
 
 		var errors = {};
 		errors[ id ] = { message: message, hidden: false };
 		wp.data.dispatch( VALIDATION ).setValidationErrors( errors );
-		ownError = true;
 	}
 
 	/**
@@ -148,7 +147,7 @@
 	 * With "use same address for billing" ticked, WooCommerce copies the shipping
 	 * address onto the billing one only when the order is placed. Until then the
 	 * billing country is whatever it was — and the fields' country rules
-	 * (includes/blocks.php) and the server's VAT exemption read it. Keep it in step.
+	 * (src/Checkout/Blocks.php) and the server's VAT exemption read it. Keep it in step.
 	 */
 	function syncBillingCountry() {
 		var customer = wp.data.select( CART ).getCustomerData();
@@ -158,15 +157,6 @@
 		if ( customer.shippingAddress.country && customer.shippingAddress.country !== customer.billingAddress.country ) {
 			wp.data.dispatch( CART ).setBillingAddress( { country: customer.shippingAddress.country } );
 		}
-	}
-
-	/** GET woolab-ic-dic/v1/lookup (includes/rest.php); a 429 carries the same shape. */
-	function lookupAres( ico, country ) {
-		var url = woolab.rest + 'lookup' + ( woolab.rest.indexOf( '?' ) === -1 ? '?' : '&' ) + 'ico=' + encodeURIComponent( ico ) + '&country=' + encodeURIComponent( country );
-
-		return fetch( url ).then( function ( response ) {
-			return response.json();
-		} );
 	}
 
 	/**
@@ -188,7 +178,7 @@
 		var fields = {};
 
 		// The company name is only an address field while the toggle is off; with it
-		// on it lives in this plugin's own section (includes/blocks.php).
+		// on it lives in this plugin's own section (src/Checkout/Blocks.php).
 		if ( COMPANY ) {
 			fields[ COMPANY ] = ares.spolecnost;
 		} else {
@@ -220,21 +210,24 @@
 
 	function check( ico ) {
 
-		// The field is hidden elsewhere and kybernaut/ic-eu has no checks
-		// (woolab_icdic_blocks_fields()), so a stored value is no error there.
-		if ( ! ico || woolab.ic_home.indexOf( billingCountry() ) === -1 ) {
+		// ARES is the Czech register, the Finančná správa lists the Slovak one, a
+		// store may plug in its country's (src/Services/Services.php).
+		var country = billingCountry();
+		var home = woolab.ic_home.indexOf( country ) !== -1;
+		var enabled = !! service( woolab, country ).lookup;
+
+		// Outside the IČO home countries kybernaut/ic-eu has no checks
+		// (Checkout\Blocks::fields()) unless a service looks companies up there, so a
+		// stored value is no error.
+		if ( ! ico || ! ( home || enabled ) ) {
 			setError( null );
 			return;
 		}
 
-		// ARES is the Czech register, the Finančná správa lists the Slovak
-		// one (includes/financna-sprava.php).
-		var country = billingCountry();
-		var sk = country === 'SK' && woolab.sk_check;
-		var enabled = country === 'CZ' && woolab.ares_check || sk;
-
-		// The Slovak lists hold real IČOs that fail the checksum, so they decide those.
-		if ( sk ? ! /^\d{8}$/.test( ico ) : ! verifyIc( ico ) ) {
+		// The Slovak lists hold real IČOs that fail the checksum, so they decide
+		// those; another country's service checks its own numbers.
+		var valid = enabled && country !== 'CZ' ? country !== 'SK' || /^\d{8}$/.test( ico ) : verifyIc( ico );
+		if ( ! valid ) {
 			setError( woolab.l18n_not_valid );
 			return;
 		}
@@ -247,7 +240,7 @@
 
 		busy( true );
 
-		lookupAres( ico, country ).then( function ( ares ) {
+		lookup( woolab.rest, ico, country ).then( function ( ares ) {
 			busy( false );
 
 			if ( ! ares ) {
@@ -272,7 +265,7 @@
 
 			setError( null );
 
-			if ( country === 'SK' ? woolab.sk_fill : woolab.ares_fill ) {
+			if ( service( woolab, country ).autofill ) {
 				fillAddress( ares, country );
 			}
 		} ).catch( function () {
@@ -350,17 +343,19 @@
 
 	// Company name suggestions: picking one sets the IČO, and the subscriber below
 	// looks it up like a typed one.
-	if ( window.woolabSuggest ) {
-		window.woolabSuggest( {
+	if ( Object.keys( woolab.services || {} ).some( function ( country ) {
+		return woolab.services[ country ].search;
+	} ) ) {
+		suggest( {
 			rest: woolab.rest,
 			selector: COMPANY ? '[id$="' + COMPANY.replace( '/', '-' ) + '"]' : '#billing-company, #shipping-company',
 			country: billingCountry,
 			enabled: function ( country ) {
-				return country === 'CZ' && woolab.ares_check && woolab.ares_fill || country === 'SK' && woolab.sk_check && woolab.sk_fill;
+				return !! service( woolab, country ).search && !! icField( country );
 			},
 			pick: function ( item ) {
 				var fields = {};
-				fields[ IC ] = item.ico;
+				fields[ icField( billingCountry() ) ] = item.ico;
 				wp.data.dispatch( CHECKOUT ).setAdditionalFields( fields );
 			}
 		} );
@@ -374,7 +369,7 @@
 	// country that decides whether it is checked in the cart store.
 	wp.data.subscribe( function () {
 		var fields = wp.data.select( CHECKOUT ).getAdditionalFields() || {};
-		var ico = String( fields[ IC ] || '' ).replace( /\s+/g, '' );
+		var ico = String( fields[ icField( billingCountry() ) ] || '' ).replace( /\s+/g, '' );
 		var key = billingCountry() + '|' + ico;
 
 		if ( key === lastIco ) {
@@ -426,4 +421,4 @@
 		}
 	}, CART );
 
-}( window.wp, window.wc ) );
+}( { data }, window.wc ) );

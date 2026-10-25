@@ -40,6 +40,13 @@ final class Vies extends AbstractService {
 	}
 
 	/**
+	 * Display name, for the messages.
+	 */
+	public function name(): string {
+		return 'VIES';
+	}
+
+	/**
 	 * Whether a VAT number is valid. VIES knows no IČO.
 	 *
 	 * @param string $vat VAT number with its prefix.
