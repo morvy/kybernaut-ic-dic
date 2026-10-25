@@ -14,8 +14,17 @@
     function field(key) {
       return $(document.getElementById('woolab_icdic_settings[' + key + ']'));
     }
+
+    // Disabled by the server (a filter decides, an extension is missing): leave as is.
+    var locked = {};
+    $.each(requires, function (option) {
+      locked[option] = field(option).prop('disabled');
+    });
     function update() {
       $.each(requires, function (option, checks) {
+        if (locked[option]) {
+          return;
+        }
         var on = checks.some(function (key) {
           return field(key).prop('checked');
         });

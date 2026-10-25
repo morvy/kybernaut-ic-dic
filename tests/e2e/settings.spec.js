@@ -170,6 +170,25 @@ test( 'a 1.x filter decides over its checkbox, and saving keeps the stored value
 	}
 } );
 
+test( '"Ignore when a check fails" sits next to the checks it needs', async ( { page } ) => {
+	await page.goto( url( 'validation' ) );
+	await setting( page, 'vies_check' ).check();
+	await expect( setting( page, 'ignore_check_fail' ) ).toBeEnabled();
+	await setting( page, 'ignore_check_fail' ).check();
+	await save( page );
+	try {
+		await page.goto( url() );
+		await page.locator( '#mainform :is(input, select):not([type=hidden])' ).first().dispatchEvent( 'change' );
+		await save( page );
+		await page.goto( url( 'validation' ) );
+		await expect( setting( page, 'ignore_check_fail' ) ).toBeChecked();
+	} finally {
+		await page.goto( url( 'validation' ) );
+		await setting( page, 'ignore_check_fail' ).uncheck();
+		await save( page );
+	}
+} );
+
 test( 'a status icon colour reaches the checkout', async ( { page } ) => {
 	await page.goto( url( 'appearance' ) );
 	await setting( page, 'color_ok' ).fill( '#123456' );

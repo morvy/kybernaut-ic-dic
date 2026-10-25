@@ -201,13 +201,6 @@ function woolab_icdic_settings_general() {
 			'default' => 'no',
 			'type'    => 'checkbox',
 		),
-		array(
-			'title'   => __( 'Ignore when ARES, Finančná správa or VIES check fails for technical reasons', 'woolab-ic-dic' ),
-			'desc'    => __( 'Allow the creation of an order if the verification of the Business ID in ARES or Finančná správa, or the VAT number in the European VIES database fails for technical reasons.', 'woolab-ic-dic' ),
-			'id'      => woolab_icdic_settings_id( 'ignore_check_fail' ),
-			'default' => 'no',
-			'type'    => 'checkbox',
-		),
 		array( 'type' => 'sectionend', 'id' => 'woolab_icdic_options' ),
 	);
 }
@@ -304,7 +297,27 @@ function woolab_icdic_settings_validation() {
 			'type'     => 'checkbox',
 			'disabled' => ! wc_tax_enabled(),
 		),
-		array( 'type' => 'sectionend', 'id' => 'woolab_icdic_eu' ),
+		array(
+			'type' => 'sectionend',
+			'id'   => 'woolab_icdic_eu',
+		),
+
+		array(
+			'title' => __( 'When a check fails', 'woolab-ic-dic' ),
+			'type'  => 'title',
+			'id'    => 'woolab_icdic_check_fail',
+		),
+		array(
+			'title'   => __( 'Ignore when ARES, Finančná správa or VIES check fails for technical reasons', 'woolab-ic-dic' ),
+			'desc'    => __( 'Allow the creation of an order if the verification of the Business ID in ARES or Finančná správa, or the VAT number in the European VIES database fails for technical reasons.', 'woolab-ic-dic' ),
+			'id'      => woolab_icdic_settings_id( 'ignore_check_fail' ),
+			'default' => 'no',
+			'type'    => 'checkbox',
+		),
+		array(
+			'type' => 'sectionend',
+			'id'   => 'woolab_icdic_check_fail',
+		),
 	);
 }
 
