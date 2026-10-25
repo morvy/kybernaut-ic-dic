@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-25T21:38:02+00:00\n"
+"POT-Creation-Date: 2026-10-25T23:11:41+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woolab-ic-dic\n"
@@ -122,7 +122,7 @@ msgstr ""
 msgid "Turn on at least one of the ARES, Finančná správa or VIES checks first."
 msgstr ""
 
-#: src/Checkout/Blocks.php:297
+#: src/Checkout/Blocks.php:298
 #: src/Checkout/Classic.php:96
 msgid "Buying as a company"
 msgstr ""
@@ -163,6 +163,8 @@ msgid "VAT ID"
 msgstr ""
 
 #: src/Fields/Labels.php:38
+#: src/Order/AdminScreen.php:275
+#: src/Order/Evidence.php:288
 msgctxt "EU VAT number field"
 msgid "VAT ID"
 msgstr ""
@@ -183,21 +185,181 @@ msgctxt "label before a value"
 msgid "%s: "
 msgstr ""
 
-#: src/Order/AdminScreen.php:197
-#: src/Order/AdminScreen.php:226
-#: src/Order/AdminScreen.php:251
-#: src/Order/AdminScreen.php:284
+#: src/Order/AdminScreen.php:198
+#: src/Order/AdminScreen.php:227
+#: src/Order/AdminScreen.php:252
+#: src/Order/AdminScreen.php:345
 msgid "Verification of VAT number has failed."
 msgstr ""
 
-#: src/Order/AdminScreen.php:250
-#: src/Order/AdminScreen.php:283
+#: src/Order/AdminScreen.php:251
+#: src/Order/AdminScreen.php:344
 msgid "Caution!"
 msgstr ""
 
-#: src/Order/AdminScreen.php:252
-#: src/Order/AdminScreen.php:285
+#: src/Order/AdminScreen.php:253
+#: src/Order/AdminScreen.php:346
 msgid "Please, make sure the VAT number is valid before processing the order."
+msgstr ""
+
+#: src/Order/AdminScreen.php:276
+#: src/Order/Evidence.php:289
+msgid "Result"
+msgstr ""
+
+#: src/Order/AdminScreen.php:277
+#: src/Order/Evidence.php:293
+msgid "Consultation number"
+msgstr ""
+
+#: src/Order/AdminScreen.php:278
+#: src/Order/Evidence.php:292
+msgid "Date of the check"
+msgstr ""
+
+#: src/Order/AdminScreen.php:279
+#: src/Order/Evidence.php:294
+msgid "Name"
+msgstr ""
+
+#: src/Order/AdminScreen.php:280
+#: src/Order/Evidence.php:295
+msgid "Address"
+msgstr ""
+
+#: src/Order/AdminScreen.php:281
+#: src/Order/Evidence.php:290
+msgid "Reason"
+msgstr ""
+
+#: src/Order/AdminScreen.php:282
+#: src/Order/Evidence.php:297
+msgid "IP address country"
+msgstr ""
+
+#: src/Order/AdminScreen.php:283
+#: src/Order/Evidence.php:298
+msgid "Billing country"
+msgstr ""
+
+#: src/Order/AdminScreen.php:284
+#: src/Order/Evidence.php:299
+msgid "VAT ID country"
+msgstr ""
+
+#: src/Order/AdminScreen.php:290
+msgid "VAT ID check"
+msgstr ""
+
+#. translators: 1: VAT ID, 2: reason, e.g. "Reverse charge, without VAT"
+#: src/Order/AdminScreen.php:321
+#, php-format
+msgid "VAT ID %1$s: %2$s."
+msgstr ""
+
+#. translators: %s: VIES consultation number
+#: src/Order/AdminScreen.php:324
+#: src/Order/Evidence.php:260
+#, php-format
+msgid "Consultation number: %s."
+msgstr ""
+
+#: src/Order/Evidence.php:205
+msgid "Validate VAT ID in VIES"
+msgstr ""
+
+#: src/Order/Evidence.php:225
+msgid "Validate VAT ID: the order has no VAT ID."
+msgstr ""
+
+#. translators: %s: VAT ID
+#: src/Order/Evidence.php:264
+#, php-format
+msgid "VAT ID %s is valid in VIES: the order is without VAT (reverse charge), totals recalculated."
+msgstr ""
+
+#. translators: 1: VAT ID, 2: result, e.g. "Valid"
+#: src/Order/Evidence.php:269
+#, php-format
+msgid "VAT ID %1$s checked in VIES (%2$s): the order is with VAT, totals recalculated."
+msgstr ""
+
+#. translators: %s: VAT ID
+#: src/Order/Evidence.php:274
+#, php-format
+msgid "VAT ID %s could not be checked, VIES did not answer: the VAT is left as it was."
+msgstr ""
+
+#. translators: 1: VAT ID, 2: result, e.g. "Valid"
+#: src/Order/Evidence.php:278
+#, php-format
+msgid "VAT ID %1$s checked in VIES (%2$s): the billing country is not an EU VAT country, the VAT is left as it was."
+msgstr ""
+
+#: src/Order/Evidence.php:291
+msgid "Checked"
+msgstr ""
+
+#: src/Order/Evidence.php:296
+msgid "Register"
+msgstr ""
+
+#: src/Order/Evidence.php:300
+msgid "Countries match"
+msgstr ""
+
+#. translators: 1: IP address country, 2: billing country, 3: VAT ID country; "–" for unknown
+#: src/Order/Evidence.php:317
+#, php-format
+msgid "The countries differ (IP address %1$s, billing %2$s, VAT ID %3$s): check that the company orders from the country of its VAT ID. The order and its VAT are not changed."
+msgstr ""
+
+#: src/Order/Evidence.php:327
+msgid "Valid"
+msgstr ""
+
+#: src/Order/Evidence.php:328
+msgid "Invalid"
+msgstr ""
+
+#: src/Order/Evidence.php:329
+msgid "Wrong format"
+msgstr ""
+
+#: src/Order/Evidence.php:330
+msgid "Could not be checked"
+msgstr ""
+
+#: src/Order/Evidence.php:343
+msgid "Reverse charge, without VAT"
+msgstr ""
+
+#: src/Order/Evidence.php:344
+msgid "With VAT"
+msgstr ""
+
+#: src/Order/Evidence.php:345
+msgid "The check failed and was ignored"
+msgstr ""
+
+#: src/Order/Privacy.php:48
+msgid "When you order as a company and enter a VAT ID, we check it in the EU VIES register run by the European Commission (and a Business ID in the Czech ARES or the Slovak Finančná správa register), sending it with our own VAT ID. We keep the result with the order as the proof of the VAT treatment: the VAT ID, the result, the VIES consultation number and date, the name and address VIES returned, and the countries of the billing address, of the VAT ID and of the IP address your order was placed from (the IP address itself is the one stored with every order). It is part of our VAT records, kept for the period the tax law requires, and an erasure request does not delete it. Orders without a VAT ID get none of this."
+msgstr ""
+
+#: src/Order/Privacy.php:62
+#: src/Order/Privacy.php:77
+#: src/Order/Privacy.php:145
+msgid "VAT ID checks"
+msgstr ""
+
+#: src/Order/Privacy.php:130
+msgid "Order number"
+msgstr ""
+
+#. translators: %s: order number
+#: src/Order/Privacy.php:173
+#, php-format
+msgid "The VAT ID check of order %s has been retained: it is part of the VAT records the shop must keep (Directive 2006/112/EC, Art. 242–249)."
 msgstr ""
 
 #: src/Services/Ares/Ares.php:43
@@ -369,185 +531,193 @@ msgid "EU: Validate VAT number in VIES"
 msgstr ""
 
 #: src/Settings/Fields.php:236
-msgid "Business ID only where companies have one"
+msgid "Your VAT ID"
 msgstr ""
 
 #: src/Settings/Fields.php:237
+msgid "The shop's own EU VAT ID, with its country code. VIES then returns a consultation number for every check, kept with the order as the proof of a reverse-charge sale. Leave empty to check without one."
+msgstr ""
+
+#: src/Settings/Fields.php:244
+msgid "Business ID only where companies have one"
+msgstr ""
+
+#: src/Settings/Fields.php:245
 msgid "Hide the Business ID field for billing countries other than Slovakia and the Czech Republic, whose companies have no IČO. The list can be changed with the woolab_icdic_ic_countries filter."
 msgstr ""
 
-#: src/Settings/Fields.php:243
+#: src/Settings/Fields.php:251
 msgid "EU: VAT exempt"
 msgstr ""
 
-#: src/Settings/Fields.php:256
+#: src/Settings/Fields.php:264
 msgid "When a check fails"
 msgstr ""
 
-#: src/Settings/Fields.php:261
+#: src/Settings/Fields.php:269
 msgid "Ignore when ARES, Finančná správa or VIES check fails for technical reasons"
 msgstr ""
 
-#: src/Settings/Fields.php:262
+#: src/Settings/Fields.php:270
 msgid "Allow the creation of an order if the verification of the Business ID in ARES or Finančná správa, or the VAT number in the European VIES database fails for technical reasons."
 msgstr ""
 
-#: src/Settings/Fields.php:292
+#: src/Settings/Fields.php:300
 msgid "Leave empty to follow the theme."
 msgstr ""
 
-#: src/Settings/Fields.php:296
+#: src/Settings/Fields.php:304
 msgid "Status icons"
 msgstr ""
 
-#: src/Settings/Fields.php:298
+#: src/Settings/Fields.php:306
 msgid "The padlock on the company name and Business ID after an autofill, and the checkmark on the other filled-in fields."
 msgstr ""
 
-#: src/Settings/Fields.php:301
+#: src/Settings/Fields.php:309
 msgid "Verified"
 msgstr ""
 
-#: src/Settings/Fields.php:301
+#: src/Settings/Fields.php:309
 msgid "Padlock and checkmark. Leave empty for green (#007518)."
 msgstr ""
 
-#: src/Settings/Fields.php:302
+#: src/Settings/Fields.php:310
 msgid "Clear"
 msgstr ""
 
-#: src/Settings/Fields.php:302
+#: src/Settings/Fields.php:310
 msgid "The X the padlock turns into. Leave empty for red (#a00)."
 msgstr ""
 
-#: src/Settings/Fields.php:309
+#: src/Settings/Fields.php:317
 msgid "Company name suggestions"
 msgstr ""
 
-#: src/Settings/Fields.php:311
+#: src/Settings/Fields.php:319
 msgid "By default the list takes its colours from the company field."
 msgstr ""
 
-#: src/Settings/Fields.php:314
+#: src/Settings/Fields.php:322
 msgid "Background"
 msgstr ""
 
-#: src/Settings/Fields.php:315
+#: src/Settings/Fields.php:323
 msgid "Text"
 msgstr ""
 
-#: src/Settings/Fields.php:316
+#: src/Settings/Fields.php:324
 msgid "Border"
 msgstr ""
 
-#: src/Settings/Fields.php:317
+#: src/Settings/Fields.php:325
 msgid "Highlighted suggestion"
 msgstr ""
 
-#: src/Settings/Fields.php:317
+#: src/Settings/Fields.php:325
 msgid "Leave empty for a tint of the text colour."
 msgstr ""
 
-#: src/Settings/Fields.php:319
+#: src/Settings/Fields.php:327
 msgid "Corner radius"
 msgstr ""
 
-#: src/Settings/Fields.php:320
+#: src/Settings/Fields.php:328
 msgid "In pixels. Leave empty for the company field's own."
 msgstr ""
 
-#: src/Settings/Fields.php:347
+#: src/Settings/Fields.php:355
 msgid "Finančná správa lists"
 msgstr ""
 
-#: src/Settings/Fields.php:349
+#: src/Settings/Fields.php:357
 msgid "The DIČ and IČ DPH lists the Slovak checks run against, imported daily."
 msgstr ""
 
 #. translators: 1: date and time, 2: time span, e.g. "3 hours"
-#: src/Settings/Fields.php:371
+#: src/Settings/Fields.php:379
 #, php-format
 msgid "%1$s (%2$s ago)"
 msgstr ""
 
 #. translators: %s: link to the Validation settings
-#: src/Settings/Fields.php:378
+#: src/Settings/Fields.php:386
 #, php-format
 msgid "Off. Enable \"SK: Validate in Finančná správa\" in %s."
 msgstr ""
 
-#: src/Settings/Fields.php:379
+#: src/Settings/Fields.php:387
 #: src/Settings/SettingsPage.php:37
 msgid "Validation"
 msgstr ""
 
-#: src/Settings/Fields.php:382
+#: src/Settings/Fields.php:390
 msgid "Up to date"
 msgstr ""
 
-#: src/Settings/Fields.php:384
+#: src/Settings/Fields.php:392
 msgid "Older than a week: Slovak numbers are checked in VIES only, or let through when \"ignore when the check fails\" is on."
 msgstr ""
 
-#: src/Settings/Fields.php:386
+#: src/Settings/Fields.php:394
 msgid "Not imported yet"
 msgstr ""
 
-#: src/Settings/Fields.php:389
+#: src/Settings/Fields.php:397
 msgid "Status"
 msgstr ""
 
-#: src/Settings/Fields.php:392
+#: src/Settings/Fields.php:400
 msgid "Last import"
 msgstr ""
 
 #. translators: 1: number of DIČ, 2: number of IČ DPH
-#: src/Settings/Fields.php:394
+#: src/Settings/Fields.php:402
 #, php-format
 msgid "%1$s DIČ, %2$s IČ DPH"
 msgstr ""
 
-#: src/Settings/Fields.php:395
+#: src/Settings/Fields.php:403
 msgid "Database"
 msgstr ""
 
-#: src/Settings/Fields.php:396
+#: src/Settings/Fields.php:404
 msgid "The file is missing, the next import creates it again."
 msgstr ""
 
-#: src/Settings/Fields.php:401
+#: src/Settings/Fields.php:409
 msgid "Last failed import"
 msgstr ""
 
-#: src/Settings/Fields.php:406
+#: src/Settings/Fields.php:414
 msgid "Not scheduled, it is scheduled again on the next page load."
 msgstr ""
 
 #. translators: %s: date and time
-#: src/Settings/Fields.php:409
+#: src/Settings/Fields.php:417
 #, php-format
 msgid "%s, overdue: WP-Cron has not run since. It runs on page visits, or set up a server cron job for wp-cron.php."
 msgstr ""
 
-#: src/Settings/Fields.php:413
+#: src/Settings/Fields.php:421
 msgid "Next import"
 msgstr ""
 
-#: src/Settings/Fields.php:420
+#: src/Settings/Fields.php:428
 msgid "PHP extensions"
 msgstr ""
 
-#: src/Settings/Fields.php:422
+#: src/Settings/Fields.php:430
 msgid "Import now"
 msgstr ""
 
 #. translators: %s: link to WooCommerce → Status → Logs
-#: src/Settings/Fields.php:425
+#: src/Settings/Fields.php:433
 #, php-format
 msgid "Every import is logged in %s."
 msgstr ""
 
-#: src/Settings/Fields.php:426
+#: src/Settings/Fields.php:434
 msgid "WooCommerce → Status → Logs"
 msgstr ""
 

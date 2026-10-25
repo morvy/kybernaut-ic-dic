@@ -15,6 +15,7 @@ namespace KybernautIcDic\Services\Vies;
 
 use KybernautIcDic\Logger;
 use KybernautIcDic\Services\AbstractService;
+use KybernautIcDic\Settings\Options;
 use KybernautIcDicDeps\Ibericode\Vat\Validator as Formats;
 
 /**
@@ -23,6 +24,13 @@ use KybernautIcDicDeps\Ibericode\Vat\Validator as Formats;
 final class Vies extends AbstractService {
 
 	private const URL = 'https://ec.europa.eu/taxation_customs/vies/rest-api/ms/%s/vat/%s';
+
+	/**
+	 * The answers of this request, by cache key.
+	 *
+	 * @var array<string,array{state:string,evidence?:array<string,string>}>
+	 */
+	private static array $answers = array();
 
 	/**
 	 * Logged when VIES cannot answer.
@@ -50,36 +58,41 @@ final class Vies extends AbstractService {
 	 * Whether a VAT number is valid. VIES knows no IČO.
 	 *
 	 * @param string $vat VAT number with its prefix.
-	 * @return array{state:string,ico:string}
+	 * @return array{state:string,ico:string,evidence?:array<string,string>}
 	 */
 	public function validate_vat_id( string $vat ): array {
-		return array(
-			'state' => $this->verify( $vat ),
-			'ico'   => '',
-		);
+		return array( 'ico' => '' ) + $this->check( $vat );
 	}
 
 	/**
-	 * The state of a VAT number.
+	 * The state of a VAT number, and what VIES returned as the proof of the check.
 	 *
-	 * @param string $vat VAT number with its prefix.
+	 * @param string $vat   VAT number with its prefix.
+	 * @param bool   $fresh Ask VIES even when the answer is cached (the admin's "Validate VAT ID").
+	 * @return array{state:string,evidence?:array<string,string>}
 	 */
-	private function verify( string $vat ): string {
+	public function check( string $vat, bool $fresh = false ): array {
 		if ( ! ( new Formats() )->validateVatNumberFormat( $vat ) ) {
-			return 'bad_format';
+			return array( 'state' => 'bad_format' );
 		}
 
+		$requester = self::requester();
+
 		// A valid or invalid answer is stable: cached, as the exemption is decided on
-		// every cart and checkout page load. An outage is asked again next time.
-		$cache_key = 'woolab_icdic_vies_' . md5( $vat );
-		$cached    = get_transient( $cache_key );
-		if ( 'valid' === $cached || 'invalid' === $cached ) {
+		// every cart and checkout page load. An outage is asked again next time, but
+		// not twice in one request (the checkout, then the order's evidence). The whole
+		// answer is cached: the consultation number and its date stay the original's.
+		$cache_key = 'woolab_icdic_vies_' . md5( $vat . '|' . $requester );
+		$cached    = $fresh ? false : ( self::$answers[ $cache_key ] ?? get_transient( $cache_key ) );
+		if ( is_array( $cached ) && isset( $cached['state'] ) ) {
 			return $cached;
 		}
 
-		$state = self::ask( $vat, $this->log_message );
+		$answer = self::ask( $vat, $this->log_message, $requester );
 
-		if ( 'unverifiable' !== $state ) {
+		self::$answers[ $cache_key ] = $answer;
+
+		if ( 'unverifiable' !== $answer['state'] ) {
 			/**
 			 * How long a VIES answer is cached.
 			 *
@@ -88,13 +101,21 @@ final class Vies extends AbstractService {
 			 * @param string $vat   VAT number.
 			 * @param string $state 'valid' or 'invalid'.
 			 */
-			$ttl = apply_filters( 'woolab_icdic_vies_cache_ttl', DAY_IN_SECONDS, $vat, $state );
+			$ttl = apply_filters( 'woolab_icdic_vies_cache_ttl', DAY_IN_SECONDS, $vat, $answer['state'] );
 			if ( $ttl > 0 ) {
-				set_transient( $cache_key, $state, $ttl );
+				set_transient( $cache_key, $answer, $ttl );
 			}
 		}
 
-		return $state;
+		return $answer;
+	}
+
+	/**
+	 * The shop's own VAT ID (Settings → Validation → "Your VAT ID"), sent as the
+	 * requester so that VIES returns a consultation number. '' when not set.
+	 */
+	public static function requester(): string {
+		return strtoupper( (string) preg_replace( '/[^A-Za-z0-9]/', '', Options::get( 'shop_vat_id' ) ) );
 	}
 
 	/**
@@ -102,11 +123,12 @@ final class Vies extends AbstractService {
 	 *
 	 * @param string $vat         VAT number with its prefix.
 	 * @param string $log_message sprintf format with %s for the VAT number, logged when VIES cannot answer.
-	 * @return string 'valid', 'invalid' or 'unverifiable'.
+	 * @param string $requester   The shop's VAT ID with its prefix, '' for none.
+	 * @return array{state:string,evidence?:array<string,string>} State 'valid', 'invalid' or 'unverifiable'.
 	 */
-	public static function ask( string $vat, string $log_message = 'Could not validate VAT number: %s' ): string {
+	public static function ask( string $vat, string $log_message = 'Could not validate VAT number: %s', string $requester = '' ): array {
 		$response = wp_remote_get(
-			self::url( $vat ),
+			self::url( $vat, $requester ),
 			array(
 				'timeout' => 10,
 				// WordPress sends "Connection: close", and the Commission's server then ends
@@ -120,23 +142,41 @@ final class Vies extends AbstractService {
 		);
 		$code     = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 		$body     = is_wp_error( $response ) ? '' : wp_remote_retrieve_body( $response );
-		$state    = self::state( $code, $body );
+		$answer   = self::answer( $code, $body );
 
-		if ( 'unverifiable' === $state ) {
+		if ( 'unverifiable' === $answer['state'] ) {
+			// A mistyped shop VAT ID must not stop every check: ask again without it.
+			if ( '' !== $requester && str_contains( $body, '"INVALID_REQUESTER_INFO"' ) ) {
+				Logger::log( sprintf( 'VIES rejected the shop VAT ID %s as the requester, checking %s without it.', $requester, $vat ) );
+				return self::ask( $vat, $log_message );
+			}
 			Logger::log( sprintf( $log_message, $vat ) );
 			Logger::log( is_wp_error( $response ) ? $response->get_error_message() : $code . ' ' . $body );
 		}
 
-		return $state;
+		return $answer;
 	}
 
 	/**
-	 * The REST URL of a VAT number.
+	 * The REST URL of a VAT number. With a requester VIES answers with a
+	 * consultation number (requestIdentifier).
 	 *
-	 * @param string $vat VAT number with its prefix.
+	 * @param string $vat       VAT number with its prefix.
+	 * @param string $requester The shop's VAT ID with its prefix, '' for none.
 	 */
-	public static function url( string $vat ): string {
-		return sprintf( self::URL, rawurlencode( strtoupper( substr( $vat, 0, 2 ) ) ), rawurlencode( substr( $vat, 2 ) ) );
+	public static function url( string $vat, string $requester = '' ): string {
+		$url = sprintf( self::URL, rawurlencode( strtoupper( substr( $vat, 0, 2 ) ) ), rawurlencode( substr( $vat, 2 ) ) );
+
+		if ( '' === $requester ) {
+			return $url;
+		}
+
+		return $url . '?' . http_build_query(
+			array(
+				'requesterMemberStateCode' => strtoupper( substr( $requester, 0, 2 ) ),
+				'requesterNumber'          => substr( $requester, 2 ),
+			)
+		);
 	}
 
 	/**
@@ -154,7 +194,39 @@ final class Vies extends AbstractService {
 			return ! empty( $data['isValid'] ) ? 'valid' : 'invalid';
 		}
 
-		// MS_UNAVAILABLE, TIMEOUT, SERVICE_UNAVAILABLE, *_MAX_CONCURRENT_REQ or an HTTP error.
+		// MS_UNAVAILABLE, TIMEOUT, SERVICE_UNAVAILABLE, *_MAX_CONCURRENT_REQ,
+		// INVALID_REQUESTER_INFO or an HTTP error.
 		return 'unverifiable';
+	}
+
+	/**
+	 * A VIES REST answer: the state, and for a definitive one the evidence — the
+	 * date of the check, the consultation number (only with a requester, '' without),
+	 * and the name and address VIES returned ('' where it returned "---").
+	 *
+	 * @param int    $code HTTP status, 0 when the request failed.
+	 * @param string $body JSON body.
+	 * @return array{state:string,evidence?:array<string,string>}
+	 */
+	public static function answer( int $code, string $body ): array {
+		$state = self::state( $code, $body );
+
+		if ( 'unverifiable' === $state ) {
+			return array( 'state' => $state );
+		}
+
+		$data  = (array) json_decode( $body, true );
+		$field = static fn ( $key ) => '---' === ( $data[ $key ] ?? '' ) ? '' : trim( (string) ( $data[ $key ] ?? '' ) );
+
+		return array(
+			'state'    => $state,
+			'evidence' => array(
+				'requested_at'        => $field( 'requestDate' ),
+				'consultation_number' => $field( 'requestIdentifier' ),
+				'name'                => $field( 'name' ),
+				'address'             => $field( 'address' ),
+				'source'              => 'vies',
+			),
+		);
 	}
 }

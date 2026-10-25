@@ -31,6 +31,7 @@
 
 namespace KybernautIcDic\Checkout;
 
+use KybernautIcDic\Order\Evidence;
 use KybernautIcDic\Services\Services;
 use KybernautIcDic\Settings\Flags;
 use KybernautIcDic\Validation\Context;
@@ -664,6 +665,11 @@ final class Blocks {
 			'woolab_icdic_vat_check_fail_ignored',
 			WC()->session->get( 'woolab_icdic_vat_check_fail_ignored' ) ? 'yes' : 'no'
 		);
+
+		// The order is created by now, 'is_vat_exempt' set from the cart.
+		if ( $is_submit ) {
+			Evidence::record( $order );
+		}
 	}
 
 	/**

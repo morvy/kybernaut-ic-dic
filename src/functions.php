@@ -414,7 +414,7 @@ function woolab_icdic_ares_search( $name ) {
  * @return string 'valid', 'invalid' or 'unverifiable'.
  */
 function woolab_icdic_vies_rest( $vat, $log_message = 'Could not validate VAT number: %s' ) {
-	return \KybernautIcDic\Services\Vies\Vies::ask( (string) $vat, (string) $log_message );
+	return \KybernautIcDic\Services\Vies\Vies::ask( (string) $vat, (string) $log_message )['state'];
 }
 
 /**

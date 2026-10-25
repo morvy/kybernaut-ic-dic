@@ -39,6 +39,7 @@ final class Options {
 			'sk_check'              => array( 'woolab_icdic_sk_check', 'no' ),
 			'sk_fill'               => array( 'woolab_icdic_sk_fill', 'no' ),
 			'vies_check'            => array( 'woolab_icdic_vies_check', 'yes' ),
+			'shop_vat_id'           => array( null, '' ),
 			'vat_exempt'            => array( 'woolab_icdic_vat_exempt_switch', 'no' ),
 			'ignore_check_fail'     => array( 'woolab_icdic_ignore_check_fail', 'no' ),
 			'disable_dic_dph_match' => array( 'woolab_icdic_disable_dic_dicdph_match', 'no' ),

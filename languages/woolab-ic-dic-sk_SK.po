@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Plugins - Kybernaut IČO DIČ - Stable (latest release)\n"
 "Report-Msgid-Bugs-To: https://kybernaut.cz/kontakt/\n"
+"POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
+"PO-Revision-Date: 2026-10-25T23:11:42+00:00\n"
 "Last-Translator: \n"
 "Language-Team: \n"
+"Language: sk_SK\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
-"PO-Revision-Date: 2026-10-25T21:38:13+00:00\n"
-"Language: sk_SK\n"
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n >= 2 && n <= 4) ? 1 : 2);\n"
 "X-Generator: GlotPress/4.1.0\n"
 
@@ -62,10 +62,7 @@ msgstr "Nastavenia"
 msgid "Business ID is invalid."
 msgstr "IČO nie je platné."
 
-#: src/Assets.php:81
-#: src/Rest/Routes.php:121
-#: src/Rest/Routes.php:197
-#: src/Validation/Errors.php:80
+#: src/Assets.php:81 src/Rest/Routes.php:121 src/Rest/Routes.php:197 src/Validation/Errors.php:80
 msgid "Unexpected error occurred. Try it again."
 msgstr "Nastala neočakávaná chyba. Vyskúšajte to znovu."
 
@@ -107,13 +104,11 @@ msgstr "Informácie boli úspešne načítané z registra %s."
 msgid "Turn on \"%s\" first."
 msgstr "Najprv zapnite „%s“."
 
-#: src/Assets.php:249
-#: src/Settings/Fields.php:173
+#: src/Assets.php:249 src/Settings/Fields.php:173
 msgid "CZ: Validate Business ID in ARES"
 msgstr "CZ: Overiť IČO v ARESe"
 
-#: src/Assets.php:250
-#: src/Settings/Fields.php:197
+#: src/Assets.php:250 src/Settings/Fields.php:197
 msgid "SK: Validate in Finančná správa"
 msgstr "SK: Overiť vo Finančnej správe"
 
@@ -121,8 +116,7 @@ msgstr "SK: Overiť vo Finančnej správe"
 msgid "Turn on at least one of the ARES, Finančná správa or VIES checks first."
 msgstr "Najprv zapnite aspoň jednu z kontrol v ARES, Finančnej správe alebo VIES."
 
-#: src/Checkout/Blocks.php:297
-#: src/Checkout/Classic.php:96
+#: src/Checkout/Blocks.php:298 src/Checkout/Classic.php:96
 msgid "Buying as a company"
 msgstr "Nakupujem na firmu"
 
@@ -142,13 +136,11 @@ msgstr "Toto daňové číslo je platné. Bez kódu krajiny (%s) nie je IČ DPH 
 msgid "This %s is not registered for VAT in the EU (VIES), so the order is placed with VAT."
 msgstr "Toto %s nie je registrované pre DPH v EÚ (VIES), objednávka sa preto vytvorí s DPH."
 
-#: src/Compat/PdfInvoices.php:47
-#: src/Fields/Labels.php:42
+#: src/Compat/PdfInvoices.php:47 src/Fields/Labels.php:42
 msgid "Business ID"
 msgstr "IČO"
 
-#: src/Compat/PdfInvoices.php:50
-#: src/Fields/Labels.php:34
+#: src/Compat/PdfInvoices.php:50 src/Fields/Labels.php:34
 msgid "Tax ID"
 msgstr "DIČ"
 
@@ -161,7 +153,7 @@ msgctxt "Czech DIČ field"
 msgid "VAT ID"
 msgstr "DIČ"
 
-#: src/Fields/Labels.php:38
+#: src/Fields/Labels.php:38 src/Order/AdminScreen.php:275 src/Order/Evidence.php:288
 msgctxt "EU VAT number field"
 msgid "VAT ID"
 msgstr "IČ DPH"
@@ -182,30 +174,171 @@ msgctxt "label before a value"
 msgid "%s: "
 msgstr "%s: "
 
-#: src/Order/AdminScreen.php:197
-#: src/Order/AdminScreen.php:226
-#: src/Order/AdminScreen.php:251
-#: src/Order/AdminScreen.php:284
+#: src/Order/AdminScreen.php:198 src/Order/AdminScreen.php:227 src/Order/AdminScreen.php:252 src/Order/AdminScreen.php:345
 msgid "Verification of VAT number has failed."
 msgstr "Overenie IČ DPH zlyhalo."
 
-#: src/Order/AdminScreen.php:250
-#: src/Order/AdminScreen.php:283
+#: src/Order/AdminScreen.php:251 src/Order/AdminScreen.php:344
 msgid "Caution!"
 msgstr "Pozor!"
 
-#: src/Order/AdminScreen.php:252
-#: src/Order/AdminScreen.php:285
+#: src/Order/AdminScreen.php:253 src/Order/AdminScreen.php:346
 msgid "Please, make sure the VAT number is valid before processing the order."
 msgstr "Pred spracovaním objednávky sa uistite, že IČ DPH je platné."
 
-#: src/Services/Ares/Ares.php:43
-#: src/Services/FinancnaSprava/FinancnaSprava.php:98
+#: src/Order/AdminScreen.php:276 src/Order/Evidence.php:289
+msgid "Result"
+msgstr "Výsledok"
+
+#: src/Order/AdminScreen.php:277 src/Order/Evidence.php:293
+msgid "Consultation number"
+msgstr "Číslo konzultácie"
+
+#: src/Order/AdminScreen.php:278 src/Order/Evidence.php:292
+msgid "Date of the check"
+msgstr "Dátum overenia"
+
+#: src/Order/AdminScreen.php:279 src/Order/Evidence.php:294
+msgid "Name"
+msgstr "Názov"
+
+#: src/Order/AdminScreen.php:280 src/Order/Evidence.php:295
+msgid "Address"
+msgstr "Adresa"
+
+#: src/Order/AdminScreen.php:281 src/Order/Evidence.php:290
+msgid "Reason"
+msgstr "Dôvod"
+
+#: src/Order/AdminScreen.php:282 src/Order/Evidence.php:297
+msgid "IP address country"
+msgstr "Krajina IP adresy"
+
+#: src/Order/AdminScreen.php:283 src/Order/Evidence.php:298
+msgid "Billing country"
+msgstr "Krajina fakturácie"
+
+#: src/Order/AdminScreen.php:284 src/Order/Evidence.php:299
+msgid "VAT ID country"
+msgstr "Krajina IČ DPH"
+
+#: src/Order/AdminScreen.php:290
+msgid "VAT ID check"
+msgstr "Overenie IČ DPH"
+
+#. translators: 1: VAT ID, 2: reason, e.g. "Reverse charge, without VAT"
+#: src/Order/AdminScreen.php:321
+#, php-format
+msgid "VAT ID %1$s: %2$s."
+msgstr "IČ DPH %1$s: %2$s."
+
+#. translators: %s: VIES consultation number
+#: src/Order/AdminScreen.php:324 src/Order/Evidence.php:260
+#, php-format
+msgid "Consultation number: %s."
+msgstr "Číslo konzultácie: %s."
+
+#: src/Order/Evidence.php:205
+msgid "Validate VAT ID in VIES"
+msgstr "Overiť IČ DPH vo VIES"
+
+#: src/Order/Evidence.php:225
+msgid "Validate VAT ID: the order has no VAT ID."
+msgstr "Overenie IČ DPH: objednávka nemá IČ DPH."
+
+#. translators: %s: VAT ID
+#: src/Order/Evidence.php:264
+#, php-format
+msgid "VAT ID %s is valid in VIES: the order is without VAT (reverse charge), totals recalculated."
+msgstr "IČ DPH %s je vo VIES platné: objednávka je bez DPH (prenesenie daňovej povinnosti), sumy prepočítané."
+
+#. translators: 1: VAT ID, 2: result, e.g. "Valid"
+#: src/Order/Evidence.php:269
+#, php-format
+msgid "VAT ID %1$s checked in VIES (%2$s): the order is with VAT, totals recalculated."
+msgstr "IČ DPH %1$s overené vo VIES (%2$s): objednávka je s DPH, sumy prepočítané."
+
+#. translators: %s: VAT ID
+#: src/Order/Evidence.php:274
+#, php-format
+msgid "VAT ID %s could not be checked, VIES did not answer: the VAT is left as it was."
+msgstr "IČ DPH %s sa nepodarilo overiť, VIES neodpovedal: DPH zostáva bez zmeny."
+
+#. translators: 1: VAT ID, 2: result, e.g. "Valid"
+#: src/Order/Evidence.php:278
+#, php-format
+msgid "VAT ID %1$s checked in VIES (%2$s): the billing country is not an EU VAT country, the VAT is left as it was."
+msgstr "IČ DPH %1$s overené vo VIES (%2$s): krajina fakturácie nie je krajinou DPH EÚ, DPH zostáva bez zmeny."
+
+#: src/Order/Evidence.php:291
+msgid "Checked"
+msgstr "Overené"
+
+#: src/Order/Evidence.php:296
+msgid "Register"
+msgstr "Register"
+
+#: src/Order/Evidence.php:300
+msgid "Countries match"
+msgstr "Krajiny sa zhodujú"
+
+#. translators: 1: IP address country, 2: billing country, 3: VAT ID country; "–" for unknown
+#: src/Order/Evidence.php:317
+#, php-format
+msgid "The countries differ (IP address %1$s, billing %2$s, VAT ID %3$s): check that the company orders from the country of its VAT ID. The order and its VAT are not changed."
+msgstr "Krajiny sa líšia (IP adresa %1$s, fakturácia %2$s, IČ DPH %3$s): overte, že firma objednáva z krajiny svojho IČ DPH. Objednávka ani jej DPH sa nemenia."
+
+#: src/Order/Evidence.php:327
+msgid "Valid"
+msgstr "Platné"
+
+#: src/Order/Evidence.php:328
+msgid "Invalid"
+msgstr "Neplatné"
+
+#: src/Order/Evidence.php:329
+msgid "Wrong format"
+msgstr "Nesprávny formát"
+
+#: src/Order/Evidence.php:330
+msgid "Could not be checked"
+msgstr "Nepodarilo sa overiť"
+
+#: src/Order/Evidence.php:343
+msgid "Reverse charge, without VAT"
+msgstr "Prenesenie daňovej povinnosti, bez DPH"
+
+#: src/Order/Evidence.php:344
+msgid "With VAT"
+msgstr "S DPH"
+
+#: src/Order/Evidence.php:345
+msgid "The check failed and was ignored"
+msgstr "Overenie zlyhalo a bolo ignorované"
+
+#: src/Order/Privacy.php:48
+msgid "When you order as a company and enter a VAT ID, we check it in the EU VIES register run by the European Commission (and a Business ID in the Czech ARES or the Slovak Finančná správa register), sending it with our own VAT ID. We keep the result with the order as the proof of the VAT treatment: the VAT ID, the result, the VIES consultation number and date, the name and address VIES returned, and the countries of the billing address, of the VAT ID and of the IP address your order was placed from (the IP address itself is the one stored with every order). It is part of our VAT records, kept for the period the tax law requires, and an erasure request does not delete it. Orders without a VAT ID get none of this."
+msgstr "Keď objednávate ako firma a zadáte IČ DPH, overíme ho v registri EÚ VIES, ktorý prevádzkuje Európska komisia (a IČO v českom registri ARES alebo v zoznamoch Finančnej správy SR), spolu s naším vlastným IČ DPH. Výsledok uchovávame pri objednávke ako doklad o uplatnení DPH: IČ DPH, výsledok, číslo konzultácie VIES a dátum, názov a adresu, ktoré VIES vrátil, a krajinu fakturačnej adresy, IČ DPH a IP adresy, z ktorej bola objednávka odoslaná (samotná IP adresa je tá, ktorá sa ukladá pri každej objednávke). Je súčasťou našich záznamov o DPH, uchováva sa po dobu, ktorú vyžaduje daňový zákon, a žiadosť o vymazanie ho neodstráni. Objednávky bez IČ DPH nič z toho nemajú."
+
+#: src/Order/Privacy.php:62 src/Order/Privacy.php:77 src/Order/Privacy.php:145
+msgid "VAT ID checks"
+msgstr "Overenia IČ DPH"
+
+#: src/Order/Privacy.php:130
+msgid "Order number"
+msgstr "Číslo objednávky"
+
+#. translators: %s: order number
+#: src/Order/Privacy.php:173
+#, php-format
+msgid "The VAT ID check of order %s has been retained: it is part of the VAT records the shop must keep (Directive 2006/112/EC, Art. 242–249)."
+msgstr "Overenie IČ DPH objednávky %s bolo zachované: je súčasťou záznamov o DPH, ktoré musí obchod uchovávať (smernica 2006/112/ES, čl. 242 – 249)."
+
+#: src/Services/Ares/Ares.php:43 src/Services/FinancnaSprava/FinancnaSprava.php:98
 msgid "Business ID not set."
 msgstr "IČO nie je vyplnené."
 
-#: src/Services/Ares/Ares.php:48
-#: src/Services/FinancnaSprava/FinancnaSprava.php:103
+#: src/Services/Ares/Ares.php:48 src/Services/FinancnaSprava/FinancnaSprava.php:103
 msgid "Business ID must be a number and 8 digits long."
 msgstr "IČO musí byť číslo s 8 číslicami."
 
@@ -233,13 +366,11 @@ msgstr "IČO sa vo Finančnej správe nenašlo, vyplňte údaje ručne."
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists are missing or older than a week, so those numbers cannot be validated. The import runs daily through WP-Cron (or run \"wp woolab-icdic sk-import\"); failures are logged in WooCommerce → Status → Logs."
 msgstr "Kybernaut IČO DIČ: zoznamy DIČ / IČ DPH Finančnej správy chýbajú alebo sú staršie ako týždeň, preto tieto čísla nemožno overiť. Import beží denne cez WP-Cron (alebo spustite „wp woolab-icdic sk-import“); chyby sa zapisujú do WooCommerce → Stav → Záznamy."
 
-#: src/Services/FinancnaSprava/Importer.php:80
-#: src/Settings/Fields.php:162
+#: src/Services/FinancnaSprava/Importer.php:80 src/Settings/Fields.php:162
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists cannot be imported, the zip, xmlreader and pdo_sqlite PHP extensions are required (ask your hosting)."
 msgstr "Kybernaut IČO DIČ: zoznamy DIČ / IČ DPH Finančnej správy nemožno importovať, sú potrebné PHP rozšírenia zip, xmlreader a pdo_sqlite (opýtajte sa svojho poskytovateľa hostingu)."
 
-#: src/Services/FinancnaSprava/Importer.php:82
-#: src/Settings/Fields.php:160
+#: src/Services/FinancnaSprava/Importer.php:82 src/Settings/Fields.php:160
 msgid "Import status"
 msgstr "Stav importu"
 
@@ -368,185 +499,192 @@ msgid "EU: Validate VAT number in VIES"
 msgstr "EU: Overiť IČ DPH vo VIES"
 
 #: src/Settings/Fields.php:236
+msgid "Your VAT ID"
+msgstr "Vaše IČ DPH"
+
+#: src/Settings/Fields.php:237
+msgid "The shop's own EU VAT ID, with its country code. VIES then returns a consultation number for every check, kept with the order as the proof of a reverse-charge sale. Leave empty to check without one."
+msgstr "Vlastné IČ DPH obchodu s kódom krajiny. VIES potom ku každému overeniu vráti číslo konzultácie, ktoré sa uloží k objednávke ako doklad o predaji s prenesením daňovej povinnosti. Nechajte prázdne pre overovanie bez neho."
+
+#: src/Settings/Fields.php:244
 msgid "Business ID only where companies have one"
 msgstr "IČO len tam, kde ho firmy majú"
 
-#: src/Settings/Fields.php:237
+#: src/Settings/Fields.php:245
 msgid "Hide the Business ID field for billing countries other than Slovakia and the Czech Republic, whose companies have no IČO. The list can be changed with the woolab_icdic_ic_countries filter."
 msgstr "Skryť pole IČO pre fakturačné krajiny okrem Slovenska a Česka, ktorých firmy IČO nemajú. Zoznam sa dá zmeniť filtrom woolab_icdic_ic_countries."
 
-#: src/Settings/Fields.php:243
+#: src/Settings/Fields.php:251
 msgid "EU: VAT exempt"
 msgstr "EU: Oslobodenie od DPH"
 
-#: src/Settings/Fields.php:256
+#: src/Settings/Fields.php:264
 msgid "When a check fails"
 msgstr "Keď kontrola zlyhá"
 
-#: src/Settings/Fields.php:261
+#: src/Settings/Fields.php:269
 msgid "Ignore when ARES, Finančná správa or VIES check fails for technical reasons"
 msgstr "Ignorovať, keď overenie v ARES, vo Finančnej správe alebo vo VIES zlyhá z technických dôvodov"
 
-#: src/Settings/Fields.php:262
+#: src/Settings/Fields.php:270
 msgid "Allow the creation of an order if the verification of the Business ID in ARES or Finančná správa, or the VAT number in the European VIES database fails for technical reasons."
 msgstr "Umožniť vytvorenie objednávky, ak sa z technických dôvodov nepodarí overiť IČO v ARES alebo vo Finančnej správe, alebo IČ DPH v európskej databáze VIES."
 
-#: src/Settings/Fields.php:292
+#: src/Settings/Fields.php:300
 msgid "Leave empty to follow the theme."
 msgstr "Nechajte prázdne, ak sa má použiť farba témy."
 
-#: src/Settings/Fields.php:296
+#: src/Settings/Fields.php:304
 msgid "Status icons"
 msgstr "Stavové ikony"
 
-#: src/Settings/Fields.php:298
+#: src/Settings/Fields.php:306
 msgid "The padlock on the company name and Business ID after an autofill, and the checkmark on the other filled-in fields."
 msgstr "Zámok pri názve firmy a IČO po automatickom vyplnení a fajka pri ostatných vyplnených poliach."
 
-#: src/Settings/Fields.php:301
+#: src/Settings/Fields.php:309
 msgid "Verified"
 msgstr "Overené"
 
-#: src/Settings/Fields.php:301
+#: src/Settings/Fields.php:309
 msgid "Padlock and checkmark. Leave empty for green (#007518)."
 msgstr "Zámok a fajka. Nechajte prázdne pre zelenú (#007518)."
 
-#: src/Settings/Fields.php:302
+#: src/Settings/Fields.php:310
 msgid "Clear"
 msgstr "Vymazanie"
 
-#: src/Settings/Fields.php:302
+#: src/Settings/Fields.php:310
 msgid "The X the padlock turns into. Leave empty for red (#a00)."
 msgstr "X, na ktoré sa zmení zámok. Nechajte prázdne pre červenú (#a00)."
 
-#: src/Settings/Fields.php:309
+#: src/Settings/Fields.php:317
 msgid "Company name suggestions"
 msgstr "Návrhy názvov firiem"
 
-#: src/Settings/Fields.php:311
+#: src/Settings/Fields.php:319
 msgid "By default the list takes its colours from the company field."
 msgstr "Predvolene preberá zoznam farby z poľa s názvom firmy."
 
-#: src/Settings/Fields.php:314
+#: src/Settings/Fields.php:322
 msgid "Background"
 msgstr "Pozadie"
 
-#: src/Settings/Fields.php:315
+#: src/Settings/Fields.php:323
 msgid "Text"
 msgstr "Text"
 
-#: src/Settings/Fields.php:316
+#: src/Settings/Fields.php:324
 msgid "Border"
 msgstr "Okraj"
 
-#: src/Settings/Fields.php:317
+#: src/Settings/Fields.php:325
 msgid "Highlighted suggestion"
 msgstr "Zvýraznený návrh"
 
-#: src/Settings/Fields.php:317
+#: src/Settings/Fields.php:325
 msgid "Leave empty for a tint of the text colour."
 msgstr "Nechajte prázdne pre odtieň farby textu."
 
-#: src/Settings/Fields.php:319
+#: src/Settings/Fields.php:327
 msgid "Corner radius"
 msgstr "Zaoblenie rohov"
 
-#: src/Settings/Fields.php:320
+#: src/Settings/Fields.php:328
 msgid "In pixels. Leave empty for the company field's own."
 msgstr "V pixeloch. Nechajte prázdne pre zaoblenie poľa s názvom firmy."
 
-#: src/Settings/Fields.php:347
+#: src/Settings/Fields.php:355
 msgid "Finančná správa lists"
 msgstr "Zoznamy Finančnej správy"
 
-#: src/Settings/Fields.php:349
+#: src/Settings/Fields.php:357
 msgid "The DIČ and IČ DPH lists the Slovak checks run against, imported daily."
 msgstr "Zoznamy DIČ a IČ DPH, podľa ktorých sa overujú slovenské údaje, importované denne."
 
 #. translators: 1: date and time, 2: time span, e.g. "3 hours"
-#: src/Settings/Fields.php:371
+#: src/Settings/Fields.php:379
 #, php-format
 msgid "%1$s (%2$s ago)"
 msgstr "%1$s (uplynulo: %2$s)"
 
 #. translators: %s: link to the Validation settings
-#: src/Settings/Fields.php:378
+#: src/Settings/Fields.php:386
 #, php-format
 msgid "Off. Enable \"SK: Validate in Finančná správa\" in %s."
 msgstr "Vypnuté. Zapnite „SK: Overiť vo Finančnej správe“ v časti %s."
 
-#: src/Settings/Fields.php:379
-#: src/Settings/SettingsPage.php:37
+#: src/Settings/Fields.php:387 src/Settings/SettingsPage.php:37
 msgid "Validation"
 msgstr "Overovanie"
 
-#: src/Settings/Fields.php:382
+#: src/Settings/Fields.php:390
 msgid "Up to date"
 msgstr "Aktuálne"
 
-#: src/Settings/Fields.php:384
+#: src/Settings/Fields.php:392
 msgid "Older than a week: Slovak numbers are checked in VIES only, or let through when \"ignore when the check fails\" is on."
 msgstr "Staršie ako týždeň: slovenské čísla sa overujú len vo VIES, alebo sa prijmú, ak je zapnuté „ignorovať, keď overenie zlyhá“."
 
-#: src/Settings/Fields.php:386
+#: src/Settings/Fields.php:394
 msgid "Not imported yet"
 msgstr "Zatiaľ neimportované"
 
-#: src/Settings/Fields.php:389
+#: src/Settings/Fields.php:397
 msgid "Status"
 msgstr "Stav"
 
-#: src/Settings/Fields.php:392
+#: src/Settings/Fields.php:400
 msgid "Last import"
 msgstr "Posledný import"
 
 #. translators: 1: number of DIČ, 2: number of IČ DPH
-#: src/Settings/Fields.php:394
+#: src/Settings/Fields.php:402
 #, php-format
 msgid "%1$s DIČ, %2$s IČ DPH"
 msgstr "%1$s DIČ, %2$s IČ DPH"
 
-#: src/Settings/Fields.php:395
+#: src/Settings/Fields.php:403
 msgid "Database"
 msgstr "Databáza"
 
-#: src/Settings/Fields.php:396
+#: src/Settings/Fields.php:404
 msgid "The file is missing, the next import creates it again."
 msgstr "Súbor chýba, najbližší import ho vytvorí znova."
 
-#: src/Settings/Fields.php:401
+#: src/Settings/Fields.php:409
 msgid "Last failed import"
 msgstr "Posledný neúspešný import"
 
-#: src/Settings/Fields.php:406
+#: src/Settings/Fields.php:414
 msgid "Not scheduled, it is scheduled again on the next page load."
 msgstr "Nenaplánované, naplánuje sa znova pri najbližšom načítaní stránky."
 
 #. translators: %s: date and time
-#: src/Settings/Fields.php:409
+#: src/Settings/Fields.php:417
 #, php-format
 msgid "%s, overdue: WP-Cron has not run since. It runs on page visits, or set up a server cron job for wp-cron.php."
 msgstr "%s, oneskorené: WP-Cron odvtedy nebežal. Spúšťa sa pri návštevách stránky, alebo nastavte serverový cron pre wp-cron.php."
 
-#: src/Settings/Fields.php:413
+#: src/Settings/Fields.php:421
 msgid "Next import"
 msgstr "Ďalší import"
 
-#: src/Settings/Fields.php:420
+#: src/Settings/Fields.php:428
 msgid "PHP extensions"
 msgstr "Rozšírenia PHP"
 
-#: src/Settings/Fields.php:422
+#: src/Settings/Fields.php:430
 msgid "Import now"
 msgstr "Importovať teraz"
 
 #. translators: %s: link to WooCommerce → Status → Logs
-#: src/Settings/Fields.php:425
+#: src/Settings/Fields.php:433
 #, php-format
 msgid "Every import is logged in %s."
 msgstr "Každý import sa zapisuje do %s."
 
-#: src/Settings/Fields.php:426
+#: src/Settings/Fields.php:434
 msgid "WooCommerce → Status → Logs"
 msgstr "WooCommerce → Stav → Záznamy"
 
@@ -568,8 +706,7 @@ msgstr "Vzhľad"
 msgid "Finančná správa"
 msgstr "Finančná správa"
 
-#: src/Validation/Errors.php:70
-#: src/Validation/Errors.php:73
+#: src/Validation/Errors.php:70 src/Validation/Errors.php:73
 msgid "Enter a valid Business ID"
 msgstr "Zadajte platnú hodnotu IČO."
 
@@ -622,8 +759,7 @@ msgid "%s has not a correct format."
 msgstr "%s nemá správny formát."
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: src/Validation/Errors.php:126
-#: src/Validation/Errors.php:134
+#: src/Validation/Errors.php:126 src/Validation/Errors.php:134
 #, php-format
 msgctxt "field label"
 msgid "Enter a valid %s."

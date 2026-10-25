@@ -233,6 +233,14 @@ final class Fields {
 				'type'    => 'checkbox',
 			),
 			array(
+				'title'       => __( 'Your VAT ID', 'woolab-ic-dic' ),
+				'desc'        => __( 'The shop\'s own EU VAT ID, with its country code. VIES then returns a consultation number for every check, kept with the order as the proof of a reverse-charge sale. Leave empty to check without one.', 'woolab-ic-dic' ),
+				'id'          => self::id( 'shop_vat_id' ),
+				'default'     => '',
+				'type'        => 'text',
+				'placeholder' => 'SK2020317068',
+			),
+			array(
 				'title'   => __( 'Business ID only where companies have one', 'woolab-ic-dic' ),
 				'desc'    => __( 'Hide the Business ID field for billing countries other than Slovakia and the Czech Republic, whose companies have no IČO. The list can be changed with the woolab_icdic_ic_countries filter.', 'woolab-ic-dic' ),
 				'id'      => self::id( 'ic_countries_only' ),

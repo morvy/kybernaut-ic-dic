@@ -25,10 +25,22 @@ add_filter(
 		if ( ! str_starts_with( $url, 'https://ec.europa.eu/taxation_customs/vies/rest-api/ms/' ) ) {
 			return $response;
 		}
-		$valid = str_ends_with( $url, '/ms/CZ/vat/27082440' );
+		$valid = str_ends_with( (string) wp_parse_url( $url, PHP_URL_PATH ), '/ms/CZ/vat/27082440' );
+		$query = array();
+		wp_parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query );
+		// As the live API: a consultation number only when the request names the
+		// shop's VAT ID as the requester, the name and address of a valid number.
+		$answer = array(
+			'isValid'           => $valid,
+			'requestDate'       => gmdate( 'Y-m-d\TH:i:s.000\Z' ),
+			'userError'         => $valid ? 'VALID' : 'INVALID',
+			'name'              => $valid ? 'Alza.cz a.s.' : '---',
+			'address'           => $valid ? "Jankovcova 1522/53\nPRAHA 7 - HOLEŠOVICE\n170 00  PRAHA 7" : '---',
+			'requestIdentifier' => empty( $query['requesterNumber'] ) ? '' : 'WAPIE2E' . strtoupper( substr( md5( $url . microtime() ), 0, 9 ) ),
+		);
 		return array(
 			'headers'  => array( 'content-type' => 'application/json' ),
-			'body'     => wp_json_encode( array( 'isValid' => $valid, 'userError' => $valid ? 'VALID' : 'INVALID' ) ),
+			'body'     => wp_json_encode( $answer ),
 			'response' => array( 'code' => 200, 'message' => 'OK' ),
 			'cookies'  => array(),
 			'filename' => null,

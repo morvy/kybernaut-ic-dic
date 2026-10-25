@@ -62,10 +62,14 @@ interface Service {
 	 * Whether a VAT number is valid, and to which IČO.
 	 *
 	 * @param string $vat VAT number with its country prefix (Greece: EL), no spaces.
-	 * @return array{state:string,ico:string}|null State 'valid', 'bad_format', 'invalid',
-	 *         'unverifiable', or 'unlisted' when this service does not know the number and
-	 *         the next one assigned should be asked. Null when it does not validate VAT
-	 *         numbers.
+	 * @return array{state:string,ico:string,evidence?:array<string,string>}|null State 'valid',
+	 *         'bad_format', 'invalid', 'unverifiable', or 'unlisted' when this service does
+	 *         not know the number and the next one assigned should be asked. Null when it
+	 *         does not validate VAT numbers. Optional 'evidence', the proof of the check
+	 *         kept with the order (Order\Evidence): 'requested_at' (the register's date of
+	 *         the check, ISO 8601), 'consultation_number' (VIES requestIdentifier, '' when
+	 *         none), 'name', 'address' (as the register returned them) and 'source' (the
+	 *         service id) — @since 2.0.0.
 	 */
 	public function validate_vat_id( string $vat ): ?array;
 }

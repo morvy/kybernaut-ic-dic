@@ -2,17 +2,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kybernaut IC DIC 2.0.0\n"
 "Report-Msgid-Bugs-To: https://kybernaut.cz/kontakt/\n"
+"POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
+"PO-Revision-Date: 2026-10-25T23:11:42+00:00\n"
 "Last-Translator: Peter Morvay <moped@jepan.sk>\n"
 "Language-Team: Magyar\n"
+"Language: hu_HU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
-"PO-Revision-Date: 2026-10-25T21:38:13+00:00\n"
-"Language: hu_HU\n"
-"X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: woolab-ic-dic\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: woolab-ic-dic\n"
+"X-Generator: WP-CLI 2.12.0\n"
 
 #. Plugin Name of the plugin
 #: woolab-ic-dic.php:3
@@ -63,10 +63,7 @@ msgstr "Beállítások"
 msgid "Business ID is invalid."
 msgstr "A cégjegyzékszám érvénytelen."
 
-#: src/Assets.php:81
-#: src/Rest/Routes.php:121
-#: src/Rest/Routes.php:197
-#: src/Validation/Errors.php:80
+#: src/Assets.php:81 src/Rest/Routes.php:121 src/Rest/Routes.php:197 src/Validation/Errors.php:80
 msgid "Unexpected error occurred. Try it again."
 msgstr "Váratlan hiba történt. Próbáld újra."
 
@@ -108,13 +105,11 @@ msgstr "Az adatok sikeresen betöltődtek a(z) %s rendszeréből."
 msgid "Turn on \"%s\" first."
 msgstr "Előbb kapcsold be ezt: „%s”."
 
-#: src/Assets.php:249
-#: src/Settings/Fields.php:173
+#: src/Assets.php:249 src/Settings/Fields.php:173
 msgid "CZ: Validate Business ID in ARES"
 msgstr "CZ: IČO ellenőrzése az ARES-ben"
 
-#: src/Assets.php:250
-#: src/Settings/Fields.php:197
+#: src/Assets.php:250 src/Settings/Fields.php:197
 msgid "SK: Validate in Finančná správa"
 msgstr "SK: Ellenőrzés a Finančná správa alapján"
 
@@ -122,8 +117,7 @@ msgstr "SK: Ellenőrzés a Finančná správa alapján"
 msgid "Turn on at least one of the ARES, Finančná správa or VIES checks first."
 msgstr "Előbb kapcsold be legalább az egyiket az ARES, a Finančná správa vagy a VIES ellenőrzések közül."
 
-#: src/Checkout/Blocks.php:297
-#: src/Checkout/Classic.php:96
+#: src/Checkout/Blocks.php:298 src/Checkout/Classic.php:96
 msgid "Buying as a company"
 msgstr "Vásárlás cégként"
 
@@ -143,13 +137,11 @@ msgstr "Ez az adószám érvényes. Országkód (%s) nélkül azonban nem közö
 msgid "This %s is not registered for VAT in the EU (VIES), so the order is placed with VAT."
 msgstr "A(z) %s nem szerepel az uniós ÁFA-nyilvántartásban (VIES), ezért a rendelés ÁFA-t tartalmaz."
 
-#: src/Compat/PdfInvoices.php:47
-#: src/Fields/Labels.php:42
+#: src/Compat/PdfInvoices.php:47 src/Fields/Labels.php:42
 msgid "Business ID"
 msgstr "Cégjegyzékszám"
 
-#: src/Compat/PdfInvoices.php:50
-#: src/Fields/Labels.php:34
+#: src/Compat/PdfInvoices.php:50 src/Fields/Labels.php:34
 msgid "Tax ID"
 msgstr "Adószám"
 
@@ -162,7 +154,7 @@ msgctxt "Czech DIČ field"
 msgid "VAT ID"
 msgstr "Közösségi adószám"
 
-#: src/Fields/Labels.php:38
+#: src/Fields/Labels.php:38 src/Order/AdminScreen.php:275 src/Order/Evidence.php:288
 msgctxt "EU VAT number field"
 msgid "VAT ID"
 msgstr "Közösségi adószám"
@@ -183,30 +175,171 @@ msgctxt "label before a value"
 msgid "%s: "
 msgstr "%s: "
 
-#: src/Order/AdminScreen.php:197
-#: src/Order/AdminScreen.php:226
-#: src/Order/AdminScreen.php:251
-#: src/Order/AdminScreen.php:284
+#: src/Order/AdminScreen.php:198 src/Order/AdminScreen.php:227 src/Order/AdminScreen.php:252 src/Order/AdminScreen.php:345
 msgid "Verification of VAT number has failed."
 msgstr "A közösségi adószám ellenőrzése nem sikerült."
 
-#: src/Order/AdminScreen.php:250
-#: src/Order/AdminScreen.php:283
+#: src/Order/AdminScreen.php:251 src/Order/AdminScreen.php:344
 msgid "Caution!"
 msgstr "Figyelem!"
 
-#: src/Order/AdminScreen.php:252
-#: src/Order/AdminScreen.php:285
+#: src/Order/AdminScreen.php:253 src/Order/AdminScreen.php:346
 msgid "Please, make sure the VAT number is valid before processing the order."
 msgstr "A rendelés feldolgozása előtt győződj meg róla, hogy a közösségi adószám érvényes."
 
-#: src/Services/Ares/Ares.php:43
-#: src/Services/FinancnaSprava/FinancnaSprava.php:98
+#: src/Order/AdminScreen.php:276 src/Order/Evidence.php:289
+msgid "Result"
+msgstr "Eredmény"
+
+#: src/Order/AdminScreen.php:277 src/Order/Evidence.php:293
+msgid "Consultation number"
+msgstr "Konzultációs szám"
+
+#: src/Order/AdminScreen.php:278 src/Order/Evidence.php:292
+msgid "Date of the check"
+msgstr "Az ellenőrzés dátuma"
+
+#: src/Order/AdminScreen.php:279 src/Order/Evidence.php:294
+msgid "Name"
+msgstr "Név"
+
+#: src/Order/AdminScreen.php:280 src/Order/Evidence.php:295
+msgid "Address"
+msgstr "Cím"
+
+#: src/Order/AdminScreen.php:281 src/Order/Evidence.php:290
+msgid "Reason"
+msgstr "Indok"
+
+#: src/Order/AdminScreen.php:282 src/Order/Evidence.php:297
+msgid "IP address country"
+msgstr "Az IP-cím országa"
+
+#: src/Order/AdminScreen.php:283 src/Order/Evidence.php:298
+msgid "Billing country"
+msgstr "Számlázási ország"
+
+#: src/Order/AdminScreen.php:284 src/Order/Evidence.php:299
+msgid "VAT ID country"
+msgstr "A közösségi adószám országa"
+
+#: src/Order/AdminScreen.php:290
+msgid "VAT ID check"
+msgstr "Közösségi adószám ellenőrzése"
+
+#. translators: 1: VAT ID, 2: reason, e.g. "Reverse charge, without VAT"
+#: src/Order/AdminScreen.php:321
+#, php-format
+msgid "VAT ID %1$s: %2$s."
+msgstr "Közösségi adószám %1$s: %2$s."
+
+#. translators: %s: VIES consultation number
+#: src/Order/AdminScreen.php:324 src/Order/Evidence.php:260
+#, php-format
+msgid "Consultation number: %s."
+msgstr "Konzultációs szám: %s."
+
+#: src/Order/Evidence.php:205
+msgid "Validate VAT ID in VIES"
+msgstr "Közösségi adószám ellenőrzése a VIES-ben"
+
+#: src/Order/Evidence.php:225
+msgid "Validate VAT ID: the order has no VAT ID."
+msgstr "Közösségi adószám ellenőrzése: a rendelésen nincs közösségi adószám."
+
+#. translators: %s: VAT ID
+#: src/Order/Evidence.php:264
+#, php-format
+msgid "VAT ID %s is valid in VIES: the order is without VAT (reverse charge), totals recalculated."
+msgstr "A(z) %s közösségi adószám érvényes a VIES-ben: a rendelés ÁFA nélküli (fordított adózás), az összegek újraszámolva."
+
+#. translators: 1: VAT ID, 2: result, e.g. "Valid"
+#: src/Order/Evidence.php:269
+#, php-format
+msgid "VAT ID %1$s checked in VIES (%2$s): the order is with VAT, totals recalculated."
+msgstr "A(z) %1$s közösségi adószám ellenőrizve a VIES-ben (%2$s): a rendelés ÁFÁ-s, az összegek újraszámolva."
+
+#. translators: %s: VAT ID
+#: src/Order/Evidence.php:274
+#, php-format
+msgid "VAT ID %s could not be checked, VIES did not answer: the VAT is left as it was."
+msgstr "A(z) %s közösségi adószámot nem sikerült ellenőrizni, a VIES nem válaszolt: az ÁFA változatlan marad."
+
+#. translators: 1: VAT ID, 2: result, e.g. "Valid"
+#: src/Order/Evidence.php:278
+#, php-format
+msgid "VAT ID %1$s checked in VIES (%2$s): the billing country is not an EU VAT country, the VAT is left as it was."
+msgstr "A(z) %1$s közösségi adószám ellenőrizve a VIES-ben (%2$s): a számlázási ország nem uniós ÁFA-ország, az ÁFA változatlan marad."
+
+#: src/Order/Evidence.php:291
+msgid "Checked"
+msgstr "Ellenőrizve"
+
+#: src/Order/Evidence.php:296
+msgid "Register"
+msgstr "Nyilvántartás"
+
+#: src/Order/Evidence.php:300
+msgid "Countries match"
+msgstr "Az országok egyeznek"
+
+#. translators: 1: IP address country, 2: billing country, 3: VAT ID country; "–" for unknown
+#: src/Order/Evidence.php:317
+#, php-format
+msgid "The countries differ (IP address %1$s, billing %2$s, VAT ID %3$s): check that the company orders from the country of its VAT ID. The order and its VAT are not changed."
+msgstr "Az országok eltérnek (IP-cím %1$s, számlázás %2$s, közösségi adószám %3$s): ellenőrizd, hogy a cég a közösségi adószáma országából rendel-e. A rendelés és az ÁFA nem változik."
+
+#: src/Order/Evidence.php:327
+msgid "Valid"
+msgstr "Érvényes"
+
+#: src/Order/Evidence.php:328
+msgid "Invalid"
+msgstr "Érvénytelen"
+
+#: src/Order/Evidence.php:329
+msgid "Wrong format"
+msgstr "Hibás formátum"
+
+#: src/Order/Evidence.php:330
+msgid "Could not be checked"
+msgstr "Nem sikerült ellenőrizni"
+
+#: src/Order/Evidence.php:343
+msgid "Reverse charge, without VAT"
+msgstr "Fordított adózás, ÁFA nélkül"
+
+#: src/Order/Evidence.php:344
+msgid "With VAT"
+msgstr "ÁFÁ-val"
+
+#: src/Order/Evidence.php:345
+msgid "The check failed and was ignored"
+msgstr "Az ellenőrzés nem sikerült, és figyelmen kívül maradt"
+
+#: src/Order/Privacy.php:48
+msgid "When you order as a company and enter a VAT ID, we check it in the EU VIES register run by the European Commission (and a Business ID in the Czech ARES or the Slovak Finančná správa register), sending it with our own VAT ID. We keep the result with the order as the proof of the VAT treatment: the VAT ID, the result, the VIES consultation number and date, the name and address VIES returned, and the countries of the billing address, of the VAT ID and of the IP address your order was placed from (the IP address itself is the one stored with every order). It is part of our VAT records, kept for the period the tax law requires, and an erasure request does not delete it. Orders without a VAT ID get none of this."
+msgstr "Ha cégként rendelsz és megadod a közösségi adószámodat, ellenőrizzük az Európai Bizottság által működtetett uniós VIES-nyilvántartásban (a cégjegyzékszámot pedig a cseh ARES-ben vagy a szlovák Finančná správa listáiban), a saját közösségi adószámunkkal együtt. Az eredményt a rendeléssel együtt megőrizzük az ÁFA-kezelés bizonyítékaként: a közösségi adószámot, az eredményt, a VIES konzultációs számát és dátumát, a VIES által visszaadott nevet és címet, valamint a számlázási cím, a közösségi adószám és annak az IP-címnek az országát, ahonnan a rendelést leadtad (maga az IP-cím az, amelyet minden rendeléssel tárolunk). Ez az ÁFA-nyilvántartásunk része, az adótörvény által előírt ideig őrizzük meg, és törlési kérelem sem törli. A közösségi adószám nélküli rendelésekre ez nem vonatkozik."
+
+#: src/Order/Privacy.php:62 src/Order/Privacy.php:77 src/Order/Privacy.php:145
+msgid "VAT ID checks"
+msgstr "Közösségi adószám-ellenőrzések"
+
+#: src/Order/Privacy.php:130
+msgid "Order number"
+msgstr "Rendelésszám"
+
+#. translators: %s: order number
+#: src/Order/Privacy.php:173
+#, php-format
+msgid "The VAT ID check of order %s has been retained: it is part of the VAT records the shop must keep (Directive 2006/112/EC, Art. 242–249)."
+msgstr "A(z) %s rendelés közösségi adószám-ellenőrzése megmaradt: a bolt által megőrzendő ÁFA-nyilvántartás része (2006/112/EK irányelv, 242–249. cikk)."
+
+#: src/Services/Ares/Ares.php:43 src/Services/FinancnaSprava/FinancnaSprava.php:98
 msgid "Business ID not set."
 msgstr "Nincs megadva cégjegyzékszám."
 
-#: src/Services/Ares/Ares.php:48
-#: src/Services/FinancnaSprava/FinancnaSprava.php:103
+#: src/Services/Ares/Ares.php:48 src/Services/FinancnaSprava/FinancnaSprava.php:103
 msgid "Business ID must be a number and 8 digits long."
 msgstr "A cégjegyzékszámnak 8 számjegyből kell állnia."
 
@@ -234,13 +367,11 @@ msgstr "A cégjegyzékszám nem szerepel a Finančná správa adatai között, t
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists are missing or older than a week, so those numbers cannot be validated. The import runs daily through WP-Cron (or run \"wp woolab-icdic sk-import\"); failures are logged in WooCommerce → Status → Logs."
 msgstr "Kybernaut IČO DIČ: a Finančná správa DIČ / IČ DPH listái hiányoznak vagy egy hétnél régebbiek, ezért ezek a számok nem ellenőrizhetők. Az importálás naponta fut a WP-Cronnal (vagy futtasd: „wp woolab-icdic sk-import”); a hibák a WooCommerce → Állapot → Naplók oldalon láthatók."
 
-#: src/Services/FinancnaSprava/Importer.php:80
-#: src/Settings/Fields.php:162
+#: src/Services/FinancnaSprava/Importer.php:80 src/Settings/Fields.php:162
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists cannot be imported, the zip, xmlreader and pdo_sqlite PHP extensions are required (ask your hosting)."
 msgstr "Kybernaut IČO DIČ: a Finančná správa DIČ / IČ DPH listái nem importálhatók, mert ehhez a zip, xmlreader és pdo_sqlite PHP-bővítmények szükségesek (kérdezd meg a tárhelyszolgáltatót)."
 
-#: src/Services/FinancnaSprava/Importer.php:82
-#: src/Settings/Fields.php:160
+#: src/Services/FinancnaSprava/Importer.php:82 src/Settings/Fields.php:160
 msgid "Import status"
 msgstr "Importálás állapota"
 
@@ -369,185 +500,192 @@ msgid "EU: Validate VAT number in VIES"
 msgstr "EU: Közösségi adószám ellenőrzése a VIES-ben"
 
 #: src/Settings/Fields.php:236
+msgid "Your VAT ID"
+msgstr "A te közösségi adószámod"
+
+#: src/Settings/Fields.php:237
+msgid "The shop's own EU VAT ID, with its country code. VIES then returns a consultation number for every check, kept with the order as the proof of a reverse-charge sale. Leave empty to check without one."
+msgstr "A bolt saját közösségi adószáma, országkóddal. A VIES ekkor minden ellenőrzéshez konzultációs számot ad, amely a rendeléssel együtt megmarad a fordított adózású eladás bizonyítékaként. Hagyd üresen, ha nélküle ellenőrzöl."
+
+#: src/Settings/Fields.php:244
 msgid "Business ID only where companies have one"
 msgstr "Cégjegyzékszám (IČO) csak ott, ahol létezik"
 
-#: src/Settings/Fields.php:237
+#: src/Settings/Fields.php:245
 msgid "Hide the Business ID field for billing countries other than Slovakia and the Czech Republic, whose companies have no IČO. The list can be changed with the woolab_icdic_ic_countries filter."
 msgstr "Elrejti a Cégjegyzékszám mezőt a Szlovákián és Csehországon kívüli számlázási országokban, ahol a cégeknek nincs IČO-juk. A lista a woolab_icdic_ic_countries szűrővel módosítható."
 
-#: src/Settings/Fields.php:243
+#: src/Settings/Fields.php:251
 msgid "EU: VAT exempt"
 msgstr "EU: ÁFA-mentesség"
 
-#: src/Settings/Fields.php:256
+#: src/Settings/Fields.php:264
 msgid "When a check fails"
 msgstr "Ha az ellenőrzés nem sikerül"
 
-#: src/Settings/Fields.php:261
+#: src/Settings/Fields.php:269
 msgid "Ignore when ARES, Finančná správa or VIES check fails for technical reasons"
 msgstr "Az ARES, a Finančná správa vagy a VIES technikai hibájának figyelmen kívül hagyása"
 
-#: src/Settings/Fields.php:262
+#: src/Settings/Fields.php:270
 msgid "Allow the creation of an order if the verification of the Business ID in ARES or Finančná správa, or the VAT number in the European VIES database fails for technical reasons."
 msgstr "A rendelés akkor is leadható, ha az IČO ellenőrzése az ARES-ben vagy a Finančná správa adatai között, illetve a közösségi adószám ellenőrzése az európai VIES adatbázisban technikai okból nem sikerül."
 
-#: src/Settings/Fields.php:292
+#: src/Settings/Fields.php:300
 msgid "Leave empty to follow the theme."
 msgstr "Üresen hagyva a sablon színeit használja."
 
-#: src/Settings/Fields.php:296
+#: src/Settings/Fields.php:304
 msgid "Status icons"
 msgstr "Állapotikonok"
 
-#: src/Settings/Fields.php:298
+#: src/Settings/Fields.php:306
 msgid "The padlock on the company name and Business ID after an autofill, and the checkmark on the other filled-in fields."
 msgstr "A lakat a cégnév és a cégjegyzékszám mezőn automatikus kitöltés után, a pipa a többi kitöltött mezőn."
 
-#: src/Settings/Fields.php:301
+#: src/Settings/Fields.php:309
 msgid "Verified"
 msgstr "Ellenőrzött"
 
-#: src/Settings/Fields.php:301
+#: src/Settings/Fields.php:309
 msgid "Padlock and checkmark. Leave empty for green (#007518)."
 msgstr "Lakat és pipa. Üresen hagyva zöld (#007518)."
 
-#: src/Settings/Fields.php:302
+#: src/Settings/Fields.php:310
 msgid "Clear"
 msgstr "Törlés"
 
-#: src/Settings/Fields.php:302
+#: src/Settings/Fields.php:310
 msgid "The X the padlock turns into. Leave empty for red (#a00)."
 msgstr "Az X, amivé a lakat változik. Üresen hagyva piros (#a00)."
 
-#: src/Settings/Fields.php:309
+#: src/Settings/Fields.php:317
 msgid "Company name suggestions"
 msgstr "Cégnévjavaslatok"
 
-#: src/Settings/Fields.php:311
+#: src/Settings/Fields.php:319
 msgid "By default the list takes its colours from the company field."
 msgstr "Alapértelmezés szerint a lista a cégnév mező színeit veszi át."
 
-#: src/Settings/Fields.php:314
+#: src/Settings/Fields.php:322
 msgid "Background"
 msgstr "Háttér"
 
-#: src/Settings/Fields.php:315
+#: src/Settings/Fields.php:323
 msgid "Text"
 msgstr "Szöveg"
 
-#: src/Settings/Fields.php:316
+#: src/Settings/Fields.php:324
 msgid "Border"
 msgstr "Keret"
 
-#: src/Settings/Fields.php:317
+#: src/Settings/Fields.php:325
 msgid "Highlighted suggestion"
 msgstr "Kiemelt javaslat"
 
-#: src/Settings/Fields.php:317
+#: src/Settings/Fields.php:325
 msgid "Leave empty for a tint of the text colour."
 msgstr "Üresen hagyva a szövegszín egy árnyalata."
 
-#: src/Settings/Fields.php:319
+#: src/Settings/Fields.php:327
 msgid "Corner radius"
 msgstr "Sarokkerekítés"
 
-#: src/Settings/Fields.php:320
+#: src/Settings/Fields.php:328
 msgid "In pixels. Leave empty for the company field's own."
 msgstr "Pixelben. Üresen hagyva a cégnév mező saját kerekítését használja."
 
-#: src/Settings/Fields.php:347
+#: src/Settings/Fields.php:355
 msgid "Finančná správa lists"
 msgstr "Finančná správa listák"
 
-#: src/Settings/Fields.php:349
+#: src/Settings/Fields.php:357
 msgid "The DIČ and IČ DPH lists the Slovak checks run against, imported daily."
 msgstr "A szlovák ellenőrzés alapjául szolgáló DIČ- és IČ DPH-listák, amelyeket naponta importálunk."
 
 #. translators: 1: date and time, 2: time span, e.g. "3 hours"
-#: src/Settings/Fields.php:371
+#: src/Settings/Fields.php:379
 #, php-format
 msgid "%1$s (%2$s ago)"
 msgstr "%1$s (%2$s ezelőtt)"
 
 #. translators: %s: link to the Validation settings
-#: src/Settings/Fields.php:378
+#: src/Settings/Fields.php:386
 #, php-format
 msgid "Off. Enable \"SK: Validate in Finančná správa\" in %s."
 msgstr "Kikapcsolva. Kapcsold be az „SK: Ellenőrzés a Finančná správa alapján” beállítást itt: %s."
 
-#: src/Settings/Fields.php:379
-#: src/Settings/SettingsPage.php:37
+#: src/Settings/Fields.php:387 src/Settings/SettingsPage.php:37
 msgid "Validation"
 msgstr "Ellenőrzés"
 
-#: src/Settings/Fields.php:382
+#: src/Settings/Fields.php:390
 msgid "Up to date"
 msgstr "Naprakész"
 
-#: src/Settings/Fields.php:384
+#: src/Settings/Fields.php:392
 msgid "Older than a week: Slovak numbers are checked in VIES only, or let through when \"ignore when the check fails\" is on."
 msgstr "Egy hétnél régebbi: a szlovák számokat csak a VIES ellenőrzi, vagy ha „Az ARES, a Finančná správa vagy a VIES technikai hibájának figyelmen kívül hagyása” be van kapcsolva, ellenőrzés nélkül elfogadja őket a bővítmény."
 
-#: src/Settings/Fields.php:386
+#: src/Settings/Fields.php:394
 msgid "Not imported yet"
 msgstr "Még nincs importálva"
 
-#: src/Settings/Fields.php:389
+#: src/Settings/Fields.php:397
 msgid "Status"
 msgstr "Állapot"
 
-#: src/Settings/Fields.php:392
+#: src/Settings/Fields.php:400
 msgid "Last import"
 msgstr "Utolsó importálás"
 
 #. translators: 1: number of DIČ, 2: number of IČ DPH
-#: src/Settings/Fields.php:394
+#: src/Settings/Fields.php:402
 #, php-format
 msgid "%1$s DIČ, %2$s IČ DPH"
 msgstr "%1$s DIČ, %2$s IČ DPH"
 
-#: src/Settings/Fields.php:395
+#: src/Settings/Fields.php:403
 msgid "Database"
 msgstr "Adatbázis"
 
-#: src/Settings/Fields.php:396
+#: src/Settings/Fields.php:404
 msgid "The file is missing, the next import creates it again."
 msgstr "A fájl hiányzik, a következő importálás újra létrehozza."
 
-#: src/Settings/Fields.php:401
+#: src/Settings/Fields.php:409
 msgid "Last failed import"
 msgstr "Utolsó sikertelen importálás"
 
-#: src/Settings/Fields.php:406
+#: src/Settings/Fields.php:414
 msgid "Not scheduled, it is scheduled again on the next page load."
 msgstr "Nincs ütemezve, a következő oldalbetöltéskor újra ütemeződik."
 
 #. translators: %s: date and time
-#: src/Settings/Fields.php:409
+#: src/Settings/Fields.php:417
 #, php-format
 msgid "%s, overdue: WP-Cron has not run since. It runs on page visits, or set up a server cron job for wp-cron.php."
 msgstr "%s, késésben: azóta nem futott a WP-Cron. Oldallátogatáskor fut, vagy állíts be szerveroldali cron-feladatot a wp-cron.php-hez."
 
-#: src/Settings/Fields.php:413
+#: src/Settings/Fields.php:421
 msgid "Next import"
 msgstr "Következő importálás"
 
-#: src/Settings/Fields.php:420
+#: src/Settings/Fields.php:428
 msgid "PHP extensions"
 msgstr "PHP-bővítmények"
 
-#: src/Settings/Fields.php:422
+#: src/Settings/Fields.php:430
 msgid "Import now"
 msgstr "Importálás most"
 
 #. translators: %s: link to WooCommerce → Status → Logs
-#: src/Settings/Fields.php:425
+#: src/Settings/Fields.php:433
 #, php-format
 msgid "Every import is logged in %s."
 msgstr "Minden importálás naplózva van itt: %s."
 
-#: src/Settings/Fields.php:426
+#: src/Settings/Fields.php:434
 msgid "WooCommerce → Status → Logs"
 msgstr "WooCommerce → Állapot → Naplók"
 
@@ -569,8 +707,7 @@ msgstr "Megjelenés"
 msgid "Finančná správa"
 msgstr "Finančná správa"
 
-#: src/Validation/Errors.php:70
-#: src/Validation/Errors.php:73
+#: src/Validation/Errors.php:70 src/Validation/Errors.php:73
 msgid "Enter a valid Business ID"
 msgstr "Adj meg érvényes cégjegyzékszámot"
 
@@ -620,8 +757,7 @@ msgid "%s has not a correct format."
 msgstr "A(z) %s formátuma helytelen."
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: src/Validation/Errors.php:126
-#: src/Validation/Errors.php:134
+#: src/Validation/Errors.php:126 src/Validation/Errors.php:134
 #, php-format
 msgctxt "field label"
 msgid "Enter a valid %s."

@@ -177,7 +177,9 @@ final class Services {
 	 *
 	 * @param array<int,Service> $services Assigned services.
 	 * @param string             $vat      VAT number with its prefix.
-	 * @return array{state:string,ico:string}|null Null when no service validates VAT numbers.
+	 * @return array{state:string,ico:string,evidence?:array<string,string>}|null The answer
+	 *         as the service gave it, its 'evidence' included. Null when no service
+	 *         validates VAT numbers.
 	 */
 	public static function vat_id( array $services, string $vat ): ?array {
 		$asked       = false;
@@ -214,8 +216,25 @@ final class Services {
 	 * @return string 'valid', 'bad_format', 'invalid' or 'unverifiable'.
 	 */
 	public static function vat_state( string $vat ): string {
-		$services = self::for_country( Checksum::vat_country_code( $vat ) )['vat_id'] ?? array( new Vies() );
+		return self::vat_answer( $vat )['state'];
+	}
 
-		return (string) ( self::vat_id( $services, $vat )['state'] ?? 'unverifiable' );
+	/**
+	 * The state of vat_state() with the answer's evidence (Service::validate_vat_id()), for the
+	 * order: the answers are cached, so this asks no register again.
+	 *
+	 * @param string $vat VAT number with its prefix.
+	 * @return array{state:string,evidence?:array<string,string>}
+	 */
+	public static function vat_answer( string $vat ): array {
+		$services = self::for_country( Checksum::vat_country_code( $vat ) )['vat_id'] ?? array( new Vies() );
+		$answer   = self::vat_id( $services, $vat );
+
+		$result = array( 'state' => (string) ( $answer['state'] ?? 'unverifiable' ) );
+		if ( ! empty( $answer['evidence'] ) && is_array( $answer['evidence'] ) ) {
+			$result['evidence'] = $answer['evidence'];
+		}
+
+		return $result;
 	}
 }

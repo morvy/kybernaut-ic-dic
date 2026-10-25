@@ -35,6 +35,8 @@ final class Plugin {
 		Checkout\CartExtension::class,
 		Checkout\VatExempt::class,
 		Order\Meta::class,
+		Order\Evidence::class,
+		Order\Privacy::class,
 		Order\AdminScreen::class,
 		Order\Display::class,
 		Order\Customer::class,

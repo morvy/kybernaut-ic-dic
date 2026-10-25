@@ -8,8 +8,8 @@
 namespace KybernautIcDic\Order;
 
 /**
- * The check-failed flag of a classic checkout order (the block checkout writes it in
- * Checkout\Blocks::update_order()).
+ * The check-failed flag and the VAT ID evidence of a classic checkout order (the
+ * block checkout writes them in Checkout\Blocks::update_order()).
  */
 final class Meta {
 
@@ -38,6 +38,8 @@ final class Meta {
 			'woolab_icdic_vat_check_fail_ignored',
 			$vat_check_fail_ignored ? 'yes' : 'no'
 		);
+
+		Evidence::record( $order );
 
 		$order->save_meta_data();
 	}
