@@ -189,6 +189,23 @@ test( '"Ignore when a check fails" sits next to the checks it needs', async ( { 
 	}
 } );
 
+test( 'an option the settings script disables says which check it needs', async ( { page } ) => {
+	await page.goto( url( 'validation' ) );
+	for ( const key of [ 'ares_check', 'sk_check', 'vies_check' ] ) {
+		if ( ! ( await setting( page, key ).isDisabled() ) ) {
+			await setting( page, key ).uncheck();
+		}
+	}
+	const reason = ( key ) => setting( page, key ).locator( 'xpath=ancestor::td' ).locator( '.woolab-icdic-requires' );
+	await expect( setting( page, 'ignore_check_fail' ) ).toBeDisabled();
+	await expect( reason( 'ignore_check_fail' ) ).toContainText( 'ARES, Finančná správa or VIES' );
+	await expect( reason( 'ares_fill' ) ).toContainText( 'CZ: Validate Business ID in ARES' );
+
+	await setting( page, 'vies_check' ).check();
+	await expect( setting( page, 'ignore_check_fail' ) ).toBeEnabled();
+	await expect( reason( 'ignore_check_fail' ) ).toHaveCount( 0 );
+} );
+
 test( 'a status icon colour reaches the checkout', async ( { page } ) => {
 	await page.goto( url( 'appearance' ) );
 	await setting( page, 'color_ok' ).fill( '#123456' );

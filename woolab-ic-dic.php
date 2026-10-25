@@ -374,7 +374,21 @@ function woolab_icdic_admin_scripts( $hook ) {
 		wp_enqueue_script( 'woolab-ic-dic-admin-edit', WOOLAB_IC_DIC_URL . 'assets/js/admin-edit'.$suffix.'.js', array('jquery'), WOOLAB_IC_DIC_VERSION );
 	}
 	if ( 'woocommerce_page_wc-settings' === $hook && isset( $_GET['tab'] ) && 'woolab_icdic' === $_GET['tab'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only picks the screen.
-		wp_enqueue_script( 'woolab-ic-dic-admin', WOOLAB_IC_DIC_URL . 'assets/js/admin'.$suffix.'.js', array('jquery'), WOOLAB_IC_DIC_VERSION );
+		wp_enqueue_script( 'woolab-ic-dic-admin', WOOLAB_IC_DIC_URL . 'assets/js/admin' . $suffix . '.js', array( 'jquery' ), WOOLAB_IC_DIC_VERSION, true );
+		/* translators: %s: name of the setting, e.g. "CZ: Validate Business ID in ARES" */
+		$needs = __( 'Turn on "%s" first.', 'woolab-ic-dic' );
+		// Why admin.js disables an option: the check it needs is off.
+		wp_localize_script(
+			'woolab-ic-dic-admin',
+			'woolabIcdicAdmin',
+			array(
+				'requires' => array(
+					'ares_fill'         => sprintf( $needs, __( 'CZ: Validate Business ID in ARES', 'woolab-ic-dic' ) ),
+					'sk_fill'           => sprintf( $needs, __( 'SK: Validate in Finančná správa', 'woolab-ic-dic' ) ),
+					'ignore_check_fail' => __( 'Turn on at least one of the ARES, Finančná správa or VIES checks first.', 'woolab-ic-dic' ),
+				),
+			)
+		);
 	}
 }
 

@@ -20,6 +20,15 @@
     $.each(requires, function (option) {
       locked[option] = field(option).prop('disabled');
     });
+
+    // Says why an option is disabled, under its checkbox.
+    function note(option, text) {
+      var $cell = field(option).closest('td');
+      $cell.find('.woolab-icdic-requires').remove();
+      if (text) {
+        $('<p class="description woolab-icdic-requires" style="color:#ca4a1f"></p>').text(text).appendTo($cell);
+      }
+    }
     function update() {
       $.each(requires, function (option, checks) {
         if (locked[option]) {
@@ -32,6 +41,7 @@
         if (!on) {
           field(option).prop('checked', false);
         }
+        note(option, on ? '' : woolabIcdicAdmin.requires[option]);
       });
     }
     $.each(['ares_check', 'sk_check', 'vies_check'], function (i, key) {

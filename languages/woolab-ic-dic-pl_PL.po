@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
-"PO-Revision-Date: 2026-10-25T18:19:18+00:00\n"
+"PO-Revision-Date: 2026-10-25T19:03:28+00:00\n"
 "Language: pl_PL\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woolab-ic-dic\n"
@@ -39,13 +39,11 @@ msgstr ""
 msgid "https://kybernaut.cz"
 msgstr ""
 
-#: includes/ares.php:20
-#: includes/financna-sprava.php:454
+#: includes/ares.php:20 includes/financna-sprava.php:454
 msgid "Business ID not set."
 msgstr "Nie podano numeru identyfikacyjnego firmy."
 
-#: includes/ares.php:25
-#: includes/financna-sprava.php:459
+#: includes/ares.php:25 includes/financna-sprava.php:459
 msgid "Business ID must be a number and 8 digits long."
 msgstr "Numer identyfikacyjny firmy musi składać się z 8 cyfr."
 
@@ -61,8 +59,7 @@ msgstr "Rejestr ARES nie odpowiada."
 msgid "An error occured while connecting to ARES, try it again later."
 msgstr "Wystąpił błąd podczas łączenia z rejestrem ARES. Spróbuj ponownie później."
 
-#: includes/blocks.php:271
-#: includes/filters-actions.php:73
+#: includes/blocks.php:271 includes/filters-actions.php:73
 msgid "Buying as a company"
 msgstr "Faktura na firmę"
 
@@ -70,8 +67,7 @@ msgstr "Faktura na firmę"
 msgid "IČO DIČ"
 msgstr "IČO DIČ"
 
-#: includes/class-woolab-icdic-settings-page.php:22
-#: includes/settings.php:409
+#: includes/class-woolab-icdic-settings-page.php:22 includes/settings.php:409
 msgid "Validation"
 msgstr "Weryfikacja"
 
@@ -109,20 +105,17 @@ msgstr "GitHub"
 msgid "Write a Review"
 msgstr "Napisz recenzję"
 
-#: includes/filters-actions.php:369
-#: includes/filters-actions.php:372
+#: includes/filters-actions.php:387 includes/filters-actions.php:390
 msgid "Enter a valid Business ID"
 msgstr "Wpisz prawidłowy numer identyfikacyjny firmy"
 
-#: includes/filters-actions.php:379
-#: includes/rest.php:96
-#: includes/rest.php:170
-#: woolab-ic-dic.php:187
+#: includes/filters-actions.php:397 includes/rest.php:96 includes/rest.php:170
+#: woolab-ic-dic.php:189
 msgid "Unexpected error occurred. Try it again."
 msgstr "Wystąpił nieoczekiwany błąd. Spróbuj ponownie."
 
 #. translators: %s: list of field labels, e.g. "Company and Business ID"
-#: includes/filters-actions.php:396
+#: includes/filters-actions.php:414
 #, php-format
 msgid "%s is not corresponding to Finančná správa."
 msgid_plural "%s are not corresponding to Finančná správa."
@@ -131,7 +124,7 @@ msgstr[1] "%s nie zgadzają się z danymi z Finančná správa."
 msgstr[2] "%s nie zgadzają się z danymi z Finančná správa."
 
 #. translators: %s: list of field labels, e.g. "Company and Business ID"
-#: includes/filters-actions.php:399
+#: includes/filters-actions.php:417
 #, php-format
 msgid "%s is not corresponding to ARES."
 msgid_plural "%s are not corresponding to ARES."
@@ -140,93 +133,88 @@ msgstr[1] "%s nie zgadzają się z danymi w ARES."
 msgstr[2] "%s nie zgadzają się z danymi w ARES."
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:405
+#: includes/filters-actions.php:423
 #, php-format
 msgctxt "field label"
 msgid "The billing country does not correspond to the country of the %s."
 msgstr "Kraj rozliczeniowy nie zgadza się z krajem numeru w polu %s."
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:409
+#: includes/filters-actions.php:427
 #, php-format
 msgctxt "field label"
 msgid "The shipping country does not correspond to the country of the %s."
 msgstr "Kraj wysyłki nie zgadza się z krajem numeru w polu %s."
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:413
+#: includes/filters-actions.php:431
 #, php-format
 msgctxt "field label"
 msgid "%s has not a correct format."
 msgstr "Pole %s ma nieprawidłowy format."
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:420
-#: includes/filters-actions.php:428
+#: includes/filters-actions.php:438 includes/filters-actions.php:446
 #, php-format
 msgctxt "field label"
 msgid "Enter a valid %s."
 msgstr "Wpisz prawidłową wartość w polu %s."
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:424
+#: includes/filters-actions.php:442
 #, php-format
 msgctxt "field label"
 msgid "Could not validate %s."
 msgstr "Nie udało się zweryfikować pola %s."
 
 #. translators: 1: Tax ID label, 2: VAT ID label
-#: includes/filters-actions.php:432
+#: includes/filters-actions.php:450
 #, php-format
 msgid "%1$s or %2$s is not valid."
 msgstr "Pole %1$s lub %2$s jest nieprawidłowe."
 
-#: includes/filters-actions.php:435
+#: includes/filters-actions.php:453
 msgid "Tax ID does not belong to the entered Business ID."
 msgstr "NIP nie odpowiada podanemu numerowi identyfikacyjnemu firmy."
 
-#: includes/filters-actions.php:438
+#: includes/filters-actions.php:456
 msgid "Could not validate Tax ID."
 msgstr "Nie udało się zweryfikować numeru NIP."
 
-#: includes/filters-actions.php:653
+#: includes/filters-actions.php:723
 msgid "Reverse charge: the order is without VAT, the buyer accounts for it."
 msgstr "Odwrotne obciążenie: zamówienie nie zawiera VAT, podatek rozlicza nabywca."
 
 #. translators: %s: country code, e.g. "PL"
-#: includes/filters-actions.php:658
+#: includes/filters-actions.php:728
 #, php-format
 msgid "This tax number is valid. Without the country code (%s) it is not an EU VAT ID, so the order is placed with VAT."
 msgstr "Ten numer podatkowy jest prawidłowy. Bez kodu kraju (%s) nie jest to numer NIP-UE, dlatego zamówienie będzie zawierać VAT."
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:663
+#: includes/filters-actions.php:733
 #, php-format
 msgid "This %s is not registered for VAT in the EU (VIES), so the order is placed with VAT."
 msgstr "Numer z pola %s nie jest zarejestrowany do celów VAT w UE (VIES), dlatego zamówienie będzie zawierać VAT."
 
-#: includes/filters-actions.php:1008
-#: includes/filters-actions.php:1036
-#: includes/filters-actions.php:1060
-#: includes/filters-actions.php:1097
+#: includes/filters-actions.php:1078 includes/filters-actions.php:1106
+#: includes/filters-actions.php:1130 includes/filters-actions.php:1167
 msgid "Verification of VAT number has failed."
 msgstr "Weryfikacja numeru NIP-UE nie powiodła się."
 
-#: includes/filters-actions.php:1059
-#: includes/filters-actions.php:1096
+#: includes/filters-actions.php:1129 includes/filters-actions.php:1166
 msgid "Caution!"
 msgstr "Uwaga!"
 
-#: includes/filters-actions.php:1061
-#: includes/filters-actions.php:1098
+#: includes/filters-actions.php:1131 includes/filters-actions.php:1168
 msgid "Please, make sure the VAT number is valid before processing the order."
 msgstr "Przed realizacją zamówienia upewnij się, że numer NIP-UE jest prawidłowy."
 
-#: includes/filters-actions.php:1113
+#: includes/filters-actions.php:1183
 msgid "View Kybernaut IČO DIČ settings"
 msgstr "Zobacz ustawienia Kybernaut IČO DIČ"
 
-#: includes/filters-actions.php:1113
+#: includes/filters-actions.php:1183
 msgid "Settings"
 msgstr "Ustawienia"
 
@@ -234,13 +222,11 @@ msgstr "Ustawienia"
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists are missing or older than a week, so those numbers cannot be validated. The import runs daily through WP-Cron (or run \"wp woolab-icdic sk-import\"); failures are logged in WooCommerce → Status → Logs."
 msgstr "Kybernaut IČO DIČ: listy DIČ / IČ DPH z Finančná správa nie zostały zaimportowane lub są starsze niż tydzień, więc tych numerów nie można zweryfikować. Import uruchamia się codziennie przez WP-Cron (możesz też uruchomić „wp woolab-icdic sk-import”); błędy są zapisywane w WooCommerce → Status → Dziennik zdarzeń."
 
-#: includes/financna-sprava.php:94
-#: includes/settings.php:230
+#: includes/financna-sprava.php:94 includes/settings.php:230
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists cannot be imported, the zip, xmlreader and pdo_sqlite PHP extensions are required (ask your hosting)."
 msgstr "Kybernaut IČO DIČ: nie można zaimportować list DIČ / IČ DPH z Finančná správa, ponieważ brakuje rozszerzeń PHP zip, xmlreader i pdo_sqlite (zapytaj dostawcę hostingu)."
 
-#: includes/financna-sprava.php:96
-#: includes/settings.php:228
+#: includes/financna-sprava.php:96 includes/settings.php:228
 msgid "Import status"
 msgstr "Stan importu"
 
@@ -368,7 +354,7 @@ msgstr "Sprawdzaj IČO, DIČ i IČ DPH na listach Finančná správa, pobieranyc
 msgid "Czech Republic"
 msgstr "Czechy"
 
-#: includes/settings.php:237
+#: includes/settings.php:237 woolab-ic-dic.php:386
 msgid "CZ: Validate Business ID in ARES"
 msgstr "CZ: Weryfikuj IČO w ARES"
 
@@ -388,7 +374,7 @@ msgstr "Włącz wyszukiwanie po nazwie firmy oraz autouzupełnianie i weryfikacj
 msgid "Slovakia"
 msgstr "Słowacja"
 
-#: includes/settings.php:254
+#: includes/settings.php:254 woolab-ic-dic.php:387
 msgid "SK: Validate in Finančná správa"
 msgstr "SK: Weryfikuj w Finančná správa"
 
@@ -594,26 +580,37 @@ msgstr "Każdy import jest zapisywany w %s."
 msgid "WooCommerce → Status → Logs"
 msgstr "WooCommerce → Status → Dziennik zdarzeń"
 
-#: woolab-ic-dic.php:186
+#: woolab-ic-dic.php:188
 msgid "Business ID is invalid."
 msgstr "Numer identyfikacyjny firmy jest nieprawidłowy."
 
-#: woolab-ic-dic.php:188
+#: woolab-ic-dic.php:190
 msgid "Information loaded succesfully from ARES."
 msgstr "Dane zostały wczytane z ARES."
 
-#: woolab-ic-dic.php:189
+#: woolab-ic-dic.php:191
 msgid "Validating data in ARES."
 msgstr "Trwa weryfikacja danych w ARES."
 
-#: woolab-ic-dic.php:190
+#: woolab-ic-dic.php:192
 msgid "Information loaded succesfully from Finančná správa."
 msgstr "Dane zostały wczytane z Finančná správa."
 
-#: woolab-ic-dic.php:191
+#: woolab-ic-dic.php:193
 msgid "Validating data in Finančná správa."
 msgstr "Trwa weryfikacja danych w Finančná správa."
 
-#: woolab-ic-dic.php:192
+#: woolab-ic-dic.php:194
 msgid "Clear company details"
 msgstr "Wyczyść dane firmy"
+
+#. translators: %s: name of the setting, e.g. "CZ: Validate Business ID in ARES"
+#: woolab-ic-dic.php:379
+#, php-format
+msgid "Turn on \"%s\" first."
+msgstr "Najpierw włącz „%s”."
+
+#: woolab-ic-dic.php:388
+msgid "Turn on at least one of the ARES, Finančná správa or VIES checks first."
+
+msgstr "Najpierw włącz co najmniej jedną z weryfikacji: ARES, Finančná správa lub VIES."
