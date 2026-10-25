@@ -341,7 +341,24 @@ function woolab_icdic_settings_appearance() {
 		$color( 'color_list_text', __( 'Text', 'woolab-ic-dic' ), $theme ),
 		$color( 'color_list_border', __( 'Border', 'woolab-ic-dic' ), $theme ),
 		$color( 'color_list_highlight', __( 'Highlighted suggestion', 'woolab-ic-dic' ), __( 'Leave empty for a tint of the text colour.', 'woolab-ic-dic' ) ),
-		array( 'type' => 'sectionend', 'id' => 'woolab_icdic_list' ),
+		array(
+			'title'             => __( 'Corner radius', 'woolab-ic-dic' ),
+			'desc'              => __( 'In pixels. Leave empty for the company field\'s own.', 'woolab-ic-dic' ),
+			'desc_tip'          => true,
+			'id'                => woolab_icdic_settings_id( 'list_radius' ),
+			'default'           => '',
+			'type'              => 'number',
+			'css'               => 'width:6em;',
+			'custom_attributes' => array(
+				'min'  => 0,
+				'max'  => 50,
+				'step' => 1,
+			),
+		),
+		array(
+			'type' => 'sectionend',
+			'id'   => 'woolab_icdic_list',
+		),
 	);
 }
 

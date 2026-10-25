@@ -70,7 +70,7 @@ msgstr "Nakupujem na firmu"
 msgid "IČO DIČ"
 msgstr "IČO DIČ"
 
-#: includes/class-woolab-icdic-settings-page.php:22, includes/settings.php:379
+#: includes/class-woolab-icdic-settings-page.php:22, includes/settings.php:396
 msgid "Validation"
 msgstr "Overovanie"
 
@@ -156,33 +156,38 @@ msgstr "DIČ nepatrí k zadanému IČO."
 msgid "Could not validate Tax ID."
 msgstr "DIČ sa nepodarilo overiť."
 
-#: includes/filters-actions.php:650
+#: includes/filters-actions.php:651
 msgid "Reverse charge: the order is without VAT, the buyer accounts for it."
 msgstr "Prenesenie daňovej povinnosti: objednávka je bez DPH, DPH odvedie odberateľ."
 
+#. translators: %s: country code, e.g. "PL"
+#: includes/filters-actions.php:656
+msgid "This tax number is valid. Without the country code (%s) it is not an EU VAT ID, so the order is placed with VAT."
+msgstr "Toto daňové číslo je platné. Bez kódu krajiny (%s) nie je IČ DPH v EÚ, objednávka sa preto vytvorí s DPH."
+
 #. translators: %s: field label, e.g. "VAT ID"
-#: includes/filters-actions.php:655
+#: includes/filters-actions.php:661
 msgid "This %s is not registered for VAT in the EU (VIES), so the order is placed with VAT."
 msgstr "Toto %s nie je registrované pre DPH v EÚ (VIES), objednávka sa preto vytvorí s DPH."
 
-#: includes/filters-actions.php:1000, includes/filters-actions.php:1028,
-#: includes/filters-actions.php:1052, includes/filters-actions.php:1089
+#: includes/filters-actions.php:1006, includes/filters-actions.php:1034,
+#: includes/filters-actions.php:1058, includes/filters-actions.php:1095
 msgid "Verification of VAT number has failed."
 msgstr "Overenie IČ DPH zlyhalo."
 
-#: includes/filters-actions.php:1051, includes/filters-actions.php:1088
+#: includes/filters-actions.php:1057, includes/filters-actions.php:1094
 msgid "Caution!"
 msgstr "Pozor!"
 
-#: includes/filters-actions.php:1053, includes/filters-actions.php:1090
+#: includes/filters-actions.php:1059, includes/filters-actions.php:1096
 msgid "Please, make sure the VAT number is valid before processing the order."
 msgstr "Pred spracovaním objednávky sa uistite, že IČ DPH je platné."
 
-#: includes/filters-actions.php:1105
+#: includes/filters-actions.php:1111
 msgid "View Kybernaut IČO DIČ settings"
 msgstr "Zobraziť nastavenia Kybernaut IČO DIČ"
 
-#: includes/filters-actions.php:1105
+#: includes/filters-actions.php:1111
 msgid "Settings"
 msgstr "Nastavenia"
 
@@ -454,64 +459,72 @@ msgstr "Zvýraznený návrh"
 msgid "Leave empty for a tint of the text colour."
 msgstr "Nechajte prázdne pre odtieň farby textu."
 
-#: includes/settings.php:355
+#: includes/settings.php:345
+msgid "Corner radius"
+msgstr "Zaoblenie rohov"
+
+#: includes/settings.php:346
+msgid "In pixels. Leave empty for the company field's own."
+msgstr "V pixeloch. Nechajte prázdne pre zaoblenie poľa s názvom firmy."
+
+#: includes/settings.php:372
 msgid "Finančná správa lists"
 msgstr "Zoznamy Finančnej správy"
 
-#: includes/settings.php:355
+#: includes/settings.php:372
 msgid "The DIČ and IČ DPH lists the Slovak checks run against, imported daily."
 msgstr "Zoznamy DIČ a IČ DPH, podľa ktorých sa overujú slovenské údaje, importované denne."
 
 #. translators: 1: date and time, 2: time span, e.g. "3 hours"
-#: includes/settings.php:370
+#: includes/settings.php:387
 msgid "%1$s (%2$s ago)"
 msgstr "%1$s (pred %2$s)"
 
 #. translators: %s: link to the Validation settings
-#: includes/settings.php:378
+#: includes/settings.php:395
 msgid "Off. Enable \"SK: Validate in Finančná správa\" in %s."
 msgstr "Vypnuté. Zapnite „SK: Overiť vo Finančnej správe“ v časti %s."
 
-#: includes/settings.php:382
+#: includes/settings.php:399
 msgid "Up to date"
 msgstr "Aktuálne"
 
-#: includes/settings.php:384
+#: includes/settings.php:401
 msgid "Older than a week: Slovak numbers are checked in VIES only, or let through when \"ignore when the check fails\" is on."
 msgstr "Staršie ako týždeň: slovenské čísla sa overujú len vo VIES, alebo sa prijmú, ak je zapnuté „ignorovať, keď overenie zlyhá“."
 
-#: includes/settings.php:386
+#: includes/settings.php:403
 msgid "Not imported yet"
 msgstr "Zatiaľ neimportované"
 
-#: includes/settings.php:389
+#: includes/settings.php:406
 msgid "Status"
 msgstr "Stav"
 
 #. translators: 1: number of DIČ, 2: number of IČ DPH
-#: includes/settings.php:394
+#: includes/settings.php:411
 msgid "%1$s DIČ, %2$s IČ DPH"
 msgstr "%1$s DIČ, %2$s IČ DPH"
 
-#: includes/settings.php:396
+#: includes/settings.php:413
 msgid "The file is missing, the next import creates it again."
 msgstr "Súbor chýba, najbližší import ho vytvorí znova."
 
-#: includes/settings.php:406
+#: includes/settings.php:423
 msgid "Not scheduled, it is scheduled again on the next page load."
 msgstr "Nenaplánované, naplánuje sa znova pri najbližšom načítaní stránky."
 
 #. translators: %s: date and time
-#: includes/settings.php:409
+#: includes/settings.php:426
 msgid "%s, overdue: WP-Cron has not run since. It runs on page visits, or set up a server cron job for wp-cron.php."
 msgstr "%s, oneskorené: WP-Cron odvtedy nebežal. Spúšťa sa pri návštevách stránky, alebo nastavte serverový cron pre wp-cron.php."
 
 #. translators: %s: link to WooCommerce → Status → Logs
-#: includes/settings.php:425
+#: includes/settings.php:442
 msgid "Every import is logged in %s."
 msgstr "Každý import sa zapisuje do %s."
 
-#: includes/settings.php:426
+#: includes/settings.php:443
 msgid "WooCommerce → Status → Logs"
 msgstr "WooCommerce → Stav → Logy"
 

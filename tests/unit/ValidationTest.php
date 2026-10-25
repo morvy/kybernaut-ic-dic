@@ -331,6 +331,37 @@ class ValidationTest extends TestCase {
 		);
 	}
 
+	/**
+	 * @dataProvider domesticTaxNumbers
+	 */
+	public function testTaxNumberWithoutCountryCodeSkipsVies( $country, $number ) {
+		$result = woolab_icdic_validate_checkout( $this->input( array(
+			'country'    => $country,
+			'dic'        => $number,
+			'verify_vat' => function ( $v ) { throw new \Exception( 'VIES asked' ); },
+		) ) );
+		$this->assertSame( array(), $this->codes( $result ) );
+		$this->assertSame( array( array( 'code' => 'tax_number_only' ) ), $result['notices'] );
+	}
+
+	public static function domesticTaxNumbers() {
+		return array(
+			'PL NIP'              => array( 'PL', '5260250995' ),
+			'PL NIP with dashes'  => array( 'PL', '526-025-09-95' ),
+			'HU adószám'          => array( 'HU', '12892312' ),
+			'HU adószám, in full' => array( 'HU', '12892312-2-41' ),
+		);
+	}
+
+	public function testPlTaxNumberWithoutCountryCodeAndBadChecksumIsAnError() {
+		$result = woolab_icdic_validate_checkout( $this->input( array(
+			'country'    => 'PL',
+			'dic'        => '5260250994',
+			'verify_vat' => function ( $v ) { return 'bad_format'; },
+		) ) );
+		$this->assertNotSame( array(), $this->codes( $result ) );
+	}
+
 	public function testCzDicNotInViesAndMalformedIsAnError() {
 		$result = woolab_icdic_validate_checkout( $this->input( array(
 			'dic'        => 'CZ27082441',

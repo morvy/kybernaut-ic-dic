@@ -48,6 +48,7 @@ function woolab_icdic_settings_schema() {
 		'color_list_text'       => array( null, '' ),
 		'color_list_border'     => array( null, '' ),
 		'color_list_highlight'  => array( null, '' ),
+		'list_radius'           => array( null, '' ),
 	);
 }
 

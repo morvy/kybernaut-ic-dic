@@ -245,3 +245,12 @@ test( 'a VAT ID the server rejects is reported under its field', async ( { page 
 	await expect( row.locator( '.wc-block-components-validation-error' ) ).toContainText( 'Enter a valid VAT ID', { timeout: 30000 } );
 	await expect( page ).not.toHaveURL( /order-received/ );
 } );
+
+test( 'a Polish NIP without "PL" is a valid tax number, the order with VAT', async ( { page } ) => {
+	await setCountry( page, 'PL' );
+	await asCompany( page );
+	await field( page, 'dic' ).fill( '5260250995' );
+	await field( page, 'dic' ).blur();
+	await expect( page.getByText( 'This tax number is valid' ).first() ).toBeVisible( { timeout: 30000 } );
+	expect( await taxTotal( page ) ).not.toBe( '0' );
+} );

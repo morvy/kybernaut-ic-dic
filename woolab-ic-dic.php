@@ -248,8 +248,8 @@ function woolab_icdic_enqueue_scripts() {
 }
 
 /**
- * The colours set in Settings → IČO DIČ → Appearance, as the custom properties
- * lookup.css reads. Empty when none is set.
+ * The colours and the list's corner radius set in Settings → IČO DIČ →
+ * Appearance, as the custom properties lookup.css reads. Empty when none is set.
  */
 function woolab_icdic_lookup_colors_css() {
 	$properties = array();
@@ -259,6 +259,11 @@ function woolab_icdic_lookup_colors_css() {
 		if ( $color ) {
 			$properties[] = '--woolab-ic-dic-color-' . $property . ':' . $color;
 		}
+	}
+
+	$radius = woolab_icdic_setting( 'list_radius' );
+	if ( '' !== $radius && is_numeric( $radius ) ) {
+		$properties[] = '--woolab-ic-dic-list-radius:' . min( 50, absint( $radius ) ) . 'px';
 	}
 
 	return $properties ? ':root{' . implode( ';', $properties ) . '}' : '';

@@ -453,7 +453,11 @@
    * block theme WooCommerce 10.0 prints a banner instead, which it leaves out.
    * WooCommerce removes these again on the next change and submit.
    */
+  // Deferred: WooCommerce triggers the event before it adds its own.
   $(document.body).on('checkout_error', function () {
+    setTimeout(add_inline_errors);
+  });
+  function add_inline_errors() {
     $('.woocommerce-NoticeGroup-checkout [data-id]').each(function () {
       var id = $(this).attr('data-id');
       var $row = $('#' + id + '_field');
@@ -466,5 +470,5 @@
         'aria-invalid': 'true'
       });
     });
-  });
+  }
 })(jQuery);

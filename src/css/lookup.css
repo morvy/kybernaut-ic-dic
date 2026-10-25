@@ -64,7 +64,7 @@
 	background: var(--woolab-ic-dic-color-list-bg, var(--woolab-ic-dic-suggest-bg, Canvas));
 	color: var(--woolab-ic-dic-color-list-text, var(--woolab-ic-dic-suggest-text, CanvasText));
 	border: 1px solid var(--woolab-ic-dic-color-list-border, var(--woolab-ic-dic-suggest-border, GrayText));
-	border-radius: var(--woolab-ic-dic-suggest-radius, 4px);
+	border-radius: var(--woolab-ic-dic-list-radius, var(--woolab-ic-dic-suggest-radius, 4px));
 	box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
 }
 

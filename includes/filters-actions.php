@@ -637,7 +637,8 @@ function woolab_icdic_vat_not_registered( $country, $vat ) {
 
 /**
  * What the checkout tells a company about the VAT on its order: reverse charge
- * when the order is VAT exempt, why it is not when its tax number is no VAT
+ * when the order is VAT exempt, why it is not when its tax number is entered
+ * without the country code (woolab_icdic_domestic_tax_number()) or is no VAT
  * registration (woolab_icdic_vat_not_registered()), nothing otherwise.
  *
  * @param string $country Billing country.
@@ -648,6 +649,11 @@ function woolab_icdic_vat_not_registered( $country, $vat ) {
 function woolab_icdic_vat_notice( $country, $vat, $exempt ) {
 	if ( $exempt ) {
 		return __( 'Reverse charge: the order is without VAT, the buyer accounts for it.', 'woolab-ic-dic' );
+	}
+
+	if ( $vat && woolab_icdic_domestic_tax_number( $country, preg_replace( '/\s+/', '', (string) $vat ) ) ) {
+		/* translators: %s: country code, e.g. "PL" */
+		return sprintf( __( 'This tax number is valid. Without the country code (%s) it is not an EU VAT ID, so the order is placed with VAT.', 'woolab-ic-dic' ), $country );
 	}
 
 	if ( $vat && woolab_icdic_vat_not_registered( $country, $vat ) ) {

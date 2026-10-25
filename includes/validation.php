@@ -156,9 +156,13 @@ function woolab_icdic_validate_checkout( array $input ) {
 		// Check if in EU
 		if ( $input['country_in_eu'] ) {
 
-			// If Validate in VIES
-			// Slovak DIC cannot (and shouldn't) be validated in VIES
-			if ( $input['vies_check'] && $country != 'SK' ) {
+			if ( woolab_icdic_domestic_tax_number( $country, $dic ) ) {
+				// A Polish or Hungarian tax number without its country code: the
+				// business enters it as a taxpayer, not as a VAT payer. Nothing to ask
+				// VIES, the order is placed with VAT.
+				$notices[] = array( 'code' => 'tax_number_only' );
+			} elseif ( $input['vies_check'] && 'SK' !== $country ) {
+				// Validate in VIES. The Slovak DIČ cannot (and shouldn't) be.
 
 				// Match VAT country prefix and country code.
 				if ( $input['check_country_match'] && woolab_icdic_get_vat_number_country_code( $dic ) !== $country ) {
@@ -291,6 +295,29 @@ function woolab_icdic_validate_checkout( array $input ) {
  */
 function woolab_icdic_cz_dic_valid( $dic ) {
 	return 'CZ' === substr( $dic, 0, 2 ) && ( woolab_icdic_verify_rc( substr( $dic, 2 ) ) || woolab_icdic_verify_dic( substr( $dic, 2 ) ) );
+}
+
+/**
+ * Whether a Polish NIP or Hungarian adószám is entered without its country code,
+ * as a business does that is a taxpayer but no VAT payer. Dashes are fine
+ * (526-025-09-95); a full adószám (12892312-2-41) is checked by its first 8 digits.
+ *
+ * @param string $country Billing country.
+ * @param string $number  Whitespace stripped.
+ * @return bool
+ */
+function woolab_icdic_domestic_tax_number( $country, $number ) {
+	if ( ! in_array( $country, array( 'PL', 'HU' ), true ) || ! preg_match( '/^[0-9-]+$/', $number ) ) {
+		return false;
+	}
+
+	$digits = str_replace( '-', '', $number );
+
+	if ( 'HU' === $country && 11 === strlen( $digits ) ) {
+		$digits = substr( $digits, 0, 8 );
+	}
+
+	return woolab_icdic_tax_number_valid( $country . $digits );
 }
 
 /**

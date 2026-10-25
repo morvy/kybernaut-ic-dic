@@ -185,3 +185,19 @@ test( 'a status icon colour reaches the checkout', async ( { page } ) => {
 		await save( page );
 	}
 } );
+
+test( 'the suggestion list corner radius reaches the checkout', async ( { page } ) => {
+	await page.goto( url( 'appearance' ) );
+	await setting( page, 'list_radius' ).fill( '12' );
+	await save( page );
+	try {
+		await expect( setting( page, 'list_radius' ) ).toHaveValue( '12' );
+		await fillCart( page );
+		await page.goto( '/checkout/' );
+		await expect.poll( () => page.evaluate( () => getComputedStyle( document.documentElement ).getPropertyValue( '--woolab-ic-dic-list-radius' ).trim() ) ).toBe( '12px' );
+	} finally {
+		await page.goto( url( 'appearance' ) );
+		await setting( page, 'list_radius' ).fill( '' );
+		await save( page );
+	}
+} );
