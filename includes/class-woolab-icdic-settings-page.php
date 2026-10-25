@@ -25,12 +25,22 @@ class Woolab_Icdic_Settings_Page extends WC_Settings_Page {
 		);
 	}
 
+	/**
+	 * General, with what a filter decides shown as such.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
 	protected function get_settings_for_default_section() {
-		return woolab_icdic_settings_general();
+		return woolab_icdic_settings_filtered( woolab_icdic_settings_general() );
 	}
 
+	/**
+	 * Validation, with what a filter decides shown as such.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
 	protected function get_settings_for_validation_section() {
-		return woolab_icdic_settings_validation();
+		return woolab_icdic_settings_filtered( woolab_icdic_settings_validation() );
 	}
 
 	protected function get_settings_for_appearance_section() {

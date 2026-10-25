@@ -48,6 +48,103 @@ function woolab_icdic_settings_warning( $message ) {
 }
 
 /**
+ * The settings a filter decides over, the 1.x ones kept working: key =>
+ * array( filter, the value in effect ).
+ *
+ * @return array<string,array{0:string,1:callable}>
+ */
+function woolab_icdic_settings_filters() {
+	return array(
+		'toggle'                => array( 'woolab_icdic_toggle', 'woolab_icdic_toggle_enabled' ),
+		'country_ontop'         => array( 'woolab_icdic_country_ontop', 'woolab_icdic_country_ontop_enabled' ),
+		'company_fields'        => array( 'woolab_icdic_fake_required', 'woolab_icdic_fields_mode' ),
+		'ignore_check_fail'     => array( 'woolab_icdic_ignore_check_fail', 'woolab_icdic_ignore_check_fail' ),
+		'ares_check'            => array( 'woolab_icdic_ares_check', 'woolab_icdic_ares_check' ),
+		'ares_fill'             => array( 'woolab_icdic_ares_fill', 'woolab_icdic_ares_fill' ),
+		'sk_check'              => array( 'woolab_icdic_sk_check', 'woolab_icdic_sk_check' ),
+		'sk_fill'               => array( 'woolab_icdic_sk_fill', 'woolab_icdic_sk_fill' ),
+		'sk_dic_required'       => array( 'woolab_icdic_sk_required_ic_and_dic', 'woolab_icdic_sk_dic_required' ),
+		'disable_dic_dph_match' => array(
+			'woolab_icdic_enable_dic_dicdph_match_check',
+			function () {
+				return ! woolab_icdic_dic_dicdph_match_enabled();
+			},
+		),
+		'vies_check'            => array( 'woolab_icdic_vies_check', 'woolab_icdic_vies_check' ),
+		'vat_exempt'            => array( 'woolab_icdic_vat_exempt_enabled', 'woolab_icdic_vat_exempt_enabled' ),
+	);
+}
+
+/**
+ * The woolab_icdic_settings_filters() key of a settings field, if a filter in the
+ * theme or a plugin decides over it.
+ *
+ * @param array<string,mixed> $field WooCommerce settings field.
+ * @return string|null
+ */
+function woolab_icdic_settings_filtered_key( $field ) {
+	$filters = woolab_icdic_settings_filters();
+	$key     = isset( $field['id'] ) && preg_match( '/^' . WOOLAB_ICDIC_SETTINGS . '\[(\w+)\]$/', $field['id'], $m ) ? $m[1] : '';
+
+	if ( ! isset( $filters[ $key ] ) || ! has_filter( $filters[ $key ][0] ) ) {
+		return null;
+	}
+
+	// woolab_icdic_fake_required only turns "Optional" and "No mark" into "Asterisk".
+	if ( 'company_fields' === $key && woolab_icdic_fields_mode() === woolab_icdic_setting( 'company_fields' ) ) {
+		return null;
+	}
+
+	return $key;
+}
+
+/**
+ * Show what a filter decided: the field reads the value in effect, cannot be
+ * changed here, and says why. Saving keeps the stored value
+ * (woolab_icdic_settings_keep_filtered()), so it is back once the filter goes.
+ *
+ * @param array<int,array<string,mixed>> $fields WooCommerce settings fields.
+ * @return array<int,array<string,mixed>>
+ */
+function woolab_icdic_settings_filtered( array $fields ) {
+	foreach ( $fields as $i => $field ) {
+		$key = woolab_icdic_settings_filtered_key( $field );
+
+		if ( null === $key ) {
+			continue;
+		}
+
+		$filter = woolab_icdic_settings_filters()[ $key ];
+		$value  = call_user_func( $filter[1] );
+
+		$fields[ $i ]['value'] = is_bool( $value ) ? ( $value ? 'yes' : 'no' ) : $value;
+		/* translators: %s: filter name */
+		$fields[ $i ]['desc'] = ( $field['desc'] ?? '' ) . '<br><em>' . sprintf( __( 'Set by the %s filter in the theme or a plugin.', 'woolab-ic-dic' ), '<code>' . esc_html( $filter[0] ) . '</code>' ) . '</em>';
+
+		if ( 'checkbox' === $field['type'] ) {
+			$fields[ $i ]['disabled'] = true;
+		} else {
+			$fields[ $i ]['custom_attributes'] = array( 'disabled' => 'disabled' );
+		}
+	}
+
+	return $fields;
+}
+
+/**
+ * A field a filter decides over is not posted (it is disabled), so it would be
+ * saved empty: keep what is stored instead.
+ *
+ * @param mixed               $value  Sanitized value.
+ * @param array<string,mixed> $option WooCommerce settings field.
+ * @return mixed Null skips the field.
+ */
+function woolab_icdic_settings_keep_filtered( $value, $option ) {
+	return null === woolab_icdic_settings_filtered_key( $option ) ? $value : null;
+}
+add_filter( 'woocommerce_admin_settings_sanitize_option', 'woolab_icdic_settings_keep_filtered', 10, 2 );
+
+/**
  * General: how the fields behave in the checkout form.
  *
  * @return array WooCommerce settings fields.

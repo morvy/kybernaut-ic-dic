@@ -37,3 +37,9 @@ add_filter(
 	10,
 	3
 );
+
+// With the cookie woolab_e2e_filter=sk_dic, a 1.x snippet turns the Slovak DIČ
+// requirement off, the way a theme would (tests/e2e/settings.spec.js).
+if ( isset( $_COOKIE['woolab_e2e_filter'] ) && 'sk_dic' === $_COOKIE['woolab_e2e_filter'] ) {
+	add_filter( 'woolab_icdic_sk_required_ic_and_dic', '__return_false' );
+}

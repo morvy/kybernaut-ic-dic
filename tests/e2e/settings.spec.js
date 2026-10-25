@@ -73,6 +73,7 @@ for ( const [ mode, marks ] of Object.entries( MARKS ) ) {
 
 			await page.goto( '/checkout/' );
 			await page.locator( '#shipping-country' ).selectOption( 'SK' );
+			await page.getByLabel( 'Use same address for billing' ).check();
 			await expect.poll( () => page.evaluate( () => wp.data.select( wc.wcBlocksData.CART_STORE_KEY ).getCustomerData().billingAddress.country ) ).toBe( 'SK' );
 			await page.locator( '#order-kybernaut-iscomp' ).check();
 			const block = ( id ) => page.locator( `label[for="order-kybernaut-${ id }"]` );
@@ -127,6 +128,7 @@ test( '"SK: Require DIČ" makes the Slovak DIČ required for companies', async (
 		await fillCart( page );
 		await page.goto( '/checkout/' );
 		await page.locator( '#shipping-country' ).selectOption( 'SK' );
+		await page.getByLabel( 'Use same address for billing' ).check();
 		await expect.poll( () => page.evaluate( () => wp.data.select( wc.wcBlocksData.CART_STORE_KEY ).getCustomerData().billingAddress.country ) ).toBe( 'SK' );
 		await page.locator( '#order-kybernaut-iscomp' ).check();
 		await page.locator( '.wc-block-components-checkout-place-order-button' ).click();
@@ -139,6 +141,32 @@ test( '"SK: Require DIČ" makes the Slovak DIČ required for companies', async (
 		await context.clearCookies( { name: 'woolab_e2e_checkout' } );
 		await set( 'validation', 'sk_dic_required', ( el ) => el.uncheck() );
 		await set( '', 'company_fields', ( el ) => el.selectOption( 'optional' ) );
+	}
+} );
+
+test( 'a 1.x filter decides over its checkbox, and saving keeps the stored value', async ( { page, context, baseURL } ) => {
+	const checkbox = () => setting( page, 'sk_dic_required' );
+	await page.goto( url( 'validation' ) );
+	await checkbox().check();
+	await save( page );
+	try {
+		await context.addCookies( [ { name: 'woolab_e2e_filter', value: 'sk_dic', url: baseURL } ] );
+		await page.goto( url( 'validation' ) );
+		await expect( checkbox() ).not.toBeChecked();
+		await expect( checkbox() ).toBeDisabled();
+		await expect( page.locator( '#mainform' ) ).toContainText( 'Set by the woolab_icdic_sk_required_ic_and_dic filter' );
+		await page.locator( '#mainform :is(input, select):not([type=hidden]):not([disabled])' ).first().dispatchEvent( 'change' );
+		await save( page );
+
+		await context.clearCookies( { name: 'woolab_e2e_filter' } );
+		await page.goto( url( 'validation' ) );
+		await expect( checkbox() ).toBeChecked();
+		await expect( checkbox() ).toBeEnabled();
+	} finally {
+		await context.clearCookies( { name: 'woolab_e2e_filter' } );
+		await page.goto( url( 'validation' ) );
+		await checkbox().uncheck();
+		await save( page );
 	}
 } );
 
