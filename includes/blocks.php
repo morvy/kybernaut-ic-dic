@@ -293,7 +293,8 @@ function woolab_icdic_blocks_register_fields() {
 	);
 
 	// The "Required" mode (woolab_icdic_fields_mode()): a company must enter its name,
-	// the Slovak Tax ID, and the Business ID where every company has one. "A company"
+	// the Business ID where every company has one, and the Slovak Tax ID when the
+	// store requires it (woolab_icdic_sk_dic_required()). "A company"
 	// is the inverse of $not_a_company while the toggle is on, and a filled-in company
 	// name (a core address field then) while it is off. WooCommerce evaluates the
 	// rule in the browser — the field loses its "(optional)" suffix and blocks the
@@ -371,7 +372,7 @@ function woolab_icdic_blocks_register_fields() {
 				'location'                   => 'order',
 				'type'                       => 'text',
 				'hidden'                     => $hidden,
-				'required'                   => in_array( $id, array( 'kybernaut/ic', 'kybernaut/dic-sk' ), true ) ? $required : false,
+				'required'                   => 'kybernaut/ic' === $id || ( 'kybernaut/dic-sk' === $id && woolab_icdic_sk_dic_required() ) ? $required : false,
 				'attributes'                 => array( 'autocomplete' => 'off' ),
 				'show_in_order_confirmation' => false,
 			)
@@ -562,8 +563,14 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 			'sk_check'              => (bool) woolab_icdic_sk_check(),
 			'sk_fill'               => (bool) woolab_icdic_sk_fill(),
 			'ignore_check_fail'     => (bool) woolab_icdic_ignore_check_fail(),
+			/**
+			 * Match the VAT number's country prefix to the billing and shipping country.
+			 *
+			 * @since 1.4.0
+			 * @param bool $check
+			 */
 			'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
-			'require_sk_ic_and_dic' => (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', true ),
+			'require_sk_ic_and_dic' => woolab_icdic_sk_dic_required(),
 			'check_dic_dph_match'   => (bool) woolab_icdic_dic_dicdph_match_enabled(),
 			'country_in_eu'         => $countries->isCountryCodeInEU( $country ),
 			'verify_vat'            => woolab_icdic_make_vies_verifier( 'Could not validate VAT number: %s, returned the following exception:' ),

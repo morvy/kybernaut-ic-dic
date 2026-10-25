@@ -76,7 +76,7 @@ function woolab_icdic_settings_general() {
 		),
 		array(
 			'title'   => __( 'Company fields', 'woolab-ic-dic' ),
-			'desc'    => __( 'The company name, the Business ID (in the Czech Republic and Slovakia, where every company has one) and the Slovak Tax ID. "Required for companies" works best with the toggle: without it, a filled-in company name makes the customer a company. The VAT ID stays optional, abroad with "only if you are a VAT payer".', 'woolab-ic-dic' ),
+			'desc'    => __( 'The company name and the Business ID (in the Czech Republic and Slovakia, where every company has one). "Required for companies" works best with the toggle: without it, a filled-in company name makes the customer a company. The Slovak Tax ID follows it only with Validation → "SK: Require DIČ". The VAT ID stays optional, abroad with "only if you are a VAT payer".', 'woolab-ic-dic' ),
 			'id'      => woolab_icdic_settings_id( 'company_fields' ),
 			'default' => 'optional',
 			'type'    => 'select',
@@ -162,6 +162,13 @@ function woolab_icdic_settings_validation() {
 			'title'   => __( 'SK: Disable DIČ / IČ DPH match check', 'woolab-ic-dic' ),
 			'desc'    => __( 'Disable validation that IČ DPH must equal "SK" + DIČ. Some non-profit organizations have IČ DPH that does not match their DIČ.', 'woolab-ic-dic' ),
 			'id'      => woolab_icdic_settings_id( 'disable_dic_dph_match' ),
+			'default' => 'no',
+			'type'    => 'checkbox',
+		),
+		array(
+			'title'   => __( 'SK: Require DIČ', 'woolab-ic-dic' ),
+			'desc'    => __( 'A Slovak company that enters its IČO has to enter its DIČ too, and "Required for companies" (General) asks for it. Off by default: non-profit organizations have an IČO but no DIČ.', 'woolab-ic-dic' ),
+			'id'      => woolab_icdic_settings_id( 'sk_dic_required' ),
 			'default' => 'no',
 			'type'    => 'checkbox',
 		),

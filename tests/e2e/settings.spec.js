@@ -43,8 +43,8 @@ const VAT_PAYER = ' (optional, only if you are a VAT payer)';
 const MARKS = {
 	optional: { company: OPTIONAL, ic: OPTIONAL, dic: OPTIONAL, dic_dph: OPTIONAL, ic_de: OPTIONAL },
 	plain: { company: '', ic: '', dic: '', dic_dph: '', ic_de: '' },
-	asterisk: { company: ' *', ic: ' *', dic: ' *', dic_dph: '', ic_de: '' },
-	required: { company: ' *', ic: ' *', dic: ' *', dic_dph: '', ic_de: '' },
+	asterisk: { company: ' *', ic: ' *', dic: '', dic_dph: '', ic_de: '' },
+	required: { company: ' *', ic: ' *', dic: '', dic_dph: '', ic_de: '' },
 };
 // The block checkout marks nothing it requires.
 const blockMark = ( mark ) => ( OPTIONAL === mark ? OPTIONAL : '' );
@@ -113,6 +113,34 @@ for ( const [ mode, marks ] of Object.entries( MARKS ) ) {
 		}
 	} );
 }
+
+test( '"SK: Require DIČ" makes the Slovak DIČ required for companies', async ( { page, context, baseURL } ) => {
+	const set = async ( section, key, apply ) => {
+		await page.goto( url( section ) );
+		await apply( setting( page, key ) );
+		await setting( page, key ).dispatchEvent( 'change' );
+		await save( page );
+	};
+	await set( '', 'company_fields', ( el ) => el.selectOption( 'required' ) );
+	await set( 'validation', 'sk_dic_required', ( el ) => el.check() );
+	try {
+		await fillCart( page );
+		await page.goto( '/checkout/' );
+		await page.locator( '#shipping-country' ).selectOption( 'SK' );
+		await expect.poll( () => page.evaluate( () => wp.data.select( wc.wcBlocksData.CART_STORE_KEY ).getCustomerData().billingAddress.country ) ).toBe( 'SK' );
+		await page.locator( '#order-kybernaut-iscomp' ).check();
+		await page.locator( '.wc-block-components-checkout-place-order-button' ).click();
+		await expect( page.locator( '.has-error #order-kybernaut-dic-sk' ) ).toBeVisible();
+
+		await classicCheckout( page, context, baseURL );
+		await setCountry( page, 'SK' );
+		await expect( page.locator( 'label[for="billing_dic"]' ) ).toHaveText( ends( 'Tax ID', ' *' ) );
+	} finally {
+		await context.clearCookies( { name: 'woolab_e2e_checkout' } );
+		await set( 'validation', 'sk_dic_required', ( el ) => el.uncheck() );
+		await set( '', 'company_fields', ( el ) => el.selectOption( 'optional' ) );
+	}
+} );
 
 test( 'a status icon colour reaches the checkout', async ( { page } ) => {
 	await page.goto( url( 'appearance' ) );

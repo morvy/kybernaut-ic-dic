@@ -34,7 +34,7 @@ if ( ! defined( 'WPINC' ) ) {
  *     @type bool        check_country_match
  *     @type bool        require_sk_ic_and_dic
  *     @type bool        check_dic_dph_match
- *     @type bool        require_company    Optional. A company must enter its name, and in SK its Tax ID ("Required" mode).
+ *     @type bool        require_company    Optional. A company must enter its name ("Required" mode).
  *     @type bool        require_ic         Optional. A company must enter a Business ID in this country ("Required" mode).
  *     @type bool        toggle_enabled     Optional. Whether the "Buying as a company" toggle is on.
  *     @type bool        iscomp             Optional. Whether "Buying as a company" is checked.
@@ -213,9 +213,9 @@ function woolab_icdic_validate_checkout( array $input ) {
 
 		}
 
-	} elseif ( 'SK' === $country && ( $is_company || ( $input['require_sk_ic_and_dic'] && ! empty( $input['ic'] ) ) ) ) {
-		// The Slovak DIČ is no VAT number, but it goes with the IČO, and a company
-		// needs it in the "Required" mode.
+	} elseif ( 'SK' === $country && $input['require_sk_ic_and_dic'] && ( $is_company || ! empty( $input['ic'] ) ) ) {
+		// Opt-in, with an IČO and for a company in the "Required" mode: non-profit
+		// organisations have an IČO but no DIČ.
 		$errors[] = array( 'code' => 'invalid_tax_id_sk' );
 	}
 

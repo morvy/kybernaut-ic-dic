@@ -378,7 +378,9 @@ class ValidationTest extends TestCase {
 		return array(
 			'CZ company, nothing entered'        => array( array(), array( 'missing_company', 'missing_business_id' ) ),
 			'CZ company, all entered'            => array( array( 'company' => 'Alza.cz a.s.', 'ic' => '27082440', 'ares_check' => false ), array() ),
-			'SK company needs the Tax ID'        => array( array( 'country' => 'SK', 'company' => 'Firma s.r.o.', 'ic' => '27082440', 'require_sk_ic_and_dic' => false ), array( 'invalid_tax_id_sk' ) ),
+			'SK non-profit, no Tax ID'           => array( array( 'country' => 'SK', 'company' => 'Združenie o.z.', 'ic' => '27082440', 'require_sk_ic_and_dic' => false ), array() ),
+			'SK, Tax ID required by the store'   => array( array( 'country' => 'SK', 'company' => 'Firma s.r.o.', 'ic' => '27082440' ), array( 'invalid_tax_id_sk' ) ),
+			'SK, Tax ID required, no IČO either' => array( array( 'country' => 'SK', 'company' => 'Firma s.r.o.' ), array( 'missing_business_id', 'invalid_tax_id_sk' ) ),
 			'AT company, no Business ID asked'   => array( array( 'country' => 'AT', 'company' => 'Firma GmbH', 'require_ic' => false ), array() ),
 			'not buying as a company'            => array( array( 'iscomp' => false ), array() ),
 			'mode off'                           => array( array( 'require_company' => false, 'require_ic' => false ), array() ),

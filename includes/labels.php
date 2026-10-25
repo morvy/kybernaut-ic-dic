@@ -93,10 +93,12 @@ function woolab_icdic_base_country() {
  * What follows a label in the checkout form: 'optional', 'required' (an asterisk),
  * 'vat_payer' ("(optional, only if you are a VAT payer)") or '' (nothing).
  *
- * The company name, the Business ID where every company has one and the Slovak
- * Tax ID follow woolab_icdic_fields_mode(). The VAT ID is always optional: abroad
- * only a VAT payer's number exempts the order, so the hint says who enters it; in
- * the shop's own country it exempts nothing, so it follows the mode without one.
+ * The company name, the Business ID where every company has one and, when the
+ * store requires it, the Slovak Tax ID follow woolab_icdic_fields_mode(). The rest
+ * is always optional, marked only in the "optional" mode: the Business ID
+ * elsewhere, the Slovak Tax ID otherwise (non-profit organisations have an IČO
+ * but no DIČ), and the VAT ID in the shop's own country, where it exempts nothing. Abroad only a VAT payer's number exempts the
+ * order, so there the VAT ID says who enters it.
  *
  * @param string $key     'company', 'ic', 'dic' or 'dic_dph'.
  * @param string $country Billing country code, '' when unknown (the Slovak set).
@@ -114,7 +116,7 @@ function woolab_icdic_field_mark( $key, $country ) {
 		return 'optional' === $mode ? 'optional' : '';
 	}
 
-	if ( 'ic' === $key && ! $sk && ! in_array( $country, woolab_icdic_ic_home_countries(), true ) ) {
+	if ( ( 'ic' === $key && ! $sk && ! in_array( $country, woolab_icdic_ic_home_countries(), true ) ) || ( 'dic' === $key && $sk && ! woolab_icdic_sk_dic_required() ) ) {
 		$mode = 'optional' === $mode ? 'optional' : 'plain';
 	}
 
@@ -168,6 +170,23 @@ function woolab_icdic_form_labels( $country, $html = false ) {
 	}
 
 	return $labels;
+}
+
+/**
+ * Whether a Slovak company needs a DIČ (Settings → IČO DIČ → Validation): with an
+ * IČO, and in the "Required" mode. Off by default: non-profit organisations have
+ * an IČO but no DIČ.
+ *
+ * @return bool
+ */
+function woolab_icdic_sk_dic_required() {
+	/**
+	 * Require the Slovak DIČ.
+	 *
+	 * @since 1.4.0
+	 * @param bool $required The setting.
+	 */
+	return (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', 'yes' === woolab_icdic_setting( 'sk_dic_required' ) );
 }
 
 /**

@@ -281,8 +281,14 @@ function woolab_icdic_checkout_field_process() {
 		'sk_check'              => (bool) woolab_icdic_sk_check(),
 		'sk_fill'               => (bool) woolab_icdic_sk_fill(),
 		'ignore_check_fail'     => (bool) woolab_icdic_ignore_check_fail(),
+		/**
+		 * Match the VAT number's country prefix to the billing and shipping country.
+		 *
+		 * @since 1.4.0
+		 * @param bool $check
+		 */
 		'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
-		'require_sk_ic_and_dic' => (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', true ),
+		'require_sk_ic_and_dic' => woolab_icdic_sk_dic_required(),
 		'check_dic_dph_match'   => (bool) woolab_icdic_dic_dicdph_match_enabled(),
 		'require_company'       => 'required' === woolab_icdic_fields_mode(),
 		// Only where every company has one, and not where the field is hidden.

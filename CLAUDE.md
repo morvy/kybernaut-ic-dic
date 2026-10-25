@@ -116,7 +116,7 @@ composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10
 - **Czech IC (Business ID)**: Mathematical validation via `woolab_icdic_verify_ic()` + optional ARES check
 - **Czech DIC (Tax ID)**: Can be either RC (birth number) or IC-based, validated mathematically
 - **Slovak IC**: Finančná správa lists when `woolab_icdic_sk_check` is on (an IČO not listed is accepted, without autofill), otherwise the 8-digit modulo-11 check
-- **Slovak DIC**: Required when IC is present, mathematical validation, then looked up in the lists and matched to the IČO
+- **Slovak DIC**: Optional (non-profits have an IČO but no DIČ; the "SK: Require DIČ" setting / `woolab_icdic_sk_required_ic_and_dic` requires it with an IČO and in the "Required" mode), mathematical validation, then looked up in the lists and matched to the IČO
 - **Slovak DIC DPH (VAT)**: Finančná správa list first, EU VIES for what the list lacks; must match DIC with SK prefix unless the lists tie both to the same IČO (VAT groups)
 - **EU VAT numbers**: VIES REST API (`includes/vies.php`); `ibericode/vat` only for the number formats and the EU country list
 
@@ -148,7 +148,7 @@ composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10
 
 **Slovakia (SK):**
 - IC (Business ID): 8 digits, mathematical validation
-- DIC (Tax ID): 10 digits, required when IC is present (not a VAT number)
+- DIC (Tax ID): 10 digits, optional (non-profits have none; not a VAT number)
 - DIC DPH (VAT registration): SK prefix + 10 digits, optional, validated via VIES
 - Special validation: DIC DPH must match DIC with SK prefix
 
@@ -165,7 +165,7 @@ composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10
 - `woolab_icdic_ignore_check_fail` - Allow orders even if validation fails
 - `woolab_icdic_vat_exempt_enabled` - Control VAT exemption feature
 - `woolab_icdic_base_country` - Override base country for VAT exemption logic
-- `woolab_icdic_sk_required_ic_and_dic` - Require both IC and DIC in Slovakia
+- `woolab_icdic_sk_required_ic_and_dic` - Require the DIC in Slovakia (default: the "SK: Require DIČ" setting, off)
 - `woolab_icdic_update_user_meta` - Update user profile when editing orders
 
 ### Known Limitations
