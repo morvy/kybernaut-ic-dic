@@ -17,6 +17,7 @@ use KybernautIcDic\Fields\Labels;
 use KybernautIcDic\Numbers\Checksum;
 use KybernautIcDic\Order\AdminScreen;
 use KybernautIcDic\Rest\Routes;
+use KybernautIcDic\Services\Services;
 use KybernautIcDic\Settings\Fields;
 use KybernautIcDic\Settings\Flags;
 use KybernautIcDic\Settings\Options;
@@ -175,12 +176,12 @@ function woolab_icdic_country_ontop_enabled() {
 }
 
 /**
- * The company name search.
+ * The company name search: whether any country has a company_search service.
  *
  * @return bool
  */
 function woolab_icdic_suggest_enabled() {
-	return Flags::suggest();
+	return (bool) array_column( Services::map(), 'company_search' );
 }
 
 /**

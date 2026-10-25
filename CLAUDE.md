@@ -76,17 +76,22 @@ composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10
 
 ### Code Organization
 
-**PHP Structure:**
-- `woolab-ic-dic.php` - Main plugin file with initialization, hooks registration, and core helper functions
-- `includes/` - Core functionality organized by responsibility:
-  - `filters-actions.php` - Main business logic for checkout fields, validation, and order processing
-  - `ares.php` - Czech ARES registry API integration for Business ID verification
-  - `financna-sprava.php` - Slovak Finančná správa DIČ / IČ DPH lists: daily WP-Cron import into a SQLite file in uploads, local IČO / DIČ / IČ DPH lookups
-  - `helpers.php` - Mathematical validation functions for IC/DIC/RC numbers
-  - `settings.php` - WooCommerce settings integration
-  - `logger.php` - Custom logging implementation
-  - `blocks.php` - Cart & Checkout Blocks: Additional Checkout Fields API + Store API hooks
-  - `compatibility/` - Third-party plugin compatibility layers (SuperFaktura, PDF Invoices, Fluid Checkout)
+**PHP Structure** (namespace `KybernautIcDic\`, PSR-4 from `src/`, Composer autoload):
+- `woolab-ic-dic.php` - constants, `vendor/autoload.php`, `Plugin::boot()`
+- `src/Plugin.php` - loads the translations, then calls the static `register()` of every class in `PARTS` (each hooks itself); HPOS / blocks compatibility declaration
+- `src/functions.php` - the public `woolab_icdic_*` functions, thin wrappers over the classes (autoload "files"); keep them, themes and plugins call them
+- `src/Settings/` - `Options` (the one `woolab_icdic_settings` option, 1.x migration), `Flags` (each switch: setting + its 1.x filter), `SettingsPage`, `Fields` (the settings sections), `FilterOverrides` (a setting a filter decides over)
+- `src/Fields/` - `Labels` (labels by billing country), `Countries` (base country, IČO countries, fields mode)
+- `src/Validation/` - `Validator` runs the checks in `Checks/` (one class per rule, `Check` interface, `AbstractCheck` base); `Context` (the checkout input, its country's services, lookups memoised), `Result` (errors / notices per field), `Errors` (code → field and message), `SkLists`
+- `src/Services/` - one class per external service: `Ares/Ares.php`, `Vies/Vies.php`, `FinancnaSprava/` (`FinancnaSprava`, `Importer`: daily WP-Cron import + WP-CLI `wp woolab-icdic sk-import`, `Storage`: the SQLite file in uploads); `Service` interface, `AbstractService`, `CallbackService` (closures), `Services` (the country → feature → services map)
+- `src/Numbers/Checksum.php` - mathematical IČO / DIČ / RČ / NIP / adószám checks
+- `src/Checkout/` - `Classic` (shortcode checkout fields, `checkout_field_process`), `Blocks` (Additional Checkout Fields API, Store API validation), `BlocksIntegration`, `CartExtension`, `VatExempt`
+- `src/Order/` - `Meta` (order meta), `AdminScreen` (admin billing fields, check-failed notices), `Display` (addresses, order details, e-mails), `Customer` (user meta)
+- `src/Rest/Routes.php` - `woolab-ic-dic/v1/lookup` and `/search`
+- `src/Assets.php` - enqueues, script data (per-country `services`), colour CSS variables
+- `src/Admin/PluginLinks.php`, `src/Logger.php`
+- `src/Compat/` - `SuperFaktura`, `PdfInvoices`, `FluidCheckout` (not registered by Plugin)
+- `uninstall.php` - removes the settings and the Slovak lists
 
 **Frontend Assets:**
 - `resources/` - Source files (unminified)
@@ -102,37 +107,49 @@ composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10
 **Dependencies:**
 - Uses `wpify/scoper` to namespace third-party dependencies (prefix: `KybernautIcDicDeps`)
 - Scoped dependencies are in `deps/` directory
-- Main dependency: `ibericode/vat` for VAT number formats and EU countries (VIES itself is called over REST, `includes/vies.php`)
+- Main dependency: `ibericode/vat` for VAT number formats and EU countries (VIES itself is called over REST, `src/Services/Vies/Vies.php`)
 
 ### Key Architectural Patterns
 
 **Field Registration Flow:**
-1. Fields added via `woocommerce_billing_fields` and `woocommerce_checkout_fields` filters
-2. Validation happens in `woolab_icdic_checkout_field_process` action on `woocommerce_checkout_process`
-3. Fields are saved to order meta automatically by WooCommerce
-4. Custom fields displayed via `woocommerce_admin_billing_fields` filter
+1. Classic: `Checkout\Classic` adds the fields on `woocommerce_billing_fields` / `woocommerce_checkout_fields`, validates on `woocommerce_checkout_process` (`checkout_field_process`), `Order\Meta` saves them
+2. Blocks: `Checkout\Blocks` registers `kybernaut/*` fields (Additional Checkout Fields API), validates on `woocommerce_blocks_validate_location_order_fields`, mirrors them to the `_billing_ic` / `_billing_dic` / `_billing_dic_dph` meta
+3. Both build a `Validation\Context` and run `Validation\Validator::run()`; `Errors` puts each finding under its field
+4. Admin: `Order\AdminScreen` on `woocommerce_admin_billing_fields`
+
+**Checks** (`src/Validation/Checks/`, order in `Validator::default_checks()`):
+- Each implements `Check`: `id()`, `field()` ('company', 'ic', 'dic', 'dic_dph'), `applies( Context )`, `run( Context, Result )`
+- Filters: `woolab_icdic_checks` (add / replace by id / remove), `woolab_icdic_check_applies`, `woolab_icdic_check_result`, `woolab_icdic_validation_result`
+- Checks ask registers only through `Context` (`company()`, `tax_id()`, `vat_id()`), never a service directly; `Checks\TaxId::route()` picks a DIČ's one route (domestic tax number, VIES, CZ format, SK)
+
+**Services** (`src/Services/`):
+- Features: `company_search`, `company_lookup`, `tax_id`, `vat_id` (`Service` methods `search_companies()`, `lookup_company()`, `validate_tax_id()`, `validate_vat_id()`; null = not supported)
+- `Services::map()`: country ('*' = every other) => feature => services asked in order; defaults follow the settings (CZ: ARES, SK: Finančná správa then VIES for the VAT ID, '*': VIES), `woolab_icdic_services` replaces or adds
+- `Services::autofill( $country )` = a `company_search` service is assigned; the script data lists lookup / search / autofill per country, so a store's own service autofills and suggests in both checkouts
+- `Services::uses( 'financna_sprava' )` gates the daily import
 
 **Validation Strategy:**
-- **Czech IC (Business ID)**: Mathematical validation via `woolab_icdic_verify_ic()` + optional ARES check
-- **Czech DIC (Tax ID)**: Can be either RC (birth number) or IC-based, validated mathematically
-- **Slovak IC**: Finančná správa lists when `woolab_icdic_sk_check` is on (an IČO not listed is accepted, without autofill), otherwise the 8-digit modulo-11 check
-- **Slovak DIC**: Optional (non-profits have an IČO but no DIČ; the "Require DIČ" setting, for the shop's own country, requires it with an IČO and in the "Required" mode; `woolab_icdic_sk_required_ic_and_dic` decides for a Slovak shop), mathematical validation, then looked up in the lists and matched to the IČO
-- **Slovak DIC DPH (VAT)**: Finančná správa list first, EU VIES for what the list lacks; must match DIC with SK prefix unless the lists tie both to the same IČO (VAT groups)
-- **EU VAT numbers**: VIES REST API (`includes/vies.php`); `ibericode/vat` only for the number formats and the EU country list
+- **Czech IC (Business ID)**: `BusinessIdFormat` (checksum) + `BusinessIdRegistry` (ARES when `ares_check` is on; with `ares_fill`, the entered company is compared)
+- **Czech DIC (Tax ID)**: RČ (birth number) or IČO-based, `TaxIdFormat`; a CZ DIČ VIES does not list is a non-payer, not an error
+- **Slovak IC**: Finančná správa lists when `sk_check` is on (an IČO not listed is accepted, without autofill), otherwise the 8-digit modulo-11 check
+- **Slovak DIC**: Optional (non-profits have an IČO but no DIČ; "Require DIČ" for the shop's own country, `woolab_icdic_sk_required_ic_and_dic` decides for a Slovak shop), `TaxIdFormat`, then `TaxIdRegistry` (listed, belongs to the IČO)
+- **Slovak DIC DPH (VAT)**: `IcDphVerify` (lists first, VIES for what they lack), `IcDphTaxIdMatch` (SK + DIČ unless the lists tie both to the same IČO: VAT groups)
+- **EU VAT numbers**: `VatIdVies` (format, VIES REST); `DomesticTaxNumber` for a PL / HU number without prefix; `ibericode/vat` only for the formats and the EU country list
+- **Other countries' Business ID**: checked by any `company_lookup` service a store assigns
 
-**ARES Integration:**
-- New REST API endpoint (since 2024): `https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/{ico}`
-- Used for both validation and autofill functionality
-- REST routes `woolab-ic-dic/v1/lookup` and `/search` (`includes/rest.php`), public, rate limited with WooCommerce's Store API `RateLimits`
-- Graceful degradation: if ARES fails and `woolab_icdic_ignore_check_fail` is enabled, order proceeds with warning
+**ARES Integration** (`src/Services/Ares/Ares.php`):
+- REST endpoint `https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/{ico}`, answers cached (`woolab_icdic_ares_cache_ttl`)
+- `lookup_company()` returns `error` false + `spolecnost`, `ico`, `dic`, `adresa`, `psc`, `mesto` (the shape every service returns); `search_companies()` for the name suggestions
+- `Rest\Routes` `woolab-ic-dic/v1/lookup` and `/search` answer for any country with a service, public, rate limited with WooCommerce's Store API `RateLimits` (`woolab_icdic_rest_rate_limit`)
+- Graceful degradation: `internal_error` + "Ignore when a check fails" (`woolab_icdic_ignore_check_fail`) lets the order through with a notice in the admin
 
 **VAT Exemption Logic:**
 - Automatically sets `WC_Customer->set_is_vat_exempt()` for valid intra-EU B2B transactions
 - Only applies when:
   - Base country differs from billing country
   - Both countries are in EU VAT area
-  - Valid VAT number verified via VIES
-- Controlled by `woolab_icdic_vat_exempt_switch` setting
+  - Valid VAT number (`Services::vat_state()`: the country's `vat_id` services, VIES when none)
+- `Checkout\VatExempt`; the `vat_exempt` setting and `woolab_icdic_vat_exempt_enabled`
 
 **HPOS Compatibility:**
 - Plugin declares compatibility via `FeaturesUtil::declare_compatibility()`
@@ -147,9 +164,9 @@ composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10
 - ARES autofill can populate company name, address, postcode, city
 
 **Slovakia (SK):**
-- IC (Business ID): 8 digits, mathematical validation
+- IC (Business ID): 8 digits, Finančná správa lists or the checksum
 - DIC (Tax ID): 10 digits, optional (non-profits have none; not a VAT number)
-- DIC DPH (VAT registration): SK prefix + 10 digits, optional, validated via VIES
+- DIC DPH (VAT registration): SK prefix + 10 digits, optional, the lists then VIES
 - Special validation: DIC DPH must match DIC with SK prefix
 
 **Other EU Countries:**
@@ -158,34 +175,39 @@ composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10
 
 ### Important Filters for Customization
 
-- `woolab_icdic_class_{field_name}` - Modify field CSS classes
-- `woolab_icdic_ares_check` - Enable/disable ARES validation
-- `woolab_icdic_ares_fill` - Enable/disable ARES autofill
-- `woolab_icdic_vies_check` - Enable/disable VIES validation
-- `woolab_icdic_ignore_check_fail` - Allow orders even if validation fails
+- `woolab_icdic_checks`, `woolab_icdic_check_applies`, `woolab_icdic_check_result`, `woolab_icdic_validation_result` - the checks (`Validation\Validator`)
+- `woolab_icdic_services` - which service answers which feature per country (`Services\Services`)
+- `woolab_icdic_class_billing_{field}` - Modify field CSS classes
+- `woolab_icdic_ares_check`, `woolab_icdic_ares_fill`, `woolab_icdic_sk_check`, `woolab_icdic_sk_fill`, `woolab_icdic_vies_check` - the registers' settings (`Settings\Flags`)
+- `woolab_icdic_ignore_check_fail` - Allow orders even if a register cannot answer
 - `woolab_icdic_vat_exempt_enabled` - Control VAT exemption feature
 - `woolab_icdic_base_country` - Override base country for VAT exemption logic
+- `woolab_icdic_ic_countries` - countries where every company has an IČO (CZ, SK)
+- `woolab_icdic_labels` - field labels by country
 - `woolab_icdic_sk_required_ic_and_dic` - Require the DIC for a Slovak shop (default: the "Require DIČ" setting, off)
+- `woolab_icdic_rest_rate_limit` - rate limit of the REST routes
 - `woolab_icdic_update_user_meta` - Update user profile when editing orders
+
+A filter that decides over a setting is shown on the settings page (`Settings\FilterOverrides`).
 
 ### Known Limitations
 
-- Fluid Checkout compatibility exists but not loaded globally (must be manually included)
+- Fluid Checkout compatibility exists but is not registered: call `\KybernautIcDic\Compat\FluidCheckout::register()` from the theme or a plugin
+- Hook callbacks are class methods: `remove_action()` needs `array( 'KybernautIcDic\…\Class', 'method' )`, the 1.x function names no longer match
 
 ## Common Development Patterns
 
-### Adding a new validation function
-Validation helpers go in `includes/helpers.php`. Follow the pattern of existing functions like `woolab_icdic_verify_ic()` - return boolean, accept clean input (no whitespace).
+### Adding a check
+A class in `src/Validation/Checks/` extending `AbstractCheck` (set `$field`, implement `id()`, `applies()`, `run()`), added to `Validator::default_checks()` where its errors should be listed. Error codes need a message and field in `Validation\Errors` (or pass the message to `Result::add_error()`). Number rules (checksums) go in `Numbers\Checksum` as static methods: boolean, clean input (no whitespace). Ask registers through `Context`.
+
+### Adding a service
+A class extending `Services\AbstractService` (`id()`, `name()`, the features it supports, returning the shapes documented in `Services\Service`), assigned in `Services::map()` behind its setting (`Settings\Flags`). The checks, both checkouts, the REST routes and the script data pick it up from the map. Store-side services go through `woolab_icdic_services` (readme FAQ has a Polish example).
 
 ### Modifying ARES response parsing
-The ARES API structure is defined in `includes/ares.php`. The API returns JSON with structure:
-- `obchodniJmeno` - company name
-- `ico` - business ID
-- `dic` - tax ID
-- `sidlo` object with address components
+`src/Services/Ares/Ares.php`. The API returns JSON with `obchodniJmeno` (company name), `ico`, `dic`, and the `sidlo` object with the address.
 
-### Testing checkout validation
-Tests go in `tests/unit/` and extend `KybernautIcDic\Test\TestCase`. Mock WordPress functions with Brain Monkey: `Functions\when( 'fn' )->justReturn( … )` for a stub, `Functions\expect( 'fn' )->once()` for an expectation (see `tests/unit/ProcessShopOrderTest.php`). Data providers are `#[DataProvider( 'name' )]` attributes on public static methods.
+### Tests
+Unit tests go in `tests/unit/` and extend `KybernautIcDic\Test\TestCase` (`tests/TestCase.php`). Mock WordPress functions with Brain Monkey: `Functions\when( 'fn' )->justReturn( … )` for a stub, `Functions\expect( 'fn' )->once()` for an expectation (see `tests/unit/ProcessShopOrderTest.php`); settings via `get_option` returning the `woolab_icdic_settings` array. Data providers are `#[DataProvider( 'name' )]` attributes on public static methods. Checks and filters: `ValidatorTest`, the 1.x validation cases: `ValidationTest`, `ValidationSkTest`. End-to-end specs in `tests/e2e/` (`mu-plugin.php` fakes VIES and, by cookie, a store's check or Polish service).
 
 ### Scoping dependencies
 Dependencies are scoped using wpify/scoper to avoid conflicts. Configuration in composer.json:

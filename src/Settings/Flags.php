@@ -147,11 +147,4 @@ final class Flags {
 		 */
 		return 'no' !== apply_filters( 'woolab_icdic_country_ontop', Options::get( 'country_ontop' ) );
 	}
-
-	/**
-	 * The company name search runs wherever a register also autofills.
-	 */
-	public static function suggest(): bool {
-		return ( self::ares_check() && self::ares_fill() ) || ( self::sk_check() && self::sk_fill() );
-	}
 }

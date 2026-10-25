@@ -117,6 +117,123 @@ Set WooCommerce → Settings → IČO DIČ → General → Company fields to "Re
 
 With the "Buying as a company" toggle enabled, a company is a customer who checked it. With the toggle disabled, a filled-in Company field is what makes the customer a company, so the IDs are required once it is filled in. The other choices mark the fields without enforcing anything: "(optional)" (WooCommerce's default), no mark, or an asterisk (what the `woolab_icdic_fake_required` filter did, which still works). The VAT ID is optional in every mode: in other countries than the shop's it reads "(optional, only if you are a VAT payer)".
 
+= How do I add my own check? =
+
+Both checkouts validate the company fields through one list of checks, each a class (`KybernautIcDic\Validation\Check`). Four filters reach them: `woolab_icdic_checks` adds, replaces (same id) or removes checks, `woolab_icdic_check_applies` switches one off for a case, `woolab_icdic_check_result` changes what one check found, `woolab_icdic_validation_result` the final errors and notices. An error with a message of your own shows under its field, as the built-in ones do. The built-in ids: `company_required`, `business_id_required`, `business_id_registry`, `business_id_format`, `domestic_tax_number`, `vat_id_country`, `vat_id_vies`, `tax_id_format`, `tax_id_registry`, `tax_id_required`, `ic_dph_country`, `ic_dph_verify`, `ic_dph_tax_id_match`.
+
+`// A check of your own: some Business IDs may not order online.
+class My_Blocked_Ic extends \KybernautIcDic\Validation\AbstractCheck {
+
+	protected string $field = 'ic'; // 'company', 'ic', 'dic' or 'dic_dph': the error shows under it.
+
+	public function id(): string {
+		return 'my_blocked_ic';
+	}
+
+	public function applies( \KybernautIcDic\Validation\Context $context ): bool {
+		return $context->entered( 'ic' );
+	}
+
+	public function run( \KybernautIcDic\Validation\Context $context, \KybernautIcDic\Validation\Result $result ): void {
+		if ( in_array( $context->number( 'ic' ), array( '12345678', '87654321' ), true ) ) {
+			$result->add_error( $this->field(), 'my_blocked_ic', array(), __( 'Please call us to order.', 'my-theme' ) );
+		}
+	}
+}
+
+// Add it (or replace a built-in check under its id, or unset one).
+add_filter( 'woolab_icdic_checks', function ( array $checks ) {
+	$checks['my_blocked_ic'] = new My_Blocked_Ic();
+	return $checks;
+} );
+
+// Switch a check off for one case: no billing / shipping country match for Poland.
+add_filter( 'woolab_icdic_check_applies', function ( $applies, $check, $context ) {
+	return 'vat_id_country' === $check->id() && 'PL' === $context->country() ? false : $applies;
+}, 10, 3 );
+
+// Let a finding of one check through: a company name that differs from ARES.
+add_filter( 'woolab_icdic_check_result', function ( $result, $check, $context ) {
+	if ( 'business_id_registry' === $check->id() ) {
+		$result->remove( 'ares_mismatch' );
+	}
+	return $result;
+}, 10, 3 );
+
+// Everything the checks found, once: $result->errors(), ->notices(), ->remove( $code ).
+add_filter( 'woolab_icdic_validation_result', function ( $result, $context ) {
+	return $result;
+}, 10, 2 );`
+
+= How do I plug in my national register (Poland, Hungary, …)? =
+
+Each external service (ARES, Finančná správa, VIES) is a class assigned to features per billing country with the `woolab_icdic_services` filter: `company_lookup` (company by Business ID), `company_search` (company by name), `tax_id` and `vat_id`. Extend `KybernautIcDic\Services\AbstractService` and implement the features your register has; the rest stay unsupported. With a `company_lookup` and a `company_search` service, a country gets what the Czech Republic has with ARES: autofill from the Business ID and company name suggestions in both checkouts, and the Business ID checked against the register when the order is placed (with the autofill, a company name, postcode or city that differs from the register's stops the order).
+
+`// A Polish company register. The REGON goes into the Business ID field.
+// https://rejestr.example.pl stands for your register's API (GUS BIR, a paid service, …).
+class My_Polish_Register extends \KybernautIcDic\Services\AbstractService {
+
+	public function id(): string {
+		return 'my_polish_register';
+	}
+
+	public function name(): string {
+		return 'GUS'; // In the messages: "Information loaded successfully from GUS."
+	}
+
+	// The company with this Business ID: autofill, and the check when the order is placed.
+	public function lookup_company( string $ico ): ?array {
+		$response = wp_remote_get( 'https://rejestr.example.pl/regon/' . rawurlencode( $ico ) );
+		$code     = wp_remote_retrieve_response_code( $response );
+
+		if ( 404 === $code ) {
+			return array( 'error' => __( 'No company with this REGON.', 'my-theme' ) );
+		}
+		if ( 200 !== $code ) {
+			// The register could not answer ("Ignore when a check fails" lets the order through).
+			return array( 'error' => __( 'GUS is not responding.', 'my-theme' ), 'internal_error' => true );
+		}
+
+		$company = json_decode( wp_remote_retrieve_body( $response ), true );
+		return array(
+			'error'      => false,
+			'spolecnost' => $company['name'],
+			'ico'        => $company['regon'],
+			'dic'        => $company['vat_payer'] ? 'PL' . $company['nip'] : '', // As the VAT ID field takes it.
+			'adresa'     => $company['street'],
+			'psc'        => $company['postcode'],
+			'mesto'      => $company['city'],
+		);
+	}
+
+	// Companies by name (3 letters or more), for the suggestions under the Company field.
+	public function search_companies( string $name ) {
+		$response = wp_remote_get( 'https://rejestr.example.pl/search?name=' . rawurlencode( $name ) );
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return false; // The register is down.
+		}
+
+		$found = array();
+		foreach ( array_slice( (array) json_decode( wp_remote_retrieve_body( $response ), true ), 0, 10 ) as $company ) {
+			$found[] = array(
+				'ico'     => $company['regon'],
+				'name'    => $company['name'],
+				'address' => $company['street'] . ', ' . $company['postcode'] . ' ' . $company['city'],
+			);
+		}
+		return $found; // Up to 10; an empty list when there are too many to list.
+	}
+}
+
+add_filter( 'woolab_icdic_services', function ( array $map ) {
+	$register                    = new My_Polish_Register();
+	$map['PL']['company_lookup'] = array( $register );
+	$map['PL']['company_search'] = array( $register );
+	return $map;
+} );`
+
+The Business ID field shows for every country unless Validation → "Business ID only where companies have one" is on; then add the country with the `woolab_icdic_ic_countries` filter. Assigning your own service to every feature of SK replaces Finančná správa, and its daily import (190 MB) stops.
+
 = How can I report security bugs? =
 
 You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/woolab-ic-dic)
@@ -184,6 +301,14 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 * Tweak: the settings moved from WooCommerce → Settings → General to their own tab, WooCommerce → Settings → IČO DIČ, with General, Validation, Appearance and Finančná správa sections. The Finančná správa section shows the import status (last import, row counts, database size, next run, last error, PHP extensions); Appearance sets the colours of the status icons and of the company name suggestions.
 * Tweak: settings are stored in one autoloaded option, `woolab_icdic_settings`, instead of ten. They are migrated automatically; the old options are kept, unused, so a downgrade to 1.11 still finds them. They will be removed in the next release. `woolab_icdic_get_option()` is deprecated, use `woolab_icdic_setting()`.
 * Tweak: `uninstall.php` removes the plugin settings (including the 1.x options) and the Slovak lists.
+* Tweak: the code is namespaced classes under `KybernautIcDic\`, autoloaded by Composer (PSR-4, `src/`); `includes/` is gone. The public `woolab_icdic_*` functions, filters, option and meta names, block field ids, REST routes and script handles stay.
+* Feature: every field check is a class of its own, hookable: `woolab_icdic_checks` adds, replaces or removes one, `woolab_icdic_check_applies` switches one off, `woolab_icdic_check_result` and `woolab_icdic_validation_result` change what was found. See the FAQ.
+* Feature: ARES, Finančná správa and VIES are services assigned per billing country and feature (company lookup, company search, DIČ, VAT ID) and replaceable with `woolab_icdic_services`. A store's own national service (e.g. Polish, Hungarian) gets the autofill and the company name suggestions in both checkouts, and its Business ID is checked when the order is placed. The Finančná správa import runs only while its lists are used. See the FAQ.
+* Tweak: `woolab_icdic_suggest_enabled()` is true when any country has a company search service.
+* Tweak: the scripts are built with @wordpress/scripts from `resources/` (`npm run build`); the `.min` copies are gone and the company name suggestions are bundled into the checkout scripts instead of a separate `suggest.js`. Handles are unchanged.
+* Fix: the classic checkout sends the billing country to the IČO lookup, not "SK" or "CZ".
+* **Breaking:** hook callbacks are class methods now, so `remove_action()` / `remove_filter()` with the old function names no longer match. Use the class, e.g. `remove_action( 'woocommerce_checkout_process', array( 'KybernautIcDic\Checkout\Classic', 'checkout_field_process' ) )` (the class name without a leading backslash, as the plugin registers it); others: `Checkout\Classic::billing_fields` and `checkout_fields`, `Checkout\VatExempt::validate_vat_exempt_for_company` and `set_vat_exempt_for_customer`, `Order\Meta::save_order_metadata`, `Order\AdminScreen::admin_billing_fields` and `process_shop_order`, `Order\Display::localisation_address_formats` and `formatted_address_replacements`, `Assets::enqueue_classic`.
+* **Breaking:** the Fluid Checkout compatibility is not a file to include any more: call `\KybernautIcDic\Compat\FluidCheckout::register();` where you included `includes/compatibility/fluidcheckout.php`.
 
 = 1.11.2 (2026-08-07) =
 

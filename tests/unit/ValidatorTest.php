@@ -283,6 +283,17 @@ class ValidatorTest extends TestCase {
 		$this->assertFalse( Services::autofill( 'DE' ) );
 	}
 
+	public function testSuggestionsWhereAnyCountryHasACompanySearch(): void {
+		\Brain\Monkey\Functions\when( 'get_option' )->justReturn( array( 'ares_check' => 'yes', 'vies_check' => 'yes' ) );
+		$this->assertFalse( woolab_icdic_suggest_enabled() ); // ares_fill off, no other search.
+	}
+
+	public function testSuggestionsForANationalCompanySearch(): void {
+		\Brain\Monkey\Functions\when( 'get_option' )->justReturn( array( 'ares_check' => 'yes', 'vies_check' => 'yes' ) );
+		self::polish_register();
+		$this->assertTrue( woolab_icdic_suggest_enabled() );
+	}
+
 	public function testANationalServiceComparesTheCompanyWithAutofill(): void {
 		\Brain\Monkey\Functions\when( 'get_option' )->justReturn( array() );
 		self::polish_register();
