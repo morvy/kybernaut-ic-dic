@@ -10,8 +10,14 @@
 
 use KybernautIcDic\Checkout\Blocks;
 use KybernautIcDic\Checkout\VatExempt;
+use KybernautIcDic\Compat\PdfInvoices;
+use KybernautIcDic\Compat\SuperFaktura;
+use KybernautIcDic\Fields\Countries;
+use KybernautIcDic\Fields\Labels;
 use KybernautIcDic\Numbers\Checksum;
 use KybernautIcDic\Order\AdminScreen;
+use KybernautIcDic\Rest\Routes;
+use KybernautIcDic\Settings\Fields;
 use KybernautIcDic\Settings\Flags;
 use KybernautIcDic\Settings\Options;
 use KybernautIcDic\Validation\Context;
@@ -19,6 +25,8 @@ use KybernautIcDic\Validation\SkLists;
 use KybernautIcDic\Validation\Validator;
 
 const WOOLAB_ICDIC_SETTINGS = Options::NAME;
+
+const WOOLAB_ICDIC_REST_NAMESPACE = Routes::REST_NAMESPACE;
 
 /**
  * Setting key => array( 1.x option name or null, default ).
@@ -549,4 +557,166 @@ function woolab_icdic_blocks_owns_company() {
  */
 function woolab_icdic_blocks_checkout() {
 	return Blocks::checkout();
+}
+
+/**
+ * Labels of the company identifier fields for a billing country.
+ *
+ * @param string $country Billing country code, '' for the Slovak set.
+ * @return array{ic:string, dic:string, dic_dph:string}
+ */
+function woolab_icdic_labels( $country ) {
+	return Labels::labels( $country );
+}
+
+/**
+ * What follows a label in the checkout form: 'optional', 'required', 'vat_payer' or ''.
+ *
+ * @param string $key     'company', 'ic', 'dic' or 'dic_dph'.
+ * @param string $country Billing country code, '' when unknown.
+ * @return string
+ */
+function woolab_icdic_field_mark( $key, $country ) {
+	return Labels::field_mark( $key, $country );
+}
+
+/**
+ * A label with its mark, as text or HTML.
+ *
+ * @param string $label Field label.
+ * @param string $mark  woolab_icdic_field_mark().
+ * @param bool   $html  HTML instead of text.
+ * @return string
+ */
+function woolab_icdic_marked_label( $label, $mark, $html = false ) {
+	return Labels::marked_label( $label, $mark, $html );
+}
+
+/**
+ * The labels as the checkout form shows them, marked.
+ *
+ * @param string $country Billing country code.
+ * @param bool   $html    HTML instead of text.
+ * @return array{ic:string, dic:string, dic_dph:string}
+ */
+function woolab_icdic_form_labels( $country, $html = false ) {
+	return Labels::form_labels( $country, $html );
+}
+
+/**
+ * The labels for the classic checkout script, by billing country.
+ *
+ * @param bool $form Form labels as HTML, or the bare ones.
+ * @return array<string,array<string,string>>
+ */
+function woolab_icdic_labels_by_country( $form = true ) {
+	return Labels::labels_by_country( $form );
+}
+
+/**
+ * A label in front of a value: "VAT ID: CZ27082440".
+ *
+ * @param string $label Field label.
+ * @return string
+ */
+function woolab_icdic_label_prefix( $label ) {
+	return Labels::label_prefix( $label );
+}
+
+/**
+ * How the company fields are marked: 'optional', 'plain', 'asterisk' or 'required'.
+ *
+ * @return string
+ */
+function woolab_icdic_fields_mode() {
+	return Countries::fields_mode();
+}
+
+/**
+ * The shop's country, as the VAT exemption sees it.
+ *
+ * @return string
+ */
+function woolab_icdic_base_country() {
+	return Countries::base_country();
+}
+
+/**
+ * Whether a company from this country needs a DIČ.
+ *
+ * @param string $country Billing country.
+ * @return bool
+ */
+function woolab_icdic_dic_required( $country ) {
+	return Countries::dic_required( $country );
+}
+
+/**
+ * The countries the Business ID field is shown for, or null for every country.
+ *
+ * @return string[]|null
+ */
+function woolab_icdic_ic_countries() {
+	return Countries::ic_countries();
+}
+
+/**
+ * The countries where every company has a Business ID.
+ *
+ * @return string[]
+ */
+function woolab_icdic_ic_home_countries() {
+	return Countries::ic_home_countries();
+}
+
+/**
+ * Whether the Business ID field is shown for a billing country.
+ *
+ * @param string $country Billing country code.
+ * @return bool
+ */
+function woolab_icdic_ic_shown( $country ) {
+	return Countries::ic_shown( $country );
+}
+
+/**
+ * The base URL of the REST routes the checkout scripts call.
+ *
+ * @return string
+ */
+function woolab_icdic_rest_url() {
+	return Routes::url();
+}
+
+/**
+ * Settings URL, optionally of one section.
+ *
+ * @param string $section Section id, '' for General.
+ * @return string
+ */
+function woolab_icdic_settings_url( $section = '' ) {
+	return Fields::url( $section );
+}
+
+/**
+ * Company identifiers for SuperFaktúra's client.
+ *
+ * @param array<string,mixed> $client_data SuperFaktúra client data.
+ * @param WC_Order            $order       Order.
+ * @return array<string,mixed>
+ */
+function woolab_icdic_superfaktura_client_data( $client_data, $order ) {
+	return SuperFaktura::client_data( $client_data, $order );
+}
+
+/**
+ * The company identifiers in the billing address of PDF Invoices and Packing Slips
+ * for WooCommerce (Acowebs).
+ *
+ * @param string $html     Html output.
+ * @param int    $order_id Order ID.
+ * @return string
+ */
+function woolab_icdic_apifw_ps_custom_billing_fields( $html, $order_id ) {
+	return PdfInvoices::custom_billing_fields( $html, $order_id );
 }

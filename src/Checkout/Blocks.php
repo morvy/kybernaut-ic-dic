@@ -75,7 +75,7 @@ final class Blocks {
 	 * the customer meta key is the bare name (`billing_ic`) — the same split the
 	 * classic checkout produces.
 	 *
-	 * The DIČ field reads differently per billing country (includes/labels.php), and a
+	 * The DIČ field reads differently per billing country (Fields\Labels), and a
 	 * block field's label is fixed, so there is one field per label, each shown for
 	 * its countries and all saved to billing_dic. The shop's own country is marked
 	 * apart from the rest (woolab_icdic_field_mark()), so outside SK and CZ it gets a

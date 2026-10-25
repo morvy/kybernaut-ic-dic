@@ -99,7 +99,7 @@ final class Errors {
 				return sprintf( _n( '%s is not corresponding to ARES.', '%s are not corresponding to ARES.', count( $missing_fields ), 'woolab-ic-dic' ), wc_format_list_of_items( $missing_fields ) );
 
 			// The VAT checks are on IČ DPH in Slovakia, on the DIČ field elsewhere; the
-			// messages name the field as the form labels it (includes/labels.php).
+			// messages name the field as the form labels it (Fields\Labels).
 			case 'vat_country_mismatch_billing':
 				/* translators: %s: field label, e.g. "VAT ID" */
 				return sprintf( _x( 'The billing country does not correspond to the country of the %s.', 'field label', 'woolab-ic-dic' ), $vat_label );

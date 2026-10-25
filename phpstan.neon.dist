@@ -4,7 +4,6 @@ parameters:
 	paths:
 		- woolab-ic-dic.php
 		- uninstall.php
-		- includes
 		- src
 	# The scoped ibericode/vat (built by wpify/scoper, see composer-deps.json).
 	scanDirectories:

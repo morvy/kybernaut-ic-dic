@@ -17,7 +17,6 @@ return RectorConfig::configure()
 		array(
 			__DIR__ . '/woolab-ic-dic.php',
 			__DIR__ . '/uninstall.php',
-			__DIR__ . '/includes',
 			__DIR__ . '/src',
 		)
 	)

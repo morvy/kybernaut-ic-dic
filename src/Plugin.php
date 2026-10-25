@@ -23,6 +23,11 @@ final class Plugin {
 	 * @var array<int,class-string>
 	 */
 	private const PARTS = array(
+		Rest\Routes::class,
+		Settings\Fields::class,
+		Settings\FilterOverrides::class,
+		Compat\SuperFaktura::class,
+		Compat\PdfInvoices::class,
 		Assets::class,
 		Services\FinancnaSprava\Importer::class,
 		Checkout\Classic::class,
@@ -34,19 +39,6 @@ final class Plugin {
 		Order\Display::class,
 		Order\Customer::class,
 		Admin\PluginLinks::class,
-	);
-
-	/**
-	 * Files not moved to classes yet.
-	 *
-	 * @var array<int,string>
-	 */
-	private const LEGACY = array(
-		'labels.php',
-		'rest.php',
-		'settings.php',
-		'compatibility/superfaktura.php',
-		'compatibility/pdf-invoices-and-packing-slips-for-woocommerce.php',
 	);
 
 	/**
@@ -66,10 +58,6 @@ final class Plugin {
 		// A wordpress.org language pack takes precedence over the bundled file and lags
 		// behind new strings; load the bundled one too, it fills in what the pack lacks.
 		load_textdomain( 'woolab-ic-dic', WOOLAB_IC_DIC_ABSPATH . 'languages/woolab-ic-dic-' . determine_locale() . '.mo' );
-
-		foreach ( self::LEGACY as $file ) {
-			include_once WOOLAB_IC_DIC_ABSPATH . 'includes/' . $file;
-		}
 
 		foreach ( self::PARTS as $part ) {
 			$part::register();

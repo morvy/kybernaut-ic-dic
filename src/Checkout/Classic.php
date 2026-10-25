@@ -37,7 +37,7 @@ final class Classic {
 
 	/**
 	 * The three company identifier fields, labelled for a billing country
-	 * (includes/labels.php). The marks come with form_field_label().
+	 * (Fields\Labels). The marks come with form_field_label().
 	 *
 	 * @param string $country Billing country code.
 	 * @return array<string,array<string,mixed>> WooCommerce form fields, keyed billing_ic, billing_dic, billing_dic_dph.

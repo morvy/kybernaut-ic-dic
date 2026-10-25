@@ -4,7 +4,6 @@
 
 	<file>woolab-ic-dic.php</file>
 	<file>uninstall.php</file>
-	<file>includes</file>
 	<file>src</file>
 
 	<arg name="extensions" value="php"/>
