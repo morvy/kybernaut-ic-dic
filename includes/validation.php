@@ -34,7 +34,8 @@ if ( ! defined( 'WPINC' ) ) {
  *     @type bool        check_country_match
  *     @type bool        require_sk_ic_and_dic
  *     @type bool        check_dic_dph_match
- *     @type bool        require_ic_for_company Optional. A company must enter its name and a Business ID.
+ *     @type bool        require_company    Optional. A company must enter its name, and in SK its Tax ID ("Required" mode).
+ *     @type bool        require_ic         Optional. A company must enter a Business ID in this country ("Required" mode).
  *     @type bool        toggle_enabled     Optional. Whether the "Buying as a company" toggle is on.
  *     @type bool        iscomp             Optional. Whether "Buying as a company" is checked.
  *     @type bool        country_in_eu      Resolved from ibericode Countries::isCountryCodeInEU().
@@ -64,19 +65,17 @@ function woolab_icdic_validate_checkout( array $input ) {
 	$dic_dph = preg_replace( '/\s+/', '', $input['dic_dph'] );
 
 	// COMPANY NAME + BUSINESS ID
-	// Every Slovak and Czech business entity has a Business ID, so a company must enter
-	// its name and that ID. Opt-in (woolab_icdic_required_ic_for_company). A company is
-	// "Buying as a company" checked when the toggle is on; with the toggle off it is a
-	// filled-in company name, so only the ID can be missing.
-	if ( ! empty( $input['require_ic_for_company'] ) ) {
-		$has_company = '' !== trim( (string) $input['company'] );
-		$is_company  = ! empty( $input['toggle_enabled'] ) ? ! empty( $input['iscomp'] ) : $has_company;
-		if ( $is_company && ! $has_company ) {
-			$errors[] = array( 'code' => 'missing_company' );
-		}
-		if ( $is_company && '' === $ico ) {
-			$errors[] = array( 'code' => 'missing_business_id' );
-		}
+	// In the "Required" mode a company must enter its name, and its Business ID where
+	// every company has one. A company is "Buying as a company" checked when the
+	// toggle is on; with the toggle off it is a filled-in company name, so only the
+	// IDs can be missing.
+	$has_company = '' !== trim( (string) $input['company'] );
+	$is_company  = ! empty( $input['require_company'] ) && ( ! empty( $input['toggle_enabled'] ) ? ! empty( $input['iscomp'] ) : $has_company );
+	if ( $is_company && ! $has_company ) {
+		$errors[] = array( 'code' => 'missing_company' );
+	}
+	if ( $is_company && ! empty( $input['require_ic'] ) && '' === $ico ) {
+		$errors[] = array( 'code' => 'missing_business_id' );
 	}
 
 	if ( $input['ic'] ) {
@@ -214,13 +213,10 @@ function woolab_icdic_validate_checkout( array $input ) {
 
 		}
 
-	}
-	// DIC is mandatory in Slovakia, this is not a VAT number
-	else {
-		// if IC is set, DIC must be set as well in Slovakia
-		if ( $input['require_sk_ic_and_dic'] && ! empty( $input['ic'] ) && empty( $input['dic'] ) && $country == 'SK' ) {
-			$errors[] = array( 'code' => 'invalid_tax_id_sk' );
-		}
+	} elseif ( 'SK' === $country && ( $is_company || ( $input['require_sk_ic_and_dic'] && ! empty( $input['ic'] ) ) ) ) {
+		// The Slovak DIČ is no VAT number, but it goes with the IČO, and a company
+		// needs it in the "Required" mode.
+		$errors[] = array( 'code' => 'invalid_tax_id_sk' );
 	}
 
 	// IC DPH / DIC DPH

@@ -82,7 +82,7 @@ function woolab_icdic_init() {
 	add_filter( 'woocommerce_checkout_fields', 'woolab_icdic_checkout_fields' );
 	add_action( 'woocommerce_checkout_process', 'woolab_icdic_checkout_field_process', 10, 0 );
 	add_filter( 'woocommerce_checkout_posted_data', 'woolab_icdic_checkout_posted_data' );
-	add_filter( 'woocommerce_form_field', 'woolab_icdic_form_field_hide_optional', 10, 2 );
+	add_filter( 'woocommerce_form_field', 'woolab_icdic_form_field_label', 10, 3 );
 	add_filter( 'woocommerce_my_account_my_address_formatted_address', 'woolab_icdic_my_address_formatted_address', 10, 3 );
 	add_filter( 'woocommerce_localisation_address_formats', 'woolab_icdic_localisation_address_formats' );
 	add_filter( 'woocommerce_formatted_address_replacements', 'woolab_icdic_formatted_address_replacements', 10, 2 );
@@ -201,7 +201,9 @@ function woolab_icdic_script_data( $blocks ) {
 		// Ask the server to recalculate the exemption as the VAT fields change
 		// (woolab_icdic_blocks_update_vat_exempt()).
 		$data['vat_exempt'] = woolab_icdic_vat_exempt_enabled();
-		$data['fields'] = array(
+		// Where the IČO field is kybernaut/ic, the one blocks.js checks.
+		$data['ic_home'] = woolab_icdic_ic_home_countries();
+		$data['fields']  = array(
 			'ic'      => 'kybernaut/ic',
 			// Country => field: the DIČ field is one per label (includes/blocks.php).
 			'dic'     => woolab_icdic_blocks_dic_fields(),

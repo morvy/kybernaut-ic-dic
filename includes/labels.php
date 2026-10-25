@@ -50,30 +50,121 @@ function woolab_icdic_labels( $country ) {
 }
 
 /**
- * Whether the company fields drop WooCommerce's "(optional)" (Settings → IČO DIČ →
- * General, or the 1.x woolab_icdic_fake_required filter, which also adds the
- * required asterisk to Company and Business ID).
+ * How the company fields are marked (Settings → IČO DIČ → General):
+ * - 'optional': WooCommerce's "(optional)", the default;
+ * - 'plain':    no mark, like any other field;
+ * - 'asterisk': marked required, not enforced (the 1.x woolab_icdic_fake_required filter);
+ * - 'required': marked, and a company cannot place the order without them.
  *
- * @return bool
+ * @return string
  */
-function woolab_icdic_hide_optional() {
-	return 'yes' === woolab_icdic_setting( 'hide_optional' ) || apply_filters( 'woolab_icdic_fake_required', false );
+function woolab_icdic_fields_mode() {
+	$mode = woolab_icdic_setting( 'company_fields' );
+
+	/**
+	 * Mark the company name and Business ID required without enforcing it.
+	 *
+	 * @since 1.5.0
+	 * @param bool $fake_required
+	 */
+	if ( in_array( $mode, array( 'optional', 'plain' ), true ) && apply_filters( 'woolab_icdic_fake_required', false ) ) {
+		$mode = 'asterisk';
+	}
+
+	return in_array( $mode, array( 'optional', 'plain', 'asterisk', 'required' ), true ) ? $mode : 'optional';
 }
 
 /**
- * The labels as the checkout form shows them: with "(optional)" hidden, the VAT
- * fields say who fills them in instead.
+ * The shop's country, as the VAT exemption sees it.
  *
- * @param string $country
+ * @return string
+ */
+function woolab_icdic_base_country() {
+	/**
+	 * The shop's country for the VAT exemption and the VAT ID's mark.
+	 *
+	 * @since 1.0.0
+	 * @param string $country WooCommerce's base country.
+	 */
+	return (string) apply_filters( 'woolab_icdic_base_country', WC()->countries->get_base_country() );
+}
+
+/**
+ * What follows a label in the checkout form: 'optional', 'required' (an asterisk),
+ * 'vat_payer' ("(optional, only if you are a VAT payer)") or '' (nothing).
+ *
+ * The company name, the Business ID where every company has one and the Slovak
+ * Tax ID follow woolab_icdic_fields_mode(). The VAT ID is always optional: abroad
+ * only a VAT payer's number exempts the order, so the hint says who enters it; in
+ * the shop's own country it exempts nothing, so it follows the mode without one.
+ *
+ * @param string $key     'company', 'ic', 'dic' or 'dic_dph'.
+ * @param string $country Billing country code, '' when unknown (the Slovak set).
+ * @return string
+ */
+function woolab_icdic_field_mark( $key, $country ) {
+	$mode = woolab_icdic_fields_mode();
+	$sk   = 'SK' === $country || '' === $country;
+
+	if ( ( $sk ? 'dic_dph' : 'dic' ) === $key ) {
+		if ( ( $sk ? 'SK' : $country ) !== woolab_icdic_base_country() ) {
+			return 'vat_payer';
+		}
+
+		return 'optional' === $mode ? 'optional' : '';
+	}
+
+	if ( 'ic' === $key && ! $sk && ! in_array( $country, woolab_icdic_ic_home_countries(), true ) ) {
+		$mode = 'optional' === $mode ? 'optional' : 'plain';
+	}
+
+	if ( 'optional' === $mode ) {
+		return 'optional';
+	}
+
+	return 'plain' === $mode ? '' : 'required';
+}
+
+/**
+ * A label with its mark (woolab_icdic_field_mark()): text for the block checkout,
+ * or HTML in WooCommerce's own markup for the classic one.
+ *
+ * @param string $label Field label.
+ * @param string $mark  woolab_icdic_field_mark().
+ * @param bool   $html  HTML instead of text.
+ * @return string
+ */
+function woolab_icdic_marked_label( $label, $mark, $html = false ) {
+	if ( 'optional' === $mark ) {
+		/* translators: %s Field label. */
+		return $html ? esc_html( $label ) . '&nbsp;<span class="optional">(' . esc_html__( 'optional', 'woocommerce' ) . ')</span>' : sprintf( __( '%s (optional)', 'woocommerce' ), $label );
+	}
+
+	if ( 'vat_payer' === $mark ) {
+		$hint = __( 'optional, only if you are a VAT payer', 'woolab-ic-dic' );
+		return $html ? esc_html( $label ) . '&nbsp;<span class="optional">(' . esc_html( $hint ) . ')</span>' : $label . ' (' . $hint . ')';
+	}
+
+	// The block checkout marks nothing it requires, so neither does this.
+	if ( 'required' === $mark && $html ) {
+		return esc_html( $label ) . '&nbsp;<span class="required" aria-hidden="true">*</span>';
+	}
+
+	return $html ? esc_html( $label ) : $label;
+}
+
+/**
+ * The labels as the checkout form shows them, marked (woolab_icdic_field_mark()).
+ *
+ * @param string $country Billing country code.
+ * @param bool   $html    woolab_icdic_marked_label().
  * @return array{ic:string, dic:string, dic_dph:string}
  */
-function woolab_icdic_form_labels( $country ) {
+function woolab_icdic_form_labels( $country, $html = false ) {
 	$labels = woolab_icdic_labels( $country );
 
-	if ( woolab_icdic_hide_optional() ) {
-		$vat            = 'SK' === $country ? 'dic_dph' : 'dic';
-		/* translators: %s: field label, e.g. "VAT ID" */
-		$labels[ $vat ] = sprintf( _x( '%s (enter only if you are a VAT payer)', 'field label', 'woolab-ic-dic' ), $labels[ $vat ] );
+	foreach ( $labels as $key => $label ) {
+		$labels[ $key ] = woolab_icdic_marked_label( $label, woolab_icdic_field_mark( $key, $country ), $html );
 	}
 
 	return $labels;
@@ -86,13 +177,18 @@ function woolab_icdic_form_labels( $country ) {
  * @return string[]|null
  */
 function woolab_icdic_ic_countries() {
-	if ( 'yes' !== woolab_icdic_setting( 'ic_countries_only' ) ) {
-		return null;
-	}
+	return 'yes' === woolab_icdic_setting( 'ic_countries_only' ) ? woolab_icdic_ic_home_countries() : null;
+}
 
+/**
+ * The countries where every company has a Business ID: the field can be limited
+ * to them, and only there the "Required" mode asks for it.
+ *
+ * @return string[]
+ */
+function woolab_icdic_ic_home_countries() {
 	/**
-	 * Countries whose companies have a Business ID (IČO), when the field is limited
-	 * to them.
+	 * Countries where every company has a Business ID (IČO).
 	 *
 	 * @since 2.0.0
 	 * @param string[] $countries Country codes.
@@ -113,20 +209,33 @@ function woolab_icdic_ic_shown( $country ) {
 
 /**
  * The labels for the classic checkout script, which swaps them when the billing
- * country changes: 'SK', 'CZ', and '' for every other country.
+ * country changes: 'SK', 'CZ', the shop's country, and '' for every other one.
  *
- * @param bool $form Form labels (woolab_icdic_form_labels()), or the bare ones
- *                   the placeholders use.
+ * @param bool $form Form labels as HTML (woolab_icdic_form_labels()), or the bare
+ *                   ones the placeholders use.
  * @return array<string,array>
  */
 function woolab_icdic_labels_by_country( $form = true ) {
-	$labels = $form ? 'woolab_icdic_form_labels' : 'woolab_icdic_labels';
+	$labels = array();
 
-	return array(
-		'SK' => $labels( 'SK' ),
-		'CZ' => $labels( 'CZ' ),
-		''   => $labels( 'EU' ),
+	// The shop's own country is marked apart from the rest (woolab_icdic_field_mark()).
+	$countries = array(
+		'SK'                        => 'SK',
+		'CZ'                        => 'CZ',
+		woolab_icdic_base_country() => woolab_icdic_base_country(),
 	);
+
+	// And the Business ID's countries (woolab_icdic_field_mark()).
+	foreach ( woolab_icdic_ic_home_countries() as $country ) {
+		$countries[ $country ] = $country;
+	}
+	$countries[''] = 'EU';
+
+	foreach ( $countries as $key => $country ) {
+		$labels[ $key ] = $form ? woolab_icdic_form_labels( $country, true ) : woolab_icdic_labels( $country );
+	}
+
+	return $labels;
 }
 
 /**

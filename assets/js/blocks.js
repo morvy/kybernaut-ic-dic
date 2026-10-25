@@ -85,10 +85,20 @@
       input.setAttribute('aria-busy', on ? 'true' : 'false');
     }
   }
+
+  /**
+   * Only an error this script set is cleared: the key is the field's, and with the
+   * Business ID required (woolab_icdic_fields_mode()) WooCommerce's own "enter a
+   * valid Business ID" is on it too.
+   */
+  var ownError = false;
   function setError(message) {
     var id = errorId();
     if (!message) {
-      wp.data.dispatch(VALIDATION).clearValidationError(id);
+      if (ownError) {
+        wp.data.dispatch(VALIDATION).clearValidationError(id);
+      }
+      ownError = false;
       return;
     }
     var errors = {};
@@ -97,6 +107,7 @@
       hidden: false
     };
     wp.data.dispatch(VALIDATION).setValidationErrors(errors);
+    ownError = true;
   }
 
   /**
@@ -189,7 +200,9 @@
     }
   }
   function check(ico) {
-    if (!ico) {
+    // The field is hidden elsewhere and kybernaut/ic-eu has no checks
+    // (woolab_icdic_blocks_fields()), so a stored value is no error there.
+    if (!ico || woolab.ic_home.indexOf(billingCountry()) === -1) {
       setError(null);
       return;
     }
@@ -321,14 +334,16 @@
   wp.data.subscribe(syncBillingCountry, CHECKOUT);
   syncBillingCountry();
 
-  // Scoped to the checkout store: the cart store changes far more often.
+  // Not scoped to one store: the IČO is in the checkout store, the billing
+  // country that decides whether it is checked in the cart store.
   wp.data.subscribe(function () {
     var fields = wp.data.select(CHECKOUT).getAdditionalFields() || {};
     var ico = String(fields[IC] || '').replace(/\s+/g, '');
-    if (ico === lastIco) {
+    var key = billingCountry() + '|' + ico;
+    if (key === lastIco) {
       return;
     }
-    lastIco = ico;
+    lastIco = key;
     checkLater(ico);
-  }, CHECKOUT);
+  });
 })(window.wp, window.wc);

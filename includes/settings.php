@@ -75,11 +75,17 @@ function woolab_icdic_settings_general() {
 			'disabled' => (bool) $fluid_checkout,
 		),
 		array(
-			'title'   => __( 'Hide "(optional)" on the company fields', 'woolab-ic-dic' ),
-			'desc'    => __( 'Companies need the company name and IDs, everyone else skips them, so "(optional)" only confuses. The VAT ID field says "enter only if you are a VAT payer" instead.', 'woolab-ic-dic' ),
-			'id'      => woolab_icdic_settings_id( 'hide_optional' ),
-			'default' => 'no',
-			'type'    => 'checkbox',
+			'title'   => __( 'Company fields', 'woolab-ic-dic' ),
+			'desc'    => __( 'The company name, the Business ID (in the Czech Republic and Slovakia, where every company has one) and the Slovak Tax ID. "Required for companies" works best with the toggle: without it, a filled-in company name makes the customer a company. The VAT ID stays optional, abroad with "only if you are a VAT payer".', 'woolab-ic-dic' ),
+			'id'      => woolab_icdic_settings_id( 'company_fields' ),
+			'default' => 'optional',
+			'type'    => 'select',
+			'options' => array(
+				'optional' => __( 'Optional: "(optional)", as WooCommerce marks fields', 'woolab-ic-dic' ),
+				'plain'    => __( 'No mark: like any other field', 'woolab-ic-dic' ),
+				'asterisk' => __( 'Asterisk: marked required, the order goes through without them', 'woolab-ic-dic' ),
+				'required' => __( 'Required for companies: no order without them (recommended)', 'woolab-ic-dic' ),
+			),
 		),
 		array(
 			'title'   => __( 'Ignore when ARES, Finančná správa or VIES check fails for technical reasons', 'woolab-ic-dic' ),

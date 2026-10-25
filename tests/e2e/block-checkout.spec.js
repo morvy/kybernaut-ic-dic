@@ -54,6 +54,7 @@ test( 'each billing country gets its own tax fields', async ( { page } ) => {
 	await asCompany( page );
 
 	await setCountry( page, 'SK' );
+	await expect( field( page, 'ic' ) ).toBeVisible();
 	await expect( field( page, 'dic-sk' ) ).toBeVisible();
 	await expect( field( page, 'dic-dph' ) ).toBeVisible();
 	await expect( field( page, 'dic-cz' ) ).toBeHidden();
@@ -67,7 +68,9 @@ test( 'each billing country gets its own tax fields', async ( { page } ) => {
 	await setCountry( page, 'DE' );
 	await expect( field( page, 'dic' ) ).toBeVisible();
 	await expect( field( page, 'dic-cz' ) ).toBeHidden();
-	await expect( field( page, 'ic' ) ).toBeVisible();
+	// Not every company has a Business ID there: a field without the checks.
+	await expect( field( page, 'ic-eu' ) ).toBeVisible();
+	await expect( field( page, 'ic' ) ).toBeHidden();
 } );
 
 test( 'a Czech IČO fills the company from ARES', async ( { page } ) => {

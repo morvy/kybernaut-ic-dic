@@ -1,9 +1,3 @@
-.woocommerce-checkout .woocommerce-billing-fields .woolab-ic-dic-toggle,
-.woocommerce-checkout .required + .optional,
-.woocommerce-checkout .required + .required,
-.woocommerce-checkout #billing_dic_field .optional {
+.woocommerce-checkout .woocommerce-billing-fields .woolab-ic-dic-toggle {
   display: none;
-}
-.woocommerce-checkout .woolab-ic-dic-required + .optional {
-  display: inline;
 }

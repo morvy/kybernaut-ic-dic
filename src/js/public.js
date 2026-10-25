@@ -130,18 +130,10 @@
             $("#billing_ic").val('');
         }
         $("#billing_dic_field").slideDown();
-        switch (country) {
-            case 'SK':
-                $("#billing_dic_dph_field").slideDown();
-                $("#billing_dic_field > label").addClass("woolab-ic-dic-required");
-                break;
-            case 'CZ':
-                $("#billing_dic_dph_field").slideUp();
-                $("#billing_dic_field > label").removeClass("woolab-ic-dic-required");
-                break;
-            default:
-                $("#billing_dic_dph_field").slideUp();
-                $("#billing_dic_field > label").removeClass("woolab-ic-dic-required");
+        if (country === 'SK') {
+            $("#billing_dic_dph_field").slideDown();
+        } else {
+            $("#billing_dic_dph_field").slideUp();
         }
         if (woolab.ares_check || woolab.sk_check) {
             // The country decides the register, so look the same IČO up again.
@@ -153,21 +145,23 @@
 
     /**
      * Labels follow the billing country (includes/labels.php): in SK the DIČ is the
-     * tax ID, everywhere else it is the VAT ID. Only the label's own text changes,
-     * WooCommerce's "(optional)" / required marks inside the label stay.
+     * tax ID, everywhere else it is the VAT ID, and so do their marks
+     * (woolab_icdic_field_mark()). Escaped HTML, from PHP.
      */
     function relabel( country ) {
         var labels       = woolab.labels[ country ] || woolab.labels[''];
         var placeholders = woolab.placeholders[ country ] || woolab.placeholders[''];
 
         $.each( { billing_ic: 'ic', billing_dic: 'dic', billing_dic_dph: 'dic_dph' }, function ( id, key ) {
-            var text  = labels[ key ];
             var label = document.querySelector( 'label[for="' + id + '"]' );
-            var node  = label && label.firstChild;
 
-            if ( node && node.nodeType === Node.TEXT_NODE ) {
-                // Keep whatever spacing WooCommerce put before its "(optional)".
-                node.nodeValue = text + node.nodeValue.match( /\s*$/ )[0];
+            // A field WooCommerce requires keeps its own mark, only the text changes.
+            if ( label && $( label ).closest( '.validate-required' ).length ) {
+                if ( label.firstChild && label.firstChild.nodeType === Node.TEXT_NODE ) {
+                    label.firstChild.nodeValue = $( '<div>' ).html( labels[ key ] ).find( '.optional, .required' ).remove().end().text().trim() + ' ';
+                }
+            } else {
+                $( label ).html( labels[ key ] );
             }
             $( '#' + id ).attr( 'placeholder', placeholders[ key ] );
         });

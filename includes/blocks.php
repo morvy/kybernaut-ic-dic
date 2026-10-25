@@ -50,31 +50,56 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * The DIČ field reads differently per billing country (includes/labels.php), and a
  * block field's label is fixed, so there is one field per label, each shown for
- * its countries and all saved to billing_dic.
+ * its countries and all saved to billing_dic. The shop's own country is marked
+ * apart from the rest (woolab_icdic_field_mark()), so outside SK and CZ it gets a
+ * field of its own too. The Business ID is split the same way.
  *
  * @return array<string,array>
  */
 function woolab_icdic_blocks_fields() {
-	return array(
-		'kybernaut/ic'      => array( 'legacy' => 'billing_ic', 'label' => array( '', 'ic' ), 'countries' => null === woolab_icdic_ic_countries() ? null : array( 'only' => woolab_icdic_ic_countries() ) ),
-		'kybernaut/dic-sk'  => array( 'legacy' => 'billing_dic', 'label' => array( 'SK', 'dic' ), 'countries' => array( 'only' => array( 'SK' ) ) ),
-		'kybernaut/dic-cz'  => array( 'legacy' => 'billing_dic', 'label' => array( 'CZ', 'dic' ), 'countries' => array( 'only' => array( 'CZ' ) ) ),
-		// The original id, so orders placed before the split keep their value.
-		'kybernaut/dic'     => array( 'legacy' => 'billing_dic', 'label' => array( 'EU', 'dic' ), 'countries' => array( 'except' => array( 'SK', 'CZ' ) ) ),
-		'kybernaut/dic-dph' => array( 'legacy' => 'billing_dic_dph', 'label' => array( 'SK', 'dic_dph' ), 'countries' => array( 'only' => array( 'SK' ) ) ),
-	);
+	// The Business ID where every company has one: looked up, and required in the
+	// "Required" mode. WooCommerce does not hold an order field to a `required`
+	// rule on the billing country, so the other countries get a field of their own.
+	$home   = woolab_icdic_ic_home_countries();
+	$fields = array( 'kybernaut/ic' => woolab_icdic_blocks_field( 'billing_ic', '', 'ic', array( 'only' => $home ) ) );
+
+	if ( null === woolab_icdic_ic_countries() ) {
+		$fields['kybernaut/ic-eu'] = woolab_icdic_blocks_field( 'billing_ic', 'EU', 'ic', array( 'except' => $home ) );
+	}
+
+	$fields['kybernaut/dic-sk'] = woolab_icdic_blocks_field( 'billing_dic', 'SK', 'dic', array( 'only' => array( 'SK' ) ) );
+	$fields['kybernaut/dic-cz'] = woolab_icdic_blocks_field( 'billing_dic', 'CZ', 'dic', array( 'only' => array( 'CZ' ) ) );
+
+	$others = array( 'SK', 'CZ' );
+	$base   = woolab_icdic_base_country();
+
+	if ( '' !== $base && ! in_array( $base, $others, true ) ) {
+		$fields[ 'kybernaut/dic-' . strtolower( $base ) ] = woolab_icdic_blocks_field( 'billing_dic', $base, 'dic', array( 'only' => array( $base ) ) );
+		$others[] = $base;
+	}
+
+	// The original id, so orders placed before the split keep their value.
+	$fields['kybernaut/dic']     = woolab_icdic_blocks_field( 'billing_dic', 'EU', 'dic', array( 'except' => $others ) );
+	$fields['kybernaut/dic-dph'] = woolab_icdic_blocks_field( 'billing_dic_dph', 'SK', 'dic_dph', array( 'only' => array( 'SK' ) ) );
+
+	return $fields;
 }
 
 /**
- * What an optional field reads: WooCommerce's "Label (optional)", or the bare
- * label when the store hides it (woolab_icdic_hide_optional()).
+ * One entry of woolab_icdic_blocks_fields().
  *
- * @param string $label
- * @return string
+ * @param string                      $legacy    The meta name.
+ * @param string                      $country   Billing country for woolab_icdic_labels().
+ * @param string                      $key       woolab_icdic_labels() key.
+ * @param array<string,string[]>|null $countries 'only' | 'except' => country codes, or null for all.
+ * @return array<string,mixed>
  */
-function woolab_icdic_blocks_optional_label( $label ) {
-	/* translators: %s Field label. */
-	return woolab_icdic_hide_optional() ? $label : sprintf( __( '%s (optional)', 'woocommerce' ), $label );
+function woolab_icdic_blocks_field( $legacy, $country, $key, $countries ) {
+	return array(
+		'legacy'    => $legacy,
+		'label'     => array( $country, $key ),
+		'countries' => $countries,
+	);
 }
 
 /**
@@ -113,17 +138,20 @@ function woolab_icdic_blocks_field_for( $legacy, $country ) {
 }
 
 /**
- * The DIČ field id per billing country, for assets/js/blocks.js: 'SK', 'CZ', and
- * '' for every other country.
+ * The DIČ field id per billing country, for assets/js/blocks.js: 'SK', 'CZ', the
+ * shop's country, and '' for every other one.
  *
  * @return array<string,string>
  */
 function woolab_icdic_blocks_dic_fields() {
-	return array(
-		'SK' => woolab_icdic_blocks_field_for( 'billing_dic', 'SK' ),
-		'CZ' => woolab_icdic_blocks_field_for( 'billing_dic', 'CZ' ),
-		''   => woolab_icdic_blocks_field_for( 'billing_dic', 'EU' ),
-	);
+	$fields = array();
+
+	foreach ( array( 'SK', 'CZ', woolab_icdic_base_country() ) as $country ) {
+		$fields[ $country ] = woolab_icdic_blocks_field_for( 'billing_dic', $country );
+	}
+	$fields[''] = woolab_icdic_blocks_field_for( 'billing_dic', 'EU' );
+
+	return $fields;
 }
 
 /**
@@ -264,16 +292,18 @@ function woolab_icdic_blocks_register_fields() {
 		),
 	);
 
-	// Opt-in: a company must enter its name and Business ID. "A company" is the inverse of
-	// $not_a_company while the toggle is on, and a filled-in company name (a core
-	// address field then) while it is off. WooCommerce evaluates the rule in the
-	// browser — the field loses its "(optional)" suffix and blocks the order — and
-	// again on the checkout POST (StoreApi Checkout route, get_contextual_fields_for_location()),
-	// so woolab_icdic_blocks_validate() does not repeat it.
-	$ic_required = false;
+	// The "Required" mode (woolab_icdic_fields_mode()): a company must enter its name,
+	// the Slovak Tax ID, and the Business ID where every company has one. "A company"
+	// is the inverse of $not_a_company while the toggle is on, and a filled-in company
+	// name (a core address field then) while it is off. WooCommerce evaluates the
+	// rule in the browser — the field loses its "(optional)" suffix and blocks the
+	// order — and again on the checkout POST (StoreApi Checkout route,
+	// get_contextual_fields_for_location()), so woolab_icdic_blocks_validate() does
+	// not repeat it.
+	$required = false;
 
-	if ( apply_filters( 'woolab_icdic_required_ic_for_company', false ) ) {
-		$ic_required = $toggle
+	if ( 'required' === woolab_icdic_fields_mode() ) {
+		$required = $toggle
 			? array(
 				'checkout' => array(
 					'properties' => array(
@@ -308,12 +338,11 @@ function woolab_icdic_blocks_register_fields() {
 			array(
 				'id'                         => 'kybernaut/company',
 				'label'                      => __( 'Company', 'woocommerce' ),
-				'optionalLabel'              => woolab_icdic_blocks_optional_label( __( 'Company', 'woocommerce' ) ),
+				'optionalLabel'              => woolab_icdic_marked_label( __( 'Company', 'woocommerce' ), woolab_icdic_field_mark( 'company', '' ) ),
 				'location'                   => 'order',
 				'type'                       => 'text',
 				'hidden'                     => $not_a_company,
-				// Same rule as the Business ID: required once "Buying as a company" is ticked.
-				'required'                   => $ic_required,
+				'required'                   => $required,
 				'attributes'                 => array( 'autocomplete' => 'organization' ),
 				'show_in_order_confirmation' => false,
 			)
@@ -337,12 +366,12 @@ function woolab_icdic_blocks_register_fields() {
 		woocommerce_register_additional_checkout_field(
 			array(
 				'id'                         => $id,
-				'label'                      => woolab_icdic_form_labels( $field['label'][0] )[ $field['label'][1] ],
-				'optionalLabel'              => woolab_icdic_blocks_optional_label( woolab_icdic_form_labels( $field['label'][0] )[ $field['label'][1] ] ),
+				'label'                      => woolab_icdic_labels( $field['label'][0] )[ $field['label'][1] ],
+				'optionalLabel'              => woolab_icdic_form_labels( $field['label'][0] )[ $field['label'][1] ],
 				'location'                   => 'order',
 				'type'                       => 'text',
 				'hidden'                     => $hidden,
-				'required'                   => 'kybernaut/ic' === $id ? $ic_required : false,
+				'required'                   => in_array( $id, array( 'kybernaut/ic', 'kybernaut/dic-sk' ), true ) ? $required : false,
 				'attributes'                 => array( 'autocomplete' => 'off' ),
 				'show_in_order_confirmation' => false,
 			)
@@ -409,13 +438,7 @@ function woolab_icdic_blocks_default_company( $value, $group, $wc_object ) {
  */
 function woolab_icdic_blocks_default_iscomp( $value, $group, $wc_object ) {
 
-	// With a Business ID required, a pre-ticked toggle without a stored one could never
-	// pass validation — tick it only for a customer who has one.
-	$keys = apply_filters( 'woolab_icdic_required_ic_for_company', false )
-		? array( 'billing_ic' )
-		: array( 'billing_company', 'billing_ic', 'billing_dic', 'billing_dic_dph' );
-
-	foreach ( $keys as $key ) {
+	foreach ( array( 'billing_company', 'billing_ic', 'billing_dic', 'billing_dic_dph' ) as $key ) {
 		// The company is a core property of orders and customers, not meta.
 		$stored = 'billing_company' === $key
 			? ( is_callable( array( $wc_object, 'get_billing_company' ) ) ? $wc_object->get_billing_company() : '' )
@@ -515,7 +538,7 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 	$result = woolab_icdic_validate_checkout(
 		array(
 			'country'               => $country,
-			'ic'                    => (string) ( $fields['kybernaut/ic'] ?? '' ),
+			'ic'                    => (string) ( $fields[ woolab_icdic_blocks_field_for( 'billing_ic', $country ) ] ?? '' ),
 			'dic'                   => (string) ( $fields[ $dic_field ] ?? '' ),
 			'dic_present'           => isset( $fields[ $dic_field ] ),
 			'dic_dph'               => (string) ( $fields['kybernaut/dic-dph'] ?? '' ),

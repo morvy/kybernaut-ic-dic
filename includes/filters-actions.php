@@ -27,19 +27,18 @@ function woolab_icdic_plugin_row_meta( $links, $file ) {
 
 /**
  * The three company identifier fields, labelled for a billing country
- * (includes/labels.php).
+ * (includes/labels.php). The marks come with woolab_icdic_form_field_label().
  *
  * @param string $country Billing country code.
  * @return array<string,array> WooCommerce form fields, keyed billing_ic, billing_dic, billing_dic_dph.
  */
 function woolab_icdic_fields( $country ) {
-	$labels       = woolab_icdic_form_labels( $country );
-	$placeholders = woolab_icdic_labels( $country );
+	$labels = woolab_icdic_labels( $country );
 
-	$field = function ( $key, $priority ) use ( $labels, $placeholders ) {
+	$field = function ( $key, $priority ) use ( $labels ) {
 		return array(
 			'label'       => $labels[ $key ],
-			'placeholder' => $placeholders[ $key ],
+			'placeholder' => $labels[ $key ],
 			'required'    => false,
 			'class'       => apply_filters( 'woolab_icdic_class_billing_' . $key, array( 'form-row-wide', 'woolab-ic-dic-no_spaces' ) ),
 			'clear'       => true,
@@ -88,18 +87,6 @@ function woolab_icdic_checkout_fields( $fields ) {
 		}
 	}
 
-	/**
-	 * Optionally show "required" asterisk for Company and Business ID
-	 * as these are always required for companies. Implies hiding "(optional)"
-	 * (woolab_icdic_hide_optional()).
-	 * @since 1.5.0
-	 */
-	$fakeRequired = apply_filters( 'woolab_icdic_fake_required', false);
-	if($fakeRequired) {
-		$fields['billing']['billing_company']['label']   .= ' <abbr class="required" title="'.__('required', 'woocommerce').'">*</abbr>';
-		$fields['billing']['billing_ic']['label']        .= ' <abbr class="required" title="'.__('required', 'woocommerce').'">*</abbr>';
-	}
-
 	// Why there is no placeholder for Company field by default ?!
 	$fields['billing']['billing_company']['placeholder'] = __( 'Company', 'woocommerce' );
 
@@ -146,20 +133,40 @@ function woolab_icdic_default_address_fields( $fields ) {
 }
 
 /**
- * Drop WooCommerce's "(optional)" from the company fields when the store asks for
- * it (woolab_icdic_hide_optional()): companies need them, everyone else skips
- * them, and the VAT fields say in their label who should fill them in.
+ * Mark the company fields of the checkout form the way the store asks for
+ * (woolab_icdic_field_mark()) instead of WooCommerce's "(optional)": they are not
+ * required fields to WooCommerce, the checkout validation asks for them. public.js
+ * swaps the marks with the labels when the billing country changes.
  *
- * @param string $field Field HTML.
- * @param string $key   Field key.
+ * @param string              $field Field HTML.
+ * @param string              $key   Field key.
+ * @param array<string,mixed> $args  Field arguments.
  * @return string
  */
-function woolab_icdic_form_field_hide_optional( $field, $key ) {
-	if ( in_array( $key, array( 'billing_company', 'billing_ic', 'billing_dic', 'billing_dic_dph' ), true ) && woolab_icdic_hide_optional() ) {
-		$field = preg_replace( '#(&nbsp;|\s)*<span class="optional">.*?</span>#', '', $field );
+function woolab_icdic_form_field_label( $field, $key, $args ) {
+	$keys = array(
+		'billing_company' => 'company',
+		'billing_ic'      => 'ic',
+		'billing_dic'     => 'dic',
+		'billing_dic_dph' => 'dic_dph',
+	);
+
+	// A field WooCommerce requires (Customizer → Company name, a snippet) keeps its marks.
+	if ( ! isset( $keys[ $key ] ) || ! is_checkout() || empty( $args['label'] ) || ! empty( $args['required'] ) ) {
+		return $field;
 	}
 
-	return $field;
+	$country = WC()->customer ? WC()->customer->get_billing_country() : '';
+	$label   = woolab_icdic_marked_label( wp_strip_all_tags( $args['label'] ), woolab_icdic_field_mark( $keys[ $key ], $country ), true );
+
+	return (string) preg_replace_callback(
+		'#(<label for="' . preg_quote( $key, '#' ) . '"[^>]*>).*?(</label>)#s',
+		function ( $m ) use ( $label ) {
+			return $m[1] . $label . $m[2];
+		},
+		$field,
+		1
+	);
 }
 
 /**
@@ -277,8 +284,9 @@ function woolab_icdic_checkout_field_process() {
 		'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
 		'require_sk_ic_and_dic' => (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', true ),
 		'check_dic_dph_match'   => (bool) woolab_icdic_dic_dicdph_match_enabled(),
-		// Not asked for where the field is hidden (woolab_icdic_ic_countries()).
-		'require_ic_for_company' => woolab_icdic_ic_shown( $country ) && (bool) apply_filters( 'woolab_icdic_required_ic_for_company', false ),
+		'require_company'       => 'required' === woolab_icdic_fields_mode(),
+		// Only where every company has one, and not where the field is hidden.
+		'require_ic'            => 'required' === woolab_icdic_fields_mode() && woolab_icdic_ic_shown( $country ) && in_array( $country, woolab_icdic_ic_home_countries(), true ),
 		'toggle_enabled'        => (bool) woolab_icdic_toggle_enabled(),
 		// The toggle is a plain checkbox: posted as "1" when ticked, absent otherwise.
 		'iscomp'                => ! empty( $_POST['billing_iscomp'] ),
@@ -548,12 +556,6 @@ function woolab_icdic_toggle_iscomp_field($value, $input) {
 
 	if ( empty($customer) ) {
 		return $value;
-	}
-
-	// With a Business ID required, a pre-ticked toggle without a stored one could never
-	// pass validation — tick it only for a customer who has one.
-	if ( apply_filters( 'woolab_icdic_required_ic_for_company', false ) ) {
-		return ! empty( $customer->get_meta( 'billing_ic' ) ) ? true : $value;
 	}
 
 	// The company is a core customer property: get_meta() does not see it.

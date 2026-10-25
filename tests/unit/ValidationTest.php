@@ -359,6 +359,34 @@ class ValidationTest extends TestCase {
 		$this->assertSame( array(), $this->codes( $result ) );
 	}
 
+	// --- "Required" company fields -----------------------------------------
+
+	/**
+	 * @dataProvider requiredModeCases
+	 */
+	public function testRequiredMode( array $over, array $codes ) {
+		$base = array(
+			'require_company' => true,
+			'require_ic'      => true,
+			'toggle_enabled'  => true,
+			'iscomp'          => true,
+		);
+		$this->assertSame( $codes, $this->codes( woolab_icdic_validate_checkout( $this->input( array_merge( $base, $over ) ) ) ) );
+	}
+
+	public static function requiredModeCases() {
+		return array(
+			'CZ company, nothing entered'        => array( array(), array( 'missing_company', 'missing_business_id' ) ),
+			'CZ company, all entered'            => array( array( 'company' => 'Alza.cz a.s.', 'ic' => '27082440', 'ares_check' => false ), array() ),
+			'SK company needs the Tax ID'        => array( array( 'country' => 'SK', 'company' => 'Firma s.r.o.', 'ic' => '27082440', 'require_sk_ic_and_dic' => false ), array( 'invalid_tax_id_sk' ) ),
+			'AT company, no Business ID asked'   => array( array( 'country' => 'AT', 'company' => 'Firma GmbH', 'require_ic' => false ), array() ),
+			'not buying as a company'            => array( array( 'iscomp' => false ), array() ),
+			'mode off'                           => array( array( 'require_company' => false, 'require_ic' => false ), array() ),
+			'no toggle: a company name is one'   => array( array( 'toggle_enabled' => false, 'company' => 'Alza.cz a.s.' ), array( 'missing_business_id' ) ),
+			'no toggle, no company name: no one' => array( array( 'toggle_enabled' => false ), array() ),
+		);
+	}
+
 	// --- SK IC DPH ---------------------------------------------------------
 
 	public function testIcDphViesValidAndMatches() {
