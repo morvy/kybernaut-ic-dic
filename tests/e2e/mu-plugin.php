@@ -43,3 +43,15 @@ add_filter(
 if ( isset( $_COOKIE['woolab_e2e_filter'] ) && 'sk_dic' === $_COOKIE['woolab_e2e_filter'] ) {
 	add_filter( 'woolab_icdic_sk_required_ic_and_dic', '__return_false' );
 }
+
+// With the header X-Woolab-E2E-Rate-Limit, a limit of 3 lookups per 10 s: a slow
+// host answers 40 parallel ones too slowly to fill the default 25
+// (tests/e2e/rest.spec.js).
+if ( ! empty( $_SERVER['HTTP_X_WOOLAB_E2E_RATE_LIMIT'] ) ) {
+	add_filter(
+		'woocommerce_store_api_rate_limit_options',
+		function ( $options ) {
+			return array_merge( (array) $options, array( 'limit' => 3, 'seconds' => 10 ) );
+		}
+	);
+}

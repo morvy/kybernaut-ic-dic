@@ -17,11 +17,15 @@ test( 'bad arguments are rejected before any register is asked', async ( { reque
 } );
 
 test( 'the lookups are rate limited', async ( { request } ) => {
-	// At once: a slow host (Playground: about a second a request) would otherwise
-	// spread them over several 10 s windows. Not a valid IČO, so ARES is not asked.
-	const responses = await Promise.all( Array.from( { length: 40 }, () => request.get( route( 'lookup&ico=1&country=CZ' ) ) ) );
+	// A limit of 3 per 10 s (tests/e2e/mu-plugin.php): a slow host (Playground,
+	// about a second a request) answers too slowly to fill the default 25. Not a
+	// valid IČO, so ARES is not asked.
+	const headers = { 'X-Woolab-E2E-Rate-Limit': '1' };
+	// The requests above opened a window under the default limit: let it pass.
+	await new Promise( ( resolve ) => setTimeout( resolve, 11000 ) );
+	const responses = await Promise.all( Array.from( { length: 10 }, () => request.get( route( 'lookup&ico=1&country=CZ' ), { headers } ) ) );
 	const limited = responses.find( ( response ) => 429 === response.status() );
-	expect( limited, 'a 429 among 40 requests' ).toBeTruthy();
+	expect( limited, 'a 429 among 10 requests' ).toBeTruthy();
 	const retry = Number( limited.headers()[ 'retry-after' ] );
 	expect( retry ).toBeGreaterThan( 0 );
 	expect( limited.headers()[ 'ratelimit-limit' ] ).toBeTruthy();
