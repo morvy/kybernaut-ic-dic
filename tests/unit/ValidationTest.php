@@ -134,7 +134,7 @@ class ValidationTest extends TestCase {
 			'error'      => false,
 			'dic'        => 'CZ27082440',
 			'spolecnost' => 'Alza.cz a.s.',
-			'psc'        => 17000,
+			'psc'        => '17000',
 			'mesto'      => 'Praha 7',
 			'adresa'     => 'Jankovcova 1522/53',
 		);
@@ -161,7 +161,7 @@ class ValidationTest extends TestCase {
 			'error'      => false,
 			'dic'        => 'CZ27082440',
 			'spolecnost' => 'Alza.cz a.s.',
-			'psc'        => 17000,
+			'psc'        => '17000',
 			'mesto'      => 'Praha 7',
 			'adresa'     => 'Jankovcova 1522/53',
 		);
@@ -185,7 +185,7 @@ class ValidationTest extends TestCase {
 			'error'      => false,
 			'dic'        => 'CZ27082440',
 			'spolecnost' => 'Alza.cz a.s.',
-			'psc'        => 17000,
+			'psc'        => '17000',
 			'mesto'      => 'Praha 7',
 			'adresa'     => 'Jankovcova 1522/53',
 		);

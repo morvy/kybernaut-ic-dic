@@ -62,7 +62,7 @@ if ( ! function_exists( 'woolab_icdic_ares') ) {
                 $ulice  = $data->sidlo->nazevUlice ?? $data->sidlo->nazevObce ?? '';
 
                 $return['adresa'] = sprintf( '%s %s', $ulice, $cp );
-                $return['psc'] = $data->sidlo->psc ?? '';
+                $return['psc'] = (string) ( $data->sidlo->psc ?? '' );
                 $return['mesto'] = $data->sidlo->nazevMestskehoObvodu ?? $data->sidlo->nazevObce ?? '';
 
                 $logger->logInfo('Ares response:');

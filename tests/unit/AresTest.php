@@ -15,7 +15,7 @@ class AresTest extends TestCase {
      */
     public function testIcoNotSet() {
             
-        $this->assertEquals(
+        $this->assertSame(
             array( 'error' => __('Business ID not set.', 'kybernaut-messenger')),
             woolab_icdic_ares()
         );
@@ -24,7 +24,7 @@ class AresTest extends TestCase {
 
     public function testTooShort() {
 
-        $this->assertEquals(
+        $this->assertSame(
             array( 'error' => __('Business ID must be a number and 8 digits long.', 'kybernaut-messenger')),
             woolab_icdic_ares(123)
         );
@@ -33,7 +33,7 @@ class AresTest extends TestCase {
 
     public function testTooLong() {
 
-        $this->assertEquals(
+        $this->assertSame(
             array( 'error' => __('Business ID must be a number and 8 digits long.', 'kybernaut-messenger')),
             woolab_icdic_ares(123456789)
         );
@@ -42,7 +42,7 @@ class AresTest extends TestCase {
 
     public function testWithLetters() {
 
-        $this->assertEquals(
+        $this->assertSame(
             array( 'error' => __('Business ID must be a number and 8 digits long.', 'kybernaut-messenger')),
             woolab_icdic_ares('1234567a')
         );
@@ -67,7 +67,7 @@ class AresTest extends TestCase {
             'return' => true
         ]);
 
-        $this->assertEquals(
+        $this->assertSame(
             array( 'error' => __('An error occured while connecting to ARES, try it again later.', 'kybernaut-messenger'), 'internal_error' => true),
             woolab_icdic_ares(88922961)
         );
@@ -94,7 +94,7 @@ class AresTest extends TestCase {
             'return_arg' => 0,
         ]);
 
-        $this->assertEquals($returnedData, woolab_icdic_ares($ico));
+        $this->assertSame($returnedData, woolab_icdic_ares($ico));
 
     }
 
@@ -110,7 +110,7 @@ class AresTest extends TestCase {
                 'return' => 404
             ]);
     
-            $this->assertEquals(
+            $this->assertSame(
                 array( 'error' => __('Entity doesn\'t exist in ARES.', 'kybernaut-messenger')),
                 woolab_icdic_ares(88922961)
             );
@@ -133,7 +133,7 @@ class AresTest extends TestCase {
             'return_arg' => 0,
         ]);
 
-        $this->assertEquals(
+        $this->assertSame(
             array( 'error' => __('ARES is not responding.', 'kybernaut-messenger'), 'internal_error' => true),
             woolab_icdic_ares(88922961)
         );
@@ -150,7 +150,7 @@ class AresTest extends TestCase {
                     'ico' => '88922961',
                     'dic' => 'CZ8956190067',
                     'adresa' => 'Za Pohořelcem 672/15',
-                    'psc' => 16900,
+                    'psc' => '16900',
                     'mesto' => 'Praha 6',
                 ]
             ],
@@ -162,7 +162,7 @@ class AresTest extends TestCase {
                     'ico' => '45211515',
                     'dic' => '',
                     'adresa' => 'Valašská Polanka 301',
-                    'psc' => 75611,
+                    'psc' => '75611',
                     'mesto' => 'Valašská Polanka',
                 ]
             ],
@@ -174,7 +174,7 @@ class AresTest extends TestCase {
                     'ico' => '16415345',
                     'dic' => 'CZ6207141193',
                     'adresa' => 'Ruprechtická 319/16a',
-                    'psc' => 46001,
+                    'psc' => '46001',
                     'mesto' => 'Liberec',
                 ]
             ],
@@ -186,7 +186,7 @@ class AresTest extends TestCase {
                     'ico' => '27082440',
                     'dic' => 'CZ27082440',
                     'adresa' => 'Jankovcova 1522/53',
-                    'psc' => 17000,
+                    'psc' => '17000',
                     'mesto' => 'Praha 7',
                 ]
             ],
@@ -198,7 +198,7 @@ class AresTest extends TestCase {
                     'ico' => '02491427',
                     'dic' => '',
                     'adresa' => 'Budovcova 105/4',
-                    'psc' => 39701,
+                    'psc' => '39701',
                     'mesto' => 'Písek',
                 ]
             ],
@@ -210,7 +210,7 @@ class AresTest extends TestCase {
                     'ico' => '26219981',
                     'dic' => 'CZ26219981',
                     'adresa' => 'Křídlovická 943/24a',
-                    'psc' => 60300,
+                    'psc' => '60300',
                     'mesto' => 'Brno',
                 ]
             ],
@@ -222,7 +222,7 @@ class AresTest extends TestCase {
                     'ico' => '08911801',
                     'dic' => '', // DIC should be empty when ZANIKLY
                     'adresa' => 'Žádovice 291',
-                    'psc' => 69649,
+                    'psc' => '69649',
                     'mesto' => 'Žádovice',
                 ]
             ],
