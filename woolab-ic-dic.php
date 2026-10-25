@@ -94,6 +94,8 @@ function woolab_icdic_init() {
 	add_filter( 'woocommerce_admin_billing_fields', 'woolab_icdic_admin_billing_fields' );
 	add_action( 'woocommerce_process_shop_order_meta', 'woolab_icdic_process_shop_order', 10, 2 );
 	add_filter( 'default_checkout_billing_iscomp', 'woolab_icdic_toggle_iscomp_field', 10, 2 );
+	add_action( 'woocommerce_checkout_update_order_review', 'woolab_icdic_remember_checkout_fields' );
+	add_filter( 'woocommerce_checkout_get_value', 'woolab_icdic_remembered_checkout_value', 10, 2 );
 	add_action( 'wp', 'woolab_icdic_set_vat_exempt_for_customer' );
 	add_action( 'woocommerce_checkout_update_order_review', 'woolab_icdic_validate_vat_exempt_for_company', 10, 1 );
 	add_action( 'woocommerce_checkout_update_order_meta', 'woolab_icdic_save_order_metadata' );

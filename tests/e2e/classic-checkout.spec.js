@@ -56,6 +56,25 @@ test( 'the tax fields and their labels follow the billing country', async ( { pa
 	await expect( row( page, 'ic' ) ).toBeVisible();
 } );
 
+test( 'a guest\'s company fields survive a reload', async ( { page } ) => {
+	await setCountry( page, 'SK' );
+	for ( const key of [ 'first_name', 'last_name', 'address_1', 'city', 'postcode', 'phone', 'email' ] ) {
+		await input( page, key ).fill( SHOPPER[ key ] );
+	}
+	await asCompany( page );
+	// Typed, not filled: WooCommerce refreshes the order review on key presses.
+	await input( page, 'company' ).pressSequentially( 'Firma s.r.o.' );
+	await input( page, 'dic' ).pressSequentially( '2020317057' );
+	await input( page, 'dic' ).blur();
+	await page.waitForResponse( /update_order_review/ );
+	await settled( page );
+
+	await page.reload();
+	await expect( input( page, 'iscomp' ) ).toBeChecked();
+	await expect( input( page, 'company' ) ).toHaveValue( 'Firma s.r.o.' );
+	await expect( input( page, 'dic' ) ).toHaveValue( '2020317057' );
+} );
+
 test( 'a Czech IČO fills the company and the address from ARES', async ( { page } ) => {
 	await setCountry( page, 'CZ' );
 	await asCompany( page );

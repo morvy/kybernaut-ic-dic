@@ -74,7 +74,10 @@ function woolab_icdic_checkout_fields( $fields ) {
 			'required'    => false,
 			'input_class' => apply_filters( 'woolab_icdic_class_billing_iscomp', array('woocommerce-form__input', 'woocommerce-form__input-checkbox', 'form-row-wide') ),
 			'clear'       => true,
-			'priority'    => 29
+			'priority'    => 29,
+			// WooCommerce refreshes the order review on a change here, which keeps the
+			// fields across a reload (woolab_icdic_remember_checkout_fields()).
+			'class'       => array( 'update_totals_on_change' ),
 		);
 		array_push( $fields['billing']['billing_ic']['class'], 'woolab-ic-dic-toggle' );
 		array_push( $fields['billing']['billing_dic']['class'], 'woolab-ic-dic-toggle' );
@@ -98,6 +101,9 @@ function woolab_icdic_checkout_fields( $fields ) {
 	}
 
 	if ( isset( $fields['billing']['billing_company'] ) ) {
+		$fields['billing']['billing_company']['class']   = (array) ( $fields['billing']['billing_company']['class'] ?? array() );
+		$fields['billing']['billing_company']['class'][] = 'update_totals_on_change';
+
 		// Why there is no placeholder for Company field by default ?!
 		$fields['billing']['billing_company']['placeholder'] = __( 'Company', 'woocommerce' );
 	}
@@ -599,6 +605,58 @@ function woolab_icdic_order_details_ids( $address_type, $order ) {
 	if ( $lines ) {
 		echo '<p class="woolab-ic-dic-customer-details">' . implode( '<br>', $lines ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above.
 	}
+}
+
+/**
+ * Keep what the shopper typed into the company fields across a reload of the
+ * classic checkout.
+ *
+ * WooCommerce's order review update stores only the address fields it sends on its
+ * own (country, postcode, city, address); the company name, the IDs and the toggle
+ * reach it only in the form's post data, so a guest lost them on reload. The block
+ * checkout keeps them itself (in the customer session, or the checkout draft).
+ *
+ * @param string $post_data The checkout form, URL-encoded.
+ * @return void
+ */
+function woolab_icdic_remember_checkout_fields( $post_data ) {
+	if ( ! WC()->session ) {
+		return;
+	}
+
+	parse_str( (string) $post_data, $data );
+
+	$fields = array();
+	foreach ( array( 'billing_company', 'billing_ic', 'billing_dic', 'billing_dic_dph' ) as $key ) {
+		if ( isset( $data[ $key ] ) && is_string( $data[ $key ] ) ) {
+			$fields[ $key ] = wc_clean( $data[ $key ] );
+		}
+	}
+
+	// An unticked checkbox is not posted.
+	if ( woolab_icdic_toggle_enabled() ) {
+		$fields['billing_iscomp'] = empty( $data['billing_iscomp'] ) ? '' : '1';
+	}
+
+	WC()->session->set( 'woolab_icdic_checkout_fields', $fields );
+}
+
+/**
+ * The value woolab_icdic_remember_checkout_fields() kept, before the customer's
+ * stored one: it is what the shopper typed last.
+ *
+ * @param mixed  $value Null, or the value another filter decided.
+ * @param string $input Field key.
+ * @return mixed
+ */
+function woolab_icdic_remembered_checkout_value( $value, $input ) {
+	if ( null !== $value || ! WC()->session ) {
+		return $value;
+	}
+
+	$fields = WC()->session->get( 'woolab_icdic_checkout_fields' );
+
+	return is_array( $fields ) && isset( $fields[ $input ] ) ? $fields[ $input ] : $value;
 }
 
 function woolab_icdic_toggle_iscomp_field($value, $input) {

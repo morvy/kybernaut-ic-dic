@@ -40,6 +40,23 @@ test.beforeEach( async ( { page } ) => {
 	await openCheckout( page );
 } );
 
+test( 'a guest\'s company fields survive a reload', async ( { page } ) => {
+	await setCountry( page, 'SK' );
+	await asCompany( page );
+	await field( page, 'company' ).fill( 'Firma s.r.o.' );
+	await field( page, 'ic' ).fill( '27082440' );
+	await field( page, 'dic-sk' ).fill( '2020317057' );
+	const saved = page.waitForResponse( ( r ) => /wc\/store\/v1\/checkout/.test( r.url() ) && r.request().postData()?.includes( '2020317057' ) );
+	await field( page, 'dic-sk' ).blur();
+	await saved;
+
+	await page.reload();
+	await expect( field( page, 'iscomp' ) ).toBeChecked();
+	await expect( field( page, 'company' ) ).toHaveValue( 'Firma s.r.o.' );
+	await expect( field( page, 'ic' ) ).toHaveValue( '27082440' );
+	await expect( field( page, 'dic-sk' ) ).toHaveValue( '2020317057' );
+} );
+
 test( 'company fields stay hidden until "Buying as a company" is ticked', async ( { page } ) => {
 	await setCountry( page, 'SK' );
 	await expect( field( page, 'company' ) ).toBeHidden();
