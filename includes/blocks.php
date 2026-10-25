@@ -689,6 +689,10 @@ function woolab_icdic_blocks_update_vat_exempt( $data ) {
 		return;
 	}
 
+	if ( isset( $data['address'] ) && is_array( $data['address'] ) ) {
+		woolab_icdic_blocks_save_address( $data['address'] );
+	}
+
 	$country = isset( $data['country'] ) ? strtoupper( wc_clean( (string) $data['country'] ) ) : '';
 	if ( ! array_key_exists( $country, WC()->countries->get_allowed_countries() ) ) {
 		$country = WC()->customer->get_billing_country();
@@ -711,6 +715,34 @@ function woolab_icdic_blocks_customer_vat_exempt( $customer, $request ) {
 
 	woolab_icdic_blocks_apply_vat_exempt_from_fields( $country, (array) ( $request['additional_fields'] ?? array() ) );
 	woolab_icdic_blocks_remember_vat_exempt();
+}
+
+/**
+ * The address an ARES / Finančná správa autofill just wrote, sent with the VAT
+ * update it triggers: the Checkout block saves the address only after a pause, and
+ * this update would otherwise answer with the old one and the block store it over
+ * the filled one. Saving it here costs no request of its own.
+ *
+ * @param array<string,mixed> $address 'type' => 'shipping'|'billing', and the address fields.
+ * @return void
+ */
+function woolab_icdic_blocks_save_address( $address ) {
+	$type = $address['type'] ?? '';
+	if ( 'shipping' !== $type && 'billing' !== $type ) {
+		return;
+	}
+
+	foreach ( array( 'first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country', 'phone' ) as $key ) {
+		$setter = 'set_' . $type . '_' . $key;
+		if ( ! isset( $address[ $key ] ) || ! is_callable( array( WC()->customer, $setter ) ) ) {
+			continue;
+		}
+		$value = wc_clean( (string) $address[ $key ] );
+		if ( 'country' === $key && ! array_key_exists( $value, WC()->countries->get_allowed_countries() ) ) {
+			continue;
+		}
+		WC()->customer->$setter( $value );
+	}
 }
 
 /**
@@ -739,8 +771,13 @@ function woolab_icdic_blocks_vat_exempt_key() {
  */
 function woolab_icdic_blocks_remember_vat_exempt() {
 	$key = woolab_icdic_blocks_vat_exempt_key();
-	if ( $key && WC()->customer ) {
-		set_transient( $key, WC()->customer->get_is_vat_exempt() ? 'yes' : 'no', DAY_IN_SECONDS );
+	if ( ! $key || ! WC()->customer ) {
+		return;
+	}
+	$exempt = WC()->customer->get_is_vat_exempt() ? 'yes' : 'no';
+	// A database write only when the decision changes.
+	if ( get_transient( $key ) !== $exempt ) {
+		set_transient( $key, $exempt, DAY_IN_SECONDS );
 	}
 }
 

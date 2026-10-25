@@ -62,17 +62,17 @@
   }
 
   /**
-   * WooCommerce keys validation errors by the input's `name` — the location and the
-   * field id joined with an underscore, "order_kybernaut/ic" — while the element's
-   * own id swaps the slash for a dash. Find the element by the id it renders, then
-   * take the key off it, so neither convention has to be rebuilt here.
+   * WooCommerce keys validation errors by the location and the field id joined
+   * with an underscore, "order_kybernaut/ic"; the element's own id swaps the
+   * slash for a dash.
    */
   function icInput() {
     return document.querySelector('[id$="' + IC.replace('/', '-') + '"]');
   }
   function errorId() {
     var input = icInput();
-    return input && input.name ? input.name : IC;
+    // WooCommerce 11 also puts the key in the input's name; 10.0 leaves it empty.
+    return input && input.name ? input.name : 'order_' + IC;
   }
 
   /**
@@ -170,10 +170,19 @@
     if (ares.dic_dph) {
       fields[DIC_DPH] = ares.dic_dph;
     }
-    if (wp.data.select(CHECKOUT).getUseShippingAsBilling()) {
-      wp.data.dispatch(CART).setShippingAddress(address);
+    var shipping = wp.data.select(CHECKOUT).getUseShippingAsBilling();
+    var cart = wp.data.dispatch(CART);
+    if (shipping) {
+      cart.setShippingAddress(address);
     } else {
-      wp.data.dispatch(CART).setBillingAddress(address);
+      cart.setBillingAddress(address);
+    }
+
+    // The VAT update the DIČ below triggers would come back with the address the
+    // server still has (the Checkout block saves after a pause), and the block
+    // would store that over the one just filled: that update carries it.
+    if (ares.dic) {
+      saveAddress = shipping ? 'shipping' : 'billing';
     }
     if (Object.keys(fields).length) {
       wp.data.dispatch(CHECKOUT).setAdditionalFields(fields);
@@ -239,13 +248,26 @@
    * changes.
    */
   var lastVat = null;
+  var sentVat = false;
+  var saveAddress = null;
   var updateVat = debounce(function (fields, country) {
+    var data = {
+      fields: fields,
+      country: country
+    };
+
+    // The address as it is now, not as ARES filled it: the shopper may have
+    // edited it since.
+    if (saveAddress) {
+      var customer = wp.data.select(CART).getCustomerData();
+      data.address = Object.assign({
+        type: saveAddress
+      }, 'shipping' === saveAddress ? customer.shippingAddress : customer.billingAddress);
+      saveAddress = null;
+    }
     wc.blocksCheckout.extensionCartUpdate({
       namespace: 'woolab-ic-dic',
-      data: {
-        fields: fields,
-        country: country
-      }
+      data: data
     });
   }, 800);
   function watchVat() {
@@ -259,12 +281,17 @@
     if (key === lastVat) {
       return;
     }
-
-    // The first run only records the state the page opened with: the server set
-    // the exemption from the customer's saved details on page load.
-    var first = null === lastVat;
     lastVat = key;
-    if (!first) {
+
+    // Each update is a full WooCommerce request, on hosting where PHP workers
+    // are scarce. Without a VAT number there is nothing to exempt, so only the
+    // update that ends an exemption goes out. A VAT number the page opened with
+    // is sent too: the server decided on page load from the saved customer
+    // details, which hold neither the block checkout's fields nor, with "Use
+    // same address for billing", the current billing country.
+    var hasVat = !!(vat[dicField(country)] || vat[DIC_DPH]);
+    if (hasVat || sentVat) {
+      sentVat = hasVat;
       updateVat(vat, country);
     }
   }
