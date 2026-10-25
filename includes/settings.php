@@ -322,7 +322,7 @@ function woolab_icdic_settings_validation() {
 }
 
 /**
- * Appearance: colours of the lookup UI (src/css/lookup.css). Empty follows the
+ * Appearance: colours of the lookup UI (resources/css/lookup.css). Empty follows the
  * theme and WooCommerce, as without these settings.
  *
  * @return array WooCommerce settings fields.

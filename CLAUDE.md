@@ -104,7 +104,7 @@ composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10
   - `compatibility/` - Third-party plugin compatibility layers (SuperFaktura, PDF Invoices, Fluid Checkout)
 
 **Frontend Assets:**
-- `src/` - Source files (unminified)
+- `resources/` - Source files (unminified)
   - `js/public.js` - Classic checkout AJAX for ARES autofill
   - `js/blocks.js` - Block checkout: same checks against the WooCommerce Blocks data stores
   - `js/suggest.js` - Company name suggestions (`window.woolabSuggest`), shared by public.js and blocks.js

@@ -10,7 +10,7 @@ var gcmq = require('gulp-group-css-media-queries');
 
 // Handle JS
 gulp.task("scripts", function (done) {
-    gulp.src('src/js/[^_]*.js')
+    gulp.src('resources/js/[^_]*.js')
         .on('error', console.log)
         .pipe(babel({
             presets: [
@@ -29,7 +29,7 @@ gulp.task("scripts", function (done) {
 
 // Minify CSS
 gulp.task('styles', function (done) {
-    gulp.src(['src/css/*.css'])
+    gulp.src(['resources/css/*.css'])
         .pipe(autoprefixer({
             cascade: false
         }))
