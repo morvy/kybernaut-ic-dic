@@ -263,6 +263,28 @@ test( 'a VAT ID the server rejects is reported under its field', async ( { page 
 	await expect( page ).not.toHaveURL( /order-received/ );
 } );
 
+test( 'a store\'s own check is reported under its field', async ( { page, context, baseURL } ) => {
+	await context.addCookies( [ { name: 'woolab_e2e_check', value: 'pl', url: baseURL } ] );
+	try {
+		await setCountry( page, 'PL' );
+		await asCompany( page );
+		await fillAddress( page );
+		await page.locator( '#shipping-postcode' ).fill( '00-001' );
+		await field( page, 'company' ).fill( 'Firma sp. z o.o.' );
+		// A valid NIP, so only the store's check objects.
+		await field( page, 'dic' ).fill( 'PL1132191233' );
+		await field( page, 'dic' ).blur();
+		await page.waitForResponse( ( r ) => r.url().includes( 'cart/extensions' ), { timeout: 15000 } ).catch( () => null );
+		await page.locator( '.wc-block-components-checkout-place-order-button' ).click();
+
+		const row = page.locator( '.wc-block-components-text-input' ).filter( { has: field( page, 'dic' ) } );
+		await expect( row.locator( '.wc-block-components-validation-error' ) ).toContainText( 'E2E: this NIP is not on the whitelist.', { timeout: 30000 } );
+		await expect( page ).not.toHaveURL( /order-received/ );
+	} finally {
+		await context.clearCookies( { name: 'woolab_e2e_check' } );
+	}
+} );
+
 test( 'a Polish NIP without "PL" is a valid tax number, the order with VAT', async ( { page } ) => {
 	await setCountry( page, 'PL' );
 	await asCompany( page );

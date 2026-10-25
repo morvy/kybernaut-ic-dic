@@ -5,10 +5,10 @@ namespace KybernautIcDic\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * Characterization tests for the pure checkout validation orchestrator in
- * includes/validation.php.
+ * Characterization tests for the checkout validation, woolab_icdic_validate_checkout()
+ * (the checks in src/Validation/Checks, run by Validator).
  *
- * woolab_icdic_validate_checkout() is pure (no WordPress, no network, no i18n),
+ * It is pure (no WordPress, no network, no i18n),
  * so they need no WordPress functions. Network is supplied via fake closures and
  * assertions are made on returned error *codes*, never translated strings.
  */

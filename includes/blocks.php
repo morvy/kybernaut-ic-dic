@@ -536,63 +536,63 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 	$countries = new Countries();
 	$dic_field = woolab_icdic_blocks_field_for( 'billing_dic', $country );
 
-	$result = woolab_icdic_validate_checkout(
-		array(
-			'country'               => $country,
-			'ic'                    => (string) ( $fields[ woolab_icdic_blocks_field_for( 'billing_ic', $country ) ] ?? '' ),
-			'dic'                   => (string) ( $fields[ $dic_field ] ?? '' ),
-			'dic_present'           => isset( $fields[ $dic_field ] ),
-			'dic_dph'               => (string) ( $fields['kybernaut/dic-dph'] ?? '' ),
-			// While the toggle owns the company name it is posted with the rest of
-			// the section, not with the address.
-			'company'               => woolab_icdic_blocks_owns_company()
-				? (string) ( $fields['kybernaut/company'] ?? '' )
-				: (string) ( $billing['company'] ?? '' ),
-			'postcode'              => (string) ( $billing['postcode'] ?? '' ),
-			'city'                  => (string) ( $billing['city'] ?? '' ),
-			'address_1'             => (string) ( $billing['address_1'] ?? '' ),
-			// The block checkout has no ship-to-different-address checkbox; it
-			// always posts both addresses. The only thing the validator does with
-			// this pair is compare the shipping country to the VAT country, so a
-			// differing shipping country is the faithful equivalent.
-			'ship_to_different'     => isset( $shipping['country'] ) && $shipping['country'] !== $country,
-			'shipping_country'      => isset( $shipping['country'] ) ? $shipping['country'] : null,
-			'ares_check'            => (bool) woolab_icdic_ares_check(),
-			'ares_fill'             => (bool) woolab_icdic_ares_fill(),
-			'vies_check'            => (bool) woolab_icdic_vies_check(),
-			'sk_check'              => (bool) woolab_icdic_sk_check(),
-			'sk_fill'               => (bool) woolab_icdic_sk_fill(),
-			'ignore_check_fail'     => (bool) woolab_icdic_ignore_check_fail(),
-			/**
-			 * Match the VAT number's country prefix to the billing and shipping country.
-			 *
-			 * @since 1.4.0
-			 * @param bool $check
-			 */
-			'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
-			'require_dic_for_firms' => woolab_icdic_dic_required( $country ),
-			'check_dic_dph_match'   => (bool) woolab_icdic_dic_dicdph_match_enabled(),
-			'country_in_eu'         => $countries->isCountryCodeInEU( $country ),
-			'verify_vat'            => woolab_icdic_make_vies_verifier( 'Could not validate VAT number: %s, returned the following exception:' ),
-			'lookup_ares'           => 'woolab_icdic_ares',
-			'lookup_sk_ico'         => 'woolab_icdic_sk_lookup',
-			'lookup_sk'             => 'woolab_icdic_sk_find',
-		)
+	$input = array(
+		'country'               => $country,
+		'ic'                    => (string) ( $fields[ woolab_icdic_blocks_field_for( 'billing_ic', $country ) ] ?? '' ),
+		'dic'                   => (string) ( $fields[ $dic_field ] ?? '' ),
+		'dic_present'           => isset( $fields[ $dic_field ] ),
+		'dic_dph'               => (string) ( $fields['kybernaut/dic-dph'] ?? '' ),
+		// While the toggle owns the company name it is posted with the rest of
+		// the section, not with the address.
+		'company'               => woolab_icdic_blocks_owns_company()
+			? (string) ( $fields['kybernaut/company'] ?? '' )
+			: (string) ( $billing['company'] ?? '' ),
+		'postcode'              => (string) ( $billing['postcode'] ?? '' ),
+		'city'                  => (string) ( $billing['city'] ?? '' ),
+		'address_1'             => (string) ( $billing['address_1'] ?? '' ),
+		// The block checkout has no ship-to-different-address checkbox; it
+		// always posts both addresses. The only thing the validator does with
+		// this pair is compare the shipping country to the VAT country, so a
+		// differing shipping country is the faithful equivalent.
+		'ship_to_different'     => isset( $shipping['country'] ) && $shipping['country'] !== $country,
+		'shipping_country'      => isset( $shipping['country'] ) ? $shipping['country'] : null,
+		'ares_check'            => (bool) woolab_icdic_ares_check(),
+		'ares_fill'             => (bool) woolab_icdic_ares_fill(),
+		'vies_check'            => (bool) woolab_icdic_vies_check(),
+		'sk_check'              => (bool) woolab_icdic_sk_check(),
+		'sk_fill'               => (bool) woolab_icdic_sk_fill(),
+		'ignore_check_fail'     => (bool) woolab_icdic_ignore_check_fail(),
+		/**
+		 * Match the VAT number's country prefix to the billing and shipping country.
+		 *
+		 * @since 1.4.0
+		 * @param bool $check
+		 */
+		'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
+		'require_dic_for_firms' => woolab_icdic_dic_required( $country ),
+		'check_dic_dph_match'   => (bool) woolab_icdic_dic_dicdph_match_enabled(),
+		'country_in_eu'         => $countries->isCountryCodeInEU( $country ),
+		'verify_vat'            => woolab_icdic_make_vies_verifier( 'Could not validate VAT number: %s, returned the following exception:' ),
+		'lookup_ares'           => 'woolab_icdic_ares',
+		'lookup_sk_ico'         => 'woolab_icdic_sk_lookup',
+		'lookup_sk'             => 'woolab_icdic_sk_find',
 	);
 
-	foreach ( $result['errors'] as $error ) {
+	$result = \KybernautIcDic\Validation\Validator::run( new \KybernautIcDic\Validation\Context( $input ) );
+
+	foreach ( $result->errors() as $error ) {
 		// WooCommerce shows these above the section, and keeps no field key in them,
 		// so the code names the field and blocks.js moves the message under it.
-		$legacy = woolab_icdic_checkout_error_field( $error['code'], $country );
+		$legacy = \KybernautIcDic\Validation\Errors::field( $error, $country );
 		$field  = 'billing_company' === $legacy
 			? ( woolab_icdic_blocks_owns_company() ? 'kybernaut/company' : null )
 			: woolab_icdic_blocks_field_for( $legacy, $country );
-		$errors->add( $field ? 'woolab_icdic:' . $field . ':' . $error['code'] : 'woolab_icdic_' . $error['code'], woolab_icdic_checkout_error_message( $error, $country ) );
+		$errors->add( $field ? 'woolab_icdic:' . $field . ':' . $error['code'] : 'woolab_icdic_' . $error['code'], \KybernautIcDic\Validation\Errors::message( $error, $country ) );
 	}
 
 	// Read back in woolab_icdic_blocks_update_order(), which stands in for
 	// woolab_icdic_save_order_metadata() on this checkout.
-	WC()->session->set( 'woolab_icdic_vat_check_fail_ignored', $result['check_fail_ignored'] );
+	WC()->session->set( 'woolab_icdic_vat_check_fail_ignored', $result->check_fail_ignored() );
 }
 
 /**

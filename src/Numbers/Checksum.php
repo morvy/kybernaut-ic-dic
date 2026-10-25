@@ -158,6 +158,72 @@ final class Checksum {
 	}
 
 	/**
+	 * Czech DIČ: "CZ" and an IČO or a birth number.
+	 *
+	 * @param string $dic Whitespace stripped.
+	 */
+	public static function cz_dic( string $dic ): bool {
+		return str_starts_with( $dic, 'CZ' ) && ( self::rc( substr( $dic, 2 ) ) || self::dic( substr( $dic, 2 ) ) );
+	}
+
+	/**
+	 * Whether a VAT number is the well-formed tax number of a country where every
+	 * business has one in that form, VAT payer or not: the Czech DIČ, the Polish NIP,
+	 * the Hungarian adószám (its first 8 digits). VIES lists only the VAT payers.
+	 *
+	 * @param string $vat Country prefix and number, whitespace stripped.
+	 */
+	public static function tax_number( string $vat ): bool {
+		$prefix = substr( $vat, 0, 2 );
+		$number = substr( $vat, 2 );
+
+		if ( 'CZ' === $prefix ) {
+			return self::cz_dic( $vat );
+		}
+
+		// Weighted sums: modulo 11 is the NIP's last digit, 10 minus modulo 10 the adószám's.
+		$checks = array(
+			'PL' => array( 10, array( 6, 5, 7, 2, 3, 4, 5, 6, 7 ) ),
+			'HU' => array( 8, array( 9, 7, 3, 1, 9, 7, 3 ) ),
+		);
+
+		if ( ! isset( $checks[ $prefix ] ) || ! preg_match( '/^\d{' . $checks[ $prefix ][0] . '}$/', $number ) ) {
+			return false;
+		}
+
+		$sum = 0;
+		foreach ( $checks[ $prefix ][1] as $i => $weight ) {
+			$sum += $weight * (int) $number[ $i ];
+		}
+
+		$check = 'PL' === $prefix ? $sum % 11 : ( 10 - $sum % 10 ) % 10;
+
+		return (int) substr( $number, -1 ) === $check;
+	}
+
+	/**
+	 * Whether a Polish NIP or Hungarian adószám is entered without its country code,
+	 * as a business does that is a taxpayer but no VAT payer. Dashes are fine
+	 * (526-025-09-95); a full adószám (12892312-2-41) is checked by its first 8 digits.
+	 *
+	 * @param string $country Billing country.
+	 * @param string $number  Whitespace stripped.
+	 */
+	public static function domestic_tax_number( string $country, string $number ): bool {
+		if ( ! in_array( $country, array( 'PL', 'HU' ), true ) || ! preg_match( '/^[0-9-]+$/', $number ) ) {
+			return false;
+		}
+
+		$digits = str_replace( '-', '', $number );
+
+		if ( 'HU' === $country && 11 === strlen( $digits ) ) {
+			$digits = substr( $digits, 0, 8 );
+		}
+
+		return self::tax_number( $country . $digits );
+	}
+
+	/**
 	 * The WooCommerce country code of a VAT number: its prefix, EL for Greece is GR.
 	 *
 	 * @param string $vat_number VAT number with its prefix.

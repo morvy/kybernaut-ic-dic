@@ -117,6 +117,28 @@ test( 'an invalid IČO stops the order', async ( { page } ) => {
 	await expect( row( page, 'ic' ).locator( '.checkout-inline-error-message' ) ).toContainText( 'Business ID' );
 } );
 
+test( 'a store\'s own check is reported under its field', async ( { page, context, baseURL } ) => {
+	await context.addCookies( [ { name: 'woolab_e2e_check', value: 'pl', url: baseURL } ] );
+	try {
+		await page.reload();
+		await setCountry( page, 'PL' );
+		await asCompany( page );
+		for ( const key of [ 'first_name', 'last_name', 'address_1', 'city', 'phone', 'email' ] ) {
+			await input( page, key ).fill( SHOPPER[ key ] );
+		}
+		await input( page, 'postcode' ).fill( '00-001' );
+		await input( page, 'company' ).fill( 'Firma sp. z o.o.' );
+		// A valid NIP, so only the store's check objects.
+		await input( page, 'dic' ).fill( 'PL1132191233' );
+		await settled( page );
+		await page.locator( '#place_order' ).click();
+		await expect( row( page, 'dic' ).locator( '.checkout-inline-error-message' ) ).toContainText( 'E2E: this NIP is not on the whitelist.', { timeout: 30000 } );
+		await expect( page ).not.toHaveURL( /order-received/ );
+	} finally {
+		await context.clearCookies( { name: 'woolab_e2e_check' } );
+	}
+} );
+
 test( 'the order carries the company and no VAT', async ( { page } ) => {
 	await setCountry( page, 'CZ' );
 	await asCompany( page );

@@ -44,6 +44,35 @@ if ( isset( $_COOKIE['woolab_e2e_filter'] ) && 'sk_dic' === $_COOKIE['woolab_e2e
 	add_filter( 'woolab_icdic_sk_required_ic_and_dic', '__return_false' );
 }
 
+// With the cookie woolab_e2e_check=pl, a store's check of its own (the
+// woolab_icdic_checks filter): a Polish NIP not on its whitelist stops the order,
+// with its message under the VAT ID field.
+if ( isset( $_COOKIE['woolab_e2e_check'] ) && 'pl' === $_COOKIE['woolab_e2e_check'] ) {
+	add_filter(
+		'woolab_icdic_checks',
+		function ( array $checks ) {
+			$checks['e2e_pl_whitelist'] = new class() extends \KybernautIcDic\Validation\AbstractCheck {
+				protected string $field = 'dic';
+
+				public function id(): string {
+					return 'e2e_pl_whitelist';
+				}
+
+				public function applies( \KybernautIcDic\Validation\Context $context ): bool {
+					return 'PL' === $context->country() && $context->entered( 'dic' );
+				}
+
+				public function run( \KybernautIcDic\Validation\Context $context, \KybernautIcDic\Validation\Result $result ): void {
+					if ( 'PL5260250995' !== $context->number( 'dic' ) ) {
+						$result->add_error( $this->field(), 'e2e_pl_whitelist', array(), 'E2E: this NIP is not on the whitelist.' );
+					}
+				}
+			};
+			return $checks;
+		}
+	);
+}
+
 // With the header X-Woolab-E2E-Rate-Limit, a limit of 3 lookups per 10 s: a slow
 // host answers 40 parallel ones too slowly to fill the default 25
 // (tests/e2e/rest.spec.js).

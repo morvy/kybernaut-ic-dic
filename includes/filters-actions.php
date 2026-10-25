@@ -322,141 +322,16 @@ function woolab_icdic_checkout_field_process() {
 		'lookup_sk'             => 'woolab_icdic_sk_find',
 	);
 
-	$result = woolab_icdic_validate_checkout( $input );
+	$result = \KybernautIcDic\Validation\Validator::run( new \KybernautIcDic\Validation\Context( $input ) );
 
-	// Map each structured error code back to its exact original notice.
-	foreach ( $result['errors'] as $error ) {
+	foreach ( $result->errors() as $error ) {
 		// Under its field, as WooCommerce shows its own (checkout.js show_inline_errors()).
-		wc_add_notice( woolab_icdic_checkout_error_message( $error, $country ), 'error', array( 'id' => woolab_icdic_checkout_error_field( $error['code'], $country ) ) );
+		wc_add_notice( \KybernautIcDic\Validation\Errors::message( $error, $country ), 'error', array( 'id' => \KybernautIcDic\Validation\Errors::field( $error, $country ) ) );
 	}
 
-	// Set flag about Business ID or VAT number check fails.
-	// The information will be saved in the order meta in woocommerce_new_order hook.
-	WC()->session->set( 'woolab_icdic_vat_check_fail_ignored', $result['check_fail_ignored'] );
+	// Saved with the order (woolab_icdic_save_order_metadata()).
+	WC()->session->set( 'woolab_icdic_vat_check_fail_ignored', $result->check_fail_ignored() );
 
-}
-
-/**
- * The field a validation error is about.
- *
- * @param string $code    woolab_icdic_validate_checkout() error code.
- * @param string $country Billing country.
- * @return string billing_company, billing_ic, billing_dic or billing_dic_dph.
- */
-function woolab_icdic_checkout_error_field( $code, $country ) {
-	$fields = array(
-		'missing_company'     => 'billing_company',
-		'missing_business_id' => 'billing_ic',
-		'invalid_business_id' => 'billing_ic',
-		'ares_unexpected'     => 'billing_ic',
-		'ares_mismatch'       => 'billing_ic',
-		'sk_mismatch'         => 'billing_ic',
-		'invalid_dic_cz'      => 'billing_dic',
-		'missing_dic'         => 'billing_dic',
-		'invalid_tax_id_sk'   => 'billing_dic',
-		'dic_ico_mismatch'    => 'billing_dic',
-		'sk_unverifiable'     => 'billing_dic',
-		'invalid_vat_dph'     => 'billing_dic_dph',
-		'dic_dph_mismatch'    => 'billing_dic_dph',
-	);
-
-	// The rest is about the VAT number: the IČ DPH in Slovakia.
-	return $fields[ $code ] ?? ( 'SK' === $country ? 'billing_dic_dph' : 'billing_dic' );
-}
-
-/**
- * Render a structured validation error to its original, translated notice string.
- *
- * One-to-one with the codes emitted by woolab_icdic_validate_checkout(); the text,
- * text domain, and context match the strings the monolithic hook used to emit.
- *
- * @param array  $error   ['code' => string, 'data' => array]
- * @param string $country Billing country, for the field labels.
- * @return string
- */
-function woolab_icdic_checkout_error_message( array $error, $country = '' ) {
-	$labels    = woolab_icdic_labels( $country );
-	$vat_label = 'SK' === $country ? $labels['dic_dph'] : $labels['dic'];
-
-	switch ( $error['code'] ) {
-		case 'missing_company':
-			// WooCommerce's own required-field notice, so it reads like the core fields' notices.
-			return sprintf( __( '%s is a required field.', 'woocommerce' ), '<strong>' . esc_html( __( 'Company', 'woocommerce' ) ) . '</strong>' );
-
-		case 'missing_business_id':
-			return __( 'Enter a valid Business ID', 'woolab-ic-dic' );
-
-		case 'invalid_business_id':
-			$message = __( 'Enter a valid Business ID', 'woolab-ic-dic' );
-			if ( isset( $error['data']['ares_message'] ) ) {
-				$message .= ' ' . $error['data']['ares_message'];
-			}
-			return $message;
-
-		case 'ares_unexpected':
-			return __( 'Unexpected error occurred. Try it again.', 'woolab-ic-dic' );
-
-		case 'ares_mismatch':
-		case 'sk_mismatch':
-			$labels = array(
-				'tax_id'   => $labels['dic'],
-				'company'  => __( 'Company', 'woocommerce' ),
-				'postcode' => __( 'Postcode / ZIP', 'woocommerce' ),
-				'city'     => __( 'Town / City', 'woocommerce' ),
-				'address'  => __( 'Address', 'woocommerce' ),
-			);
-			$missing_fields = array();
-			foreach ( $error['data']['fields'] as $field ) {
-				$missing_fields[] = $labels[ $field ];
-			}
-			if ( 'sk_mismatch' === $error['code'] ) {
-				/* translators: %s: list of field labels, e.g. "Company and Business ID" */
-				return sprintf( _n( '%s is not corresponding to Finančná správa.', '%s are not corresponding to Finančná správa.', count( $missing_fields ), 'woolab-ic-dic' ), wc_format_list_of_items( $missing_fields ) );
-			}
-			/* translators: %s: list of field labels, e.g. "Company and Business ID" */
-			return sprintf( _n( '%s is not corresponding to ARES.', '%s are not corresponding to ARES.', count( $missing_fields ), 'woolab-ic-dic' ), wc_format_list_of_items( $missing_fields ) );
-
-		// The VAT checks are on IČ DPH in Slovakia, on the DIČ field elsewhere; the
-		// messages name the field as the form labels it (includes/labels.php).
-		case 'vat_country_mismatch_billing':
-			/* translators: %s: field label, e.g. "VAT ID" */
-			return sprintf( _x( 'The billing country does not correspond to the country of the %s.', 'field label', 'woolab-ic-dic' ), $vat_label );
-
-		case 'vat_country_mismatch_shipping':
-			/* translators: %s: field label, e.g. "VAT ID" */
-			return sprintf( _x( 'The shipping country does not correspond to the country of the %s.', 'field label', 'woolab-ic-dic' ), $vat_label );
-
-		case 'vat_format':
-			/* translators: %s: field label, e.g. "VAT ID" */
-			return sprintf( _x( '%s has not a correct format.', 'field label', 'woolab-ic-dic' ), $vat_label );
-
-		case 'invalid_vat':
-		case 'missing_dic':
-		case 'invalid_dic_cz':
-		case 'invalid_vat_dph':
-			/* translators: %s: field label, e.g. "VAT ID" */
-			return sprintf( _x( 'Enter a valid %s.', 'field label', 'woolab-ic-dic' ), $vat_label );
-
-		case 'vat_unverifiable':
-			/* translators: %s: field label, e.g. "VAT ID" */
-			return sprintf( _x( 'Could not validate %s.', 'field label', 'woolab-ic-dic' ), $vat_label );
-
-		case 'invalid_tax_id_sk':
-			/* translators: %s: field label, e.g. "VAT ID" */
-			return sprintf( _x( 'Enter a valid %s.', 'field label', 'woolab-ic-dic' ), $labels['dic'] );
-
-		case 'dic_dph_mismatch':
-			/* translators: 1: Tax ID label, 2: VAT ID label */
-			return sprintf( __( '%1$s or %2$s is not valid.', 'woolab-ic-dic' ), $labels['dic'], $labels['dic_dph'] );
-
-		case 'dic_ico_mismatch':
-			return __( 'Tax ID does not belong to the entered Business ID.', 'woolab-ic-dic' );
-
-		case 'sk_unverifiable':
-			return __( 'Could not validate Tax ID.', 'woolab-ic-dic' );
-	}
-
-	return '';
 }
 
 // My address formatted

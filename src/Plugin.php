@@ -37,7 +37,6 @@ final class Plugin {
 		'vies.php',
 		'rest.php',
 		'financna-sprava.php',
-		'validation.php',
 		'filters-actions.php',
 		'settings.php',
 		'blocks.php',
