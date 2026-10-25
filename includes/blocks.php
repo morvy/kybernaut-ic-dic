@@ -663,6 +663,9 @@ function woolab_icdic_blocks_apply_vat_exempt( $country, $dic, $dic_dph, $is_com
 	// The store's own country, or not an EU VAT country: no intra-EU exemption.
 	if ( empty( $country ) || $country === $base_country || ! in_array( $country, $vat_countries, true ) ) {
 		woolab_icdic_vat_exempt_reset();
+		if ( WC()->session ) {
+			WC()->session->set( 'woolab_icdic_vat_not_registered', null );
+		}
 		return;
 	}
 
@@ -671,6 +674,11 @@ function woolab_icdic_blocks_apply_vat_exempt( $country, $dic, $dic_dph, $is_com
 	$is_vat_exempt = ( ! empty( $vat_num ) && $is_company )
 		? woolab_icdic_vat_number_exempt( $vat_num, woolab_icdic_ignore_check_fail() )
 		: false;
+
+	// For woolab_icdic_blocks_cart_data(), which blocks.js shows as a notice.
+	if ( WC()->session ) {
+		WC()->session->set( 'woolab_icdic_vat_not_registered', ! $is_vat_exempt && $is_company && woolab_icdic_vat_not_registered( $country, (string) $vat_num ) ? 'yes' : null );
+	}
 
 	$data = array(
 		'billing_country' => $country,
@@ -829,7 +837,7 @@ function woolab_icdic_blocks_restore_vat_exempt() {
 }
 
 /**
- * Register the extensionCartUpdate() callback.
+ * Register the extensionCartUpdate() callback, and the cart data it sends back.
  */
 function woolab_icdic_blocks_register_update_callback() {
 	woocommerce_store_api_register_update_callback(
@@ -837,6 +845,44 @@ function woolab_icdic_blocks_register_update_callback() {
 			'namespace' => 'woolab-ic-dic',
 			'callback'  => 'woolab_icdic_blocks_update_vat_exempt',
 		)
+	);
+
+	woocommerce_store_api_register_endpoint_data(
+		array(
+			'endpoint'        => 'cart',
+			'namespace'       => 'woolab-ic-dic',
+			'data_callback'   => 'woolab_icdic_blocks_cart_data',
+			'schema_callback' => 'woolab_icdic_blocks_cart_schema',
+			'schema_type'     => ARRAY_A,
+		)
+	);
+}
+
+/**
+ * The notice blocks.js shows: a Czech DIČ VIES does not list
+ * (woolab_icdic_vat_not_registered()), or null.
+ *
+ * @return array{vat_notice:string|null}
+ */
+function woolab_icdic_blocks_cart_data() {
+	$session = WC()->session;
+
+	return array( 'vat_notice' => $session && 'yes' === $session->get( 'woolab_icdic_vat_not_registered' ) ? woolab_icdic_vat_not_registered_message() : null );
+}
+
+/**
+ * The schema of woolab_icdic_blocks_cart_data().
+ *
+ * @return array<string,array<string,mixed>>
+ */
+function woolab_icdic_blocks_cart_schema() {
+	return array(
+		'vat_notice' => array(
+			'description' => 'Why the order is not VAT exempt.',
+			'type'        => array( 'string', 'null' ),
+			'context'     => array( 'view', 'edit' ),
+			'readonly'    => true,
+		),
 	);
 }
 

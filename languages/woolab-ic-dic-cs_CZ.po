@@ -156,24 +156,29 @@ msgstr "DIČ nepatří k zadanému IČO."
 msgid "Could not validate Tax ID."
 msgstr "DIČ se nepodařilo ověřit."
 
-#: includes/filters-actions.php:916, includes/filters-actions.php:944,
-#: includes/filters-actions.php:968, includes/filters-actions.php:1005
+#. translators: %s: field label, e.g. "VAT ID"
+#: includes/filters-actions.php:615
+msgid "This %s is not registered for VAT in the EU (VIES), so the order is placed with VAT."
+msgstr "Toto %s není registrováno k DPH v EU (VIES), objednávka se proto vytvoří s DPH."
+
+#: includes/filters-actions.php:956, includes/filters-actions.php:984,
+#: includes/filters-actions.php:1008, includes/filters-actions.php:1045
 msgid "Verification of VAT number has failed."
 msgstr "Ověření DIČ se nezdařilo."
 
-#: includes/filters-actions.php:967, includes/filters-actions.php:1004
+#: includes/filters-actions.php:1007, includes/filters-actions.php:1044
 msgid "Caution!"
 msgstr "Pozor!"
 
-#: includes/filters-actions.php:969, includes/filters-actions.php:1006
+#: includes/filters-actions.php:1009, includes/filters-actions.php:1046
 msgid "Please, make sure the VAT number is valid before processing the order."
 msgstr "Před zpracováním objednávky se ujistěte, že je DIČ platné."
 
-#: includes/filters-actions.php:1021
+#: includes/filters-actions.php:1061
 msgid "View Kybernaut IČO DIČ settings"
 msgstr "Zobrazit nastavení Kybernaut IČO DIČ"
 
-#: includes/filters-actions.php:1021
+#: includes/filters-actions.php:1061
 msgid "Settings"
 msgstr "Nastavení"
 

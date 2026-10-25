@@ -115,3 +115,24 @@ test( 'the order carries the company and no VAT', async ( { page } ) => {
 	await expect( page.locator( 'body' ) ).toContainText( /10[.,]00/ );
 	await expect( page.locator( 'body' ) ).not.toContainText( /12[.,]30/ );
 } );
+
+// A Czech business that is no VAT payer: VIES does not list its DIČ (the stub in
+// mu-plugin.php lists Alza's only), and that is no reason to turn it away.
+test( 'a Czech DIČ VIES does not list orders with VAT, and says why', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	for ( const key of [ 'first_name', 'last_name', 'address_1', 'city', 'postcode', 'phone', 'email' ] ) {
+		await input( page, key ).fill( SHOPPER[ key ] );
+	}
+	await input( page, 'company' ).fill( 'Neplátce s.r.o.' );
+	await input( page, 'dic' ).fill( 'CZ00006947' );
+	await input( page, 'dic' ).blur();
+	await page.evaluate( () => jQuery( document.body ).trigger( 'update_checkout' ) );
+	await expect( page.getByText( 'is not registered for VAT in the EU (VIES)' ).first() ).toBeVisible( { timeout: 30000 } );
+	await expect( vatRow( page ) ).toHaveCount( 1 );
+
+	await settled( page );
+	await page.locator( '#place_order' ).click();
+	await expect( page ).toHaveURL( /order-received/, { timeout: 30000 } );
+	await expect( page.locator( 'body' ) ).toContainText( /12[.,]30/ );
+} );

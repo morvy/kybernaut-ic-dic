@@ -281,6 +281,25 @@ class ValidationTest extends TestCase {
 		$this->assertSame( array( 'invalid_vat' ), $this->codes( $result ) );
 	}
 
+	// A Czech business that is no VAT payer: its DIČ is real, VIES does not list it.
+	public function testCzDicNotInViesOrdersWithVat() {
+		$result = woolab_icdic_validate_checkout( $this->input( array(
+			'dic'        => 'CZ27082440',
+			'verify_vat' => function ( $v ) { return 'invalid'; },
+		) ) );
+		$this->assertSame( array(), $this->codes( $result ) );
+		$this->assertSame( array( array( 'code' => 'vat_not_registered' ) ), $result['notices'] );
+	}
+
+	public function testCzDicNotInViesAndMalformedIsAnError() {
+		$result = woolab_icdic_validate_checkout( $this->input( array(
+			'dic'        => 'CZ27082441',
+			'verify_vat' => function ( $v ) { return 'invalid'; },
+		) ) );
+		$this->assertSame( array( 'invalid_vat' ), $this->codes( $result ) );
+		$this->assertSame( array(), $result['notices'] );
+	}
+
 	public function testEuDicViesBadFormatEmitsBothNotices() {
 		$result = woolab_icdic_validate_checkout( $this->input( array(
 			'country'    => 'DE',

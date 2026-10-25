@@ -197,3 +197,24 @@ test( 'the order carries the company and no VAT', async ( { page } ) => {
 	await expect( page.locator( 'body' ) ).toContainText( /10[.,]00/ );
 	await expect( page.locator( 'body' ) ).not.toContainText( /12[.,]30/ );
 } );
+
+// A Czech business that is no VAT payer: VIES does not list its DIČ (the stub in
+// mu-plugin.php lists Alza's only), and that is no reason to turn it away.
+test( 'a Czech DIČ VIES does not list orders with VAT, and says why', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await field( page, 'company' ).fill( 'Neplátce s.r.o.' );
+	await field( page, 'dic-cz' ).fill( 'CZ00006947' );
+	await field( page, 'dic-cz' ).blur();
+	await expect( page.getByText( 'is not registered for VAT in the EU (VIES)' ).first() ).toBeVisible( { timeout: 30000 } );
+	expect( await taxTotal( page ) ).not.toBe( '0' );
+
+	// WooCommerce drops a click while it saves the address it just got.
+	const saved = page.waitForResponse( ( r ) => r.url().includes( '__experimental_calc_totals' ), { timeout: 10000 } ).catch( () => null );
+	await fillAddress( page );
+	await page.locator( '#shipping-postcode' ).blur();
+	await saved;
+	await page.locator( '.wc-block-components-checkout-place-order-button' ).click();
+	await expect( page ).toHaveURL( /order-received/, { timeout: 30000 } );
+	await expect( page.locator( 'body' ) ).toContainText( /12[.,]30/ );
+} );

@@ -588,6 +588,41 @@ function woolab_icdic_toggle_iscomp_field($value, $input) {
  * @param bool   $ignore_check_fail
  * @return bool
  */
+/**
+ * Whether a Czech DIČ is a real one VIES does not list: every Czech business has a
+ * DIČ, only VAT payers are in VIES. Such a company orders with VAT
+ * (woolab_icdic_validate_checkout()), and the checkout says why.
+ *
+ * @param string $country Billing country.
+ * @param string $vat     The VAT number woolab_icdic_select_vat_number() picked.
+ * @return bool
+ */
+function woolab_icdic_vat_not_registered( $country, $vat ) {
+	$vat = preg_replace( '/\s+/', '', (string) $vat );
+
+	// The VIES answer is cached (woolab_icdic_make_vies_verifier()), the exemption just asked.
+	return 'CZ' === $country && woolab_icdic_vies_check() && woolab_icdic_cz_dic_valid( $vat )
+		&& 'invalid' === call_user_func( woolab_icdic_make_vies_verifier( 'Could not validate VAT number: %s' ), $vat );
+}
+
+/**
+ * What the checkout tells such a company (woolab_icdic_vat_not_registered()).
+ *
+ * @return string
+ */
+function woolab_icdic_vat_not_registered_message() {
+	/* translators: %s: field label, e.g. "VAT ID" */
+	return sprintf( __( 'This %s is not registered for VAT in the EU (VIES), so the order is placed with VAT.', 'woolab-ic-dic' ), woolab_icdic_labels( 'CZ' )['dic'] );
+}
+
+/**
+ * Whether a VAT number exempts the order: VIES says valid, or cannot answer and
+ * the store lets that pass.
+ *
+ * @param string $vat_num
+ * @param bool   $ignore_check_fail
+ * @return bool
+ */
 function woolab_icdic_vat_number_exempt( $vat_num, $ignore_check_fail ) {
 	$verify_vat = woolab_icdic_make_vies_verifier( 'Could not validate if VAT number is exempt: %s, returned the following exception:' );
 	return woolab_icdic_vat_exempt_from_state( $verify_vat( $vat_num ), $ignore_check_fail );
@@ -690,6 +725,11 @@ function woolab_icdic_validate_vat_exempt_for_company( $post_data ) {
 		$is_vat_exempt = apply_filters( 'woolab_icdic_vat_exempt_company', $is_vat_exempt, $data );
 
 		woolab_icdic_vat_exempt_set( $is_vat_exempt );
+
+		// Shown with the order review WooCommerce is sending back.
+		if ( ! $is_vat_exempt && woolab_icdic_vat_not_registered( $country, $vat_num ) ) {
+			wc_add_notice( woolab_icdic_vat_not_registered_message(), 'notice' );
+		}
 	} else {
 		woolab_icdic_vat_exempt_set( false );
 	}

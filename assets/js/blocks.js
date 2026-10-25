@@ -346,4 +346,25 @@
     lastIco = key;
     checkLater(ico);
   });
+
+  // A Czech DIČ VIES does not list: the order is placed with VAT, and the
+  // checkout says why (woolab_icdic_blocks_cart_data()).
+  var vatNotice = null;
+  wp.data.subscribe(function () {
+    var extensions = wp.data.select(CART).getCartData().extensions || {};
+    var notice = (extensions['woolab-ic-dic'] || {}).vat_notice || null;
+    if (notice === vatNotice) {
+      return;
+    }
+    vatNotice = notice;
+    if (notice) {
+      wp.data.dispatch('core/notices').createNotice('info', notice, {
+        id: 'woolab-ic-dic-vat',
+        context: 'wc/checkout',
+        isDismissible: false
+      });
+    } else {
+      wp.data.dispatch('core/notices').removeNotice('woolab-ic-dic-vat', 'wc/checkout');
+    }
+  }, CART);
 })(window.wp, window.wc);

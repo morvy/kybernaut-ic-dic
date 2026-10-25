@@ -47,6 +47,7 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * @return array {
  *     @type array $errors             List of ['code' => string, 'data' => array]; 'data' omitted when unused.
+ *     @type array $notices            Same shape, for what does not stop the order ('vat_not_registered').
  *     @type bool  $check_fail_ignored Whether a VAT/ARES check failure was ignored.
  * }
  */
@@ -55,6 +56,7 @@ function woolab_icdic_validate_checkout( array $input ) {
 	$country = $input['country'];
 
 	$errors                 = array();
+	$notices                = array();
 	$vat_check_fail_ignored = false;
 	$sk_check               = ! empty( $input['sk_check'] );
 	$sk_dic                 = null;
@@ -175,7 +177,11 @@ function woolab_icdic_validate_checkout( array $input ) {
 					// validateVatNumber() short-circuits to false (no VIES call, no exception).
 					$errors[] = array( 'code' => 'vat_format' );
 					$errors[] = array( 'code' => 'invalid_vat' );
-				} elseif ( $state === 'invalid' ) {
+				} elseif ( 'invalid' === $state && 'CZ' === $country && woolab_icdic_cz_dic_valid( $dic ) ) {
+					// Not an error: every Czech business has a DIČ, VIES lists only the
+					// VAT payers. The order goes through as a company's, with VAT.
+					$notices[] = array( 'code' => 'vat_not_registered' );
+				} elseif ( 'invalid' === $state ) {
 					$errors[] = array( 'code' => 'invalid_vat' );
 				} elseif ( $state === 'unverifiable' ) {
 					if ( $input['ignore_check_fail'] ) {
@@ -184,29 +190,26 @@ function woolab_icdic_validate_checkout( array $input ) {
 						$errors[] = array( 'code' => 'vat_unverifiable' );
 					}
 				}
-
-			// Validate CZ and SK mathematicaly
-			} else {
-				if ( $country == 'CZ' ) {
-					if ( ! ( woolab_icdic_verify_rc( substr( $dic, 2 ) ) || woolab_icdic_verify_dic( substr( $dic, 2 ) ) ) || substr( $dic, 0, 2 ) != 'CZ' ) {
-						$errors[] = array( 'code' => 'invalid_dic_cz' );
-					}
-				} elseif ( $country == 'SK' ) {
-					if ( ! woolab_icdic_verify_dic_sk( $dic ) ) {
-						$errors[] = array( 'code' => 'invalid_tax_id_sk' );
-					} elseif ( $sk_check ) {
-						$sk_dic = $input['lookup_sk']( 'dic', $dic );
-						if ( false === $sk_dic ) {
-							if ( $input['ignore_check_fail'] ) {
-								$vat_check_fail_ignored = true;
-							} else {
-								$errors[] = array( 'code' => 'sk_unverifiable' );
-							}
-						} elseif ( null === $sk_dic ) {
-							$errors[] = array( 'code' => 'invalid_tax_id_sk' );
-						} elseif ( woolab_icdic_sk_ico_differs( $sk_dic, $ico ) ) {
-							$errors[] = array( 'code' => 'dic_ico_mismatch' );
+			} elseif ( 'CZ' === $country ) {
+				// Without VIES, CZ and SK are validated mathematically.
+				if ( ! woolab_icdic_cz_dic_valid( $dic ) ) {
+					$errors[] = array( 'code' => 'invalid_dic_cz' );
+				}
+			} elseif ( 'SK' === $country ) {
+				if ( ! woolab_icdic_verify_dic_sk( $dic ) ) {
+					$errors[] = array( 'code' => 'invalid_tax_id_sk' );
+				} elseif ( $sk_check ) {
+					$sk_dic = $input['lookup_sk']( 'dic', $dic );
+					if ( false === $sk_dic ) {
+						if ( $input['ignore_check_fail'] ) {
+							$vat_check_fail_ignored = true;
+						} else {
+							$errors[] = array( 'code' => 'sk_unverifiable' );
 						}
+					} elseif ( null === $sk_dic ) {
+						$errors[] = array( 'code' => 'invalid_tax_id_sk' );
+					} elseif ( woolab_icdic_sk_ico_differs( $sk_dic, $ico ) ) {
+						$errors[] = array( 'code' => 'dic_ico_mismatch' );
 					}
 				}
 			}
@@ -274,8 +277,19 @@ function woolab_icdic_validate_checkout( array $input ) {
 
 	return array(
 		'errors'             => $errors,
+		'notices'            => $notices,
 		'check_fail_ignored' => $vat_check_fail_ignored,
 	);
+}
+
+/**
+ * Whether a Czech DIČ is well-formed: "CZ" and an IČO or a birth number.
+ *
+ * @param string $dic Whitespace stripped.
+ * @return bool
+ */
+function woolab_icdic_cz_dic_valid( $dic ) {
+	return 'CZ' === substr( $dic, 0, 2 ) && ( woolab_icdic_verify_rc( substr( $dic, 2 ) ) || woolab_icdic_verify_dic( substr( $dic, 2 ) ) );
 }
 
 /**
