@@ -1,0 +1,196 @@
+// Block checkout: which company fields each billing country gets, the "Buying as
+// a company" toggle, the billing country behind "Use same address for billing",
+// the ARES autofill, the live intra-EU VAT exemption, and the order it places.
+const { test, expect } = require( '@playwright/test' );
+const { fillCart, expectIdentifiersOnce, COMPANY, SHOPPER } = require( './helpers' );
+
+const field = ( page, id ) => page.locator( `#order-kybernaut-${ id }` );
+
+async function openCheckout( page ) {
+	await fillCart( page );
+	await page.goto( '/checkout/' );
+	await expect( field( page, 'iscomp' ) ).toBeVisible();
+}
+
+async function setCountry( page, country ) {
+	await page.locator( '#shipping-country' ).selectOption( country );
+	// The billing country the field rules read follows the shipping one.
+	await expect.poll( () => page.evaluate( () => wp.data.select( wc.wcBlocksData.CART_STORE_KEY ).getCustomerData().billingAddress.country ) ).toBe( country );
+}
+
+async function asCompany( page ) {
+	await field( page, 'iscomp' ).check();
+	await expect( field( page, 'company' ) ).toBeVisible();
+}
+
+// Whatever ARES did not fill in.
+async function fillAddress( page ) {
+	await page.locator( '#email' ).fill( SHOPPER.email );
+	for ( const key of [ 'first_name', 'last_name', 'address_1', 'city', 'postcode' ] ) {
+		const input = page.locator( `#shipping-${ key }` );
+		if ( ! ( await input.inputValue() ) ) {
+			await input.fill( SHOPPER[ key ] );
+		}
+	}
+}
+
+const taxTotal = ( page ) => page.evaluate( () => wp.data.select( wc.wcBlocksData.CART_STORE_KEY ).getCartTotals().total_tax );
+
+test.beforeEach( async ( { page } ) => {
+	await openCheckout( page );
+} );
+
+test( 'company fields stay hidden until "Buying as a company" is ticked', async ( { page } ) => {
+	await setCountry( page, 'SK' );
+	await expect( field( page, 'company' ) ).toBeHidden();
+	await expect( field( page, 'ic' ) ).toBeHidden();
+	await asCompany( page );
+	await expect( field( page, 'ic' ) ).toBeVisible();
+	await field( page, 'iscomp' ).uncheck();
+	await expect( field( page, 'ic' ) ).toBeHidden();
+} );
+
+test( 'each billing country gets its own tax fields', async ( { page } ) => {
+	await asCompany( page );
+
+	await setCountry( page, 'SK' );
+	await expect( field( page, 'dic-sk' ) ).toBeVisible();
+	await expect( field( page, 'dic-dph' ) ).toBeVisible();
+	await expect( field( page, 'dic-cz' ) ).toBeHidden();
+	await expect( field( page, 'dic' ) ).toBeHidden();
+
+	await setCountry( page, 'CZ' );
+	await expect( field( page, 'dic-cz' ) ).toBeVisible();
+	await expect( field( page, 'dic-sk' ) ).toBeHidden();
+	await expect( field( page, 'dic-dph' ) ).toBeHidden();
+
+	await setCountry( page, 'DE' );
+	await expect( field( page, 'dic' ) ).toBeVisible();
+	await expect( field( page, 'dic-cz' ) ).toBeHidden();
+	await expect( field( page, 'ic' ) ).toBeVisible();
+} );
+
+test( 'a Czech IČO fills the company from ARES', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await field( page, 'ic' ).fill( COMPANY.ico );
+	await field( page, 'ic' ).blur();
+	await expect( field( page, 'company' ) ).toHaveValue( COMPANY.name );
+	await expect( field( page, 'dic-cz' ) ).toHaveValue( COMPANY.dic );
+} );
+
+test( 'requests of its own: one IČO lookup and one VAT update, nothing before', async ( { page } ) => {
+	// Every request is a full WordPress + WooCommerce boot, often on shared
+	// hosting: the plugin adds only the ones with something to decide.
+	const own = [];
+	page.on( 'request', ( request ) => {
+		const url = decodeURIComponent( request.url() );
+		if ( url.includes( 'woolab-ic-dic/v1/' ) || ( request.postData() || '' ).includes( '"namespace":"woolab-ic-dic"' ) ) {
+			own.push( url.includes( 'woolab-ic-dic/v1/lookup' ) ? 'lookup' : url.includes( 'woolab-ic-dic/v1/search' ) ? 'search' : 'vat' );
+		}
+	} );
+	await page.reload();
+	await expect( field( page, 'iscomp' ) ).toBeVisible();
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await page.waitForTimeout( 2000 );
+	expect( own, 'nothing without a VAT ID' ).toEqual( [] );
+
+	await field( page, 'ic' ).fill( COMPANY.ico );
+	await field( page, 'ic' ).blur();
+	await expect( field( page, 'dic-cz' ) ).toHaveValue( COMPANY.dic );
+	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).toBe( '0' );
+	await page.waitForTimeout( 2000 );
+	expect( own ).toEqual( [ 'lookup', 'vat' ] );
+} );
+
+test( 'the ARES address survives slow Store API responses', async ( { page } ) => {
+	// Every Store API batch takes 4 s, so the country change is still on its way
+	// when ARES fills the address and the VAT update follows.
+	await page.route( /wc\/store\/v1\/batch/, async ( route ) => {
+		await new Promise( ( resolve ) => setTimeout( resolve, 4000 ) );
+		await route.continue();
+	} );
+	await page.locator( '#shipping-country' ).selectOption( 'CZ' );
+	await asCompany( page );
+	await field( page, 'ic' ).fill( COMPANY.ico );
+	await field( page, 'ic' ).blur();
+	await expect( page.locator( '#shipping-city' ) ).toHaveValue( 'Praha 7' );
+	// Long enough for every response sent so far to have come back.
+	await page.waitForTimeout( 10000 );
+	await expect( page.locator( '#shipping-city' ) ).toHaveValue( 'Praha 7' );
+	await expect( page.locator( '#shipping-address_1' ) ).toHaveValue( /Jankovcova/ );
+} );
+
+test( 'a valid foreign EU VAT ID makes the order VAT exempt, live', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await expect.poll( () => taxTotal( page ) ).not.toBe( '0' );
+
+	await field( page, 'dic-cz' ).fill( COMPANY.dic );
+	await field( page, 'dic-cz' ).blur();
+	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).toBe( '0' );
+
+	// Back to the shop's own country: VAT again.
+	await setCountry( page, 'SK' );
+	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).not.toBe( '0' );
+} );
+
+test( 'after a reload the VAT ID and the VAT agree', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await field( page, 'dic-cz' ).fill( COMPANY.dic );
+	await field( page, 'dic-cz' ).blur();
+	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).toBe( '0' );
+
+	// The Checkout block saves the address after a pause, and on WooCommerce 10.0
+	// only once it is complete; reloading earlier loses it.
+	await fillAddress( page );
+	await expect.poll( async () => ( await ( await page.request.get( '/?rest_route=/wc/store/v1/cart' ) ).json() ).shipping_address.country ).toBe( 'CZ' );
+
+	// A guest's 'order' fields do not reliably survive a reload (WooCommerce keeps
+	// them in its checkout draft at best), so neither may the exemption: whatever
+	// the page shows, no VAT ID means VAT, and typing it again exempts the order.
+	await page.reload();
+	await expect( field( page, 'iscomp' ) ).toBeVisible();
+	if ( ! ( await field( page, 'iscomp' ).isChecked() ) ) {
+		await asCompany( page );
+	}
+	if ( await field( page, 'dic-cz' ).inputValue() ) {
+		// Restored (WooCommerce 10.0's checkout draft): so is the exemption.
+		await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).toBe( '0' );
+		return;
+	}
+	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).not.toBe( '0' );
+	await field( page, 'dic-cz' ).fill( COMPANY.dic );
+	await field( page, 'dic-cz' ).blur();
+	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).toBe( '0' );
+} );
+
+test( 'an invalid IČO is reported at the field', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await field( page, 'ic' ).fill( '12345678' );
+	await field( page, 'ic' ).blur();
+	await expect( page.locator( '.wc-block-components-validation-error' ).first() ).toBeVisible();
+} );
+
+test( 'the order carries the company and no VAT', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await field( page, 'ic' ).fill( COMPANY.ico );
+	await field( page, 'ic' ).blur();
+	await expect( field( page, 'dic-cz' ) ).toHaveValue( COMPANY.dic );
+	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).toBe( '0' );
+
+	// ARES filled the street, city and postcode.
+	await expect( page.locator( '#shipping-city' ) ).toHaveValue( 'Praha 7' );
+	await fillAddress( page );
+	await page.locator( '.wc-block-components-checkout-place-order-button' ).click();
+
+	await expect( page ).toHaveURL( /order-received/, { timeout: 30000 } );
+	await expectIdentifiersOnce( page );
+	// €10 product, free shipping: €12.30 with Slovak VAT.
+	await expect( page.locator( 'body' ) ).toContainText( /10[.,]00/ );
+	await expect( page.locator( 'body' ) ).not.toContainText( /12[.,]30/ );
+} );

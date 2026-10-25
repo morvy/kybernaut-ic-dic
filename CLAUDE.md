@@ -39,8 +39,9 @@ vendor/bin/phpunit --testsuite Unit
 
 The test suite uses WP_Mock (10up/wp_mock) for mocking WordPress functions without requiring a full WordPress installation.
 
-End-to-end tests run the block checkout in WordPress Playground with live ARES and
-VIES, on two stacks that `tests/e2e/stack.js` resolves into `tests/e2e/.blueprint.json`
+End-to-end tests run the checkouts in WordPress Playground with live ARES (VIES is
+answered by `tests/e2e/mu-plugin.php`: its registers are too often busy), on two
+stacks that `tests/e2e/stack.js` resolves into `tests/e2e/.blueprint.json`
 (`setup.php` fails the boot if Playground serves anything else):
 - `min`: the plugin header's minimums (WC requires at least → its newest patch,
   Requires at least, Requires PHP);
@@ -51,12 +52,25 @@ npx playwright install chromium   # once
 npm run test:e2e                  # both; or test:e2e:min / test:e2e:latest (port 9411)
 ```
 
+The same specs run against any site with WooCommerce and this plugin, set up once
+with `wp eval-file wp-content/plugins/woolab-ic-dic/tests/e2e/setup.php` (it can run
+again): a Slovak shop, a classic checkout at /classic-checkout/ next to the block one,
+and an mu-plugin that switches between them by cookie. The local one is the ddev
+project `woolab-test` (`~/_DEV/ideas/woolab-test`, WordPress + WooCommerce + Blocksy,
+this checkout mounted as the plugin, admin / password):
+```bash
+E2E_BASE_URL=https://woolab-test.local npm run test:e2e:site
+```
+Specs: `block-checkout`, `classic-checkout` (fields, labels, ARES fill, VIES exemption,
+placed order), `rest` (arguments, rate limit), `settings` (every section saves, settings
+reach the checkout). Not covered: the Finančná správa import (190 MB download).
+
 ### Static analysis
 ```bash
 composer lint            # PHPCS, PHPStan and Rector (dry run)
 composer lint:phpcs      # WooCommerce coding standards (phpcs.xml.dist)
-composer lint:phpstan    # level 6, WordPress / WooCommerce / WP-CLI stubs (phpstan.neon.dist)
-composer lint:rector     # PHP 8.1 + WordPress up to 6.7 deprecations (rector.php)
+composer lint:phpstan    # level 6, WordPress / WooCommerce / WP-CLI stubs, WooCommerce feature checks (phpstan.neon.dist)
+composer lint:rector     # PHP 8.1, WordPress up to 6.7 and WooCommerce up to 10.0 deprecations (rector.php)
 ```
 
 ## Architecture
