@@ -62,7 +62,7 @@ By default, if you edit order details, user profile is not touched. If you want 
 
 ### Require DIC when ICO filled in SK
 
-Settings → IČO DIČ → Validation → "SK: Require DIČ", off by default since 2.0.0: Slovak non-profit organisations have an IČO but no DIČ. The filter decides over the option:
+Settings → IČO DIČ → General → "Require DIČ", for the shop's own country and off by default since 2.0.0: non-profit organisations may have an IČO but no DIČ. For a Slovak shop the filter decides over the option:
 
     add_filter( 'woolab_icdic_sk_required_ic_and_dic', '__return_true' );
 

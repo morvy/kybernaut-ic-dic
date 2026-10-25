@@ -94,11 +94,12 @@ function woolab_icdic_base_country() {
  * 'vat_payer' ("(optional, only if you are a VAT payer)") or '' (nothing).
  *
  * The company name, the Business ID where every company has one and, when the
- * store requires it, the Slovak Tax ID follow woolab_icdic_fields_mode(). The rest
- * is always optional, marked only in the "optional" mode: the Business ID
- * elsewhere, the Slovak Tax ID otherwise (non-profit organisations have an IČO
- * but no DIČ), and the VAT ID in the shop's own country, where it exempts nothing. Abroad only a VAT payer's number exempts the
- * order, so there the VAT ID says who enters it.
+ * store requires it (woolab_icdic_dic_required()), the DIČ of the shop's own
+ * country follow woolab_icdic_fields_mode(). The rest is always optional, marked
+ * only in the "optional" mode: the Business ID elsewhere, that DIČ otherwise
+ * (non-profit organisations have an IČO but no DIČ), and the IČ DPH of a Slovak
+ * shop. Abroad only a VAT payer's number exempts the order, so there the VAT ID
+ * says who enters it.
  *
  * @param string $key     'company', 'ic', 'dic' or 'dic_dph'.
  * @param string $country Billing country code, '' when unknown (the Slovak set).
@@ -107,16 +108,17 @@ function woolab_icdic_base_country() {
 function woolab_icdic_field_mark( $key, $country ) {
 	$mode = woolab_icdic_fields_mode();
 	$sk   = 'SK' === $country || '' === $country;
+	$code = $sk ? 'SK' : $country;
 
-	if ( ( $sk ? 'dic_dph' : 'dic' ) === $key ) {
-		if ( ( $sk ? 'SK' : $country ) !== woolab_icdic_base_country() ) {
-			return 'vat_payer';
-		}
-
-		return 'optional' === $mode ? 'optional' : '';
+	if ( ( $sk ? 'dic_dph' : 'dic' ) === $key && woolab_icdic_base_country() !== $code ) {
+		return 'vat_payer';
 	}
 
-	if ( ( 'ic' === $key && ! $sk && ! in_array( $country, woolab_icdic_ic_home_countries(), true ) ) || ( 'dic' === $key && $sk && ! woolab_icdic_sk_dic_required() ) ) {
+	$optional = ( 'ic' === $key && ! $sk && ! in_array( $country, woolab_icdic_ic_home_countries(), true ) )
+		|| ( 'dic' === $key && ! woolab_icdic_dic_required( $code ) )
+		|| 'dic_dph' === $key;
+
+	if ( $optional ) {
 		$mode = 'optional' === $mode ? 'optional' : 'plain';
 	}
 
@@ -173,20 +175,32 @@ function woolab_icdic_form_labels( $country, $html = false ) {
 }
 
 /**
- * Whether a Slovak company needs a DIČ (Settings → IČO DIČ → Validation): with an
- * IČO, and in the "Required" mode. Off by default: non-profit organisations have
- * an IČO but no DIČ.
+ * Whether a company from this country needs a DIČ (Settings → IČO DIČ → General →
+ * "Require DIČ"): with an IČO, and in the "Required" mode. Only in the shop's own
+ * country, and off by default: non-profit organisations may have an IČO but no
+ * DIČ, and abroad the DIČ is the VAT ID, which only VAT payers have.
  *
+ * @param string $country Billing country.
  * @return bool
  */
-function woolab_icdic_sk_dic_required() {
+function woolab_icdic_dic_required( $country ) {
+	if ( '' === $country || woolab_icdic_base_country() !== $country ) {
+		return false;
+	}
+
+	$required = 'yes' === woolab_icdic_setting( 'dic_required' );
+
+	if ( 'SK' !== $country ) {
+		return $required;
+	}
+
 	/**
-	 * Require the Slovak DIČ.
+	 * Require the Slovak DIČ (for a Slovak shop).
 	 *
 	 * @since 1.4.0
 	 * @param bool $required The setting.
 	 */
-	return (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', 'yes' === woolab_icdic_setting( 'sk_dic_required' ) );
+	return (bool) apply_filters( 'woolab_icdic_sk_required_ic_and_dic', $required );
 }
 
 /**

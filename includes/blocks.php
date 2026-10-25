@@ -293,8 +293,8 @@ function woolab_icdic_blocks_register_fields() {
 	);
 
 	// The "Required" mode (woolab_icdic_fields_mode()): a company must enter its name,
-	// the Business ID where every company has one, and the Slovak Tax ID when the
-	// store requires it (woolab_icdic_sk_dic_required()). "A company"
+	// the Business ID where every company has one, and the shop's own DIČ when the
+	// store requires it (woolab_icdic_dic_required()). "A company"
 	// is the inverse of $not_a_company while the toggle is on, and a filled-in company
 	// name (a core address field then) while it is off. WooCommerce evaluates the
 	// rule in the browser — the field loses its "(optional)" suffix and blocks the
@@ -372,7 +372,7 @@ function woolab_icdic_blocks_register_fields() {
 				'location'                   => 'order',
 				'type'                       => 'text',
 				'hidden'                     => $hidden,
-				'required'                   => 'kybernaut/ic' === $id || ( 'kybernaut/dic-sk' === $id && woolab_icdic_sk_dic_required() ) ? $required : false,
+				'required'                   => 'kybernaut/ic' === $id || ( woolab_icdic_blocks_field_for( 'billing_dic', woolab_icdic_base_country() ) === $id && woolab_icdic_dic_required( woolab_icdic_base_country() ) ) ? $required : false,
 				'attributes'                 => array( 'autocomplete' => 'off' ),
 				'show_in_order_confirmation' => false,
 			)
@@ -570,7 +570,7 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 			 * @param bool $check
 			 */
 			'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
-			'require_sk_ic_and_dic' => woolab_icdic_sk_dic_required(),
+			'require_dic_for_firms' => woolab_icdic_dic_required( $country ),
 			'check_dic_dph_match'   => (bool) woolab_icdic_dic_dicdph_match_enabled(),
 			'country_in_eu'         => $countries->isCountryCodeInEU( $country ),
 			'verify_vat'            => woolab_icdic_make_vies_verifier( 'Could not validate VAT number: %s, returned the following exception:' ),
@@ -581,7 +581,13 @@ function woolab_icdic_blocks_validate( $errors, $fields ) {
 	);
 
 	foreach ( $result['errors'] as $error ) {
-		$errors->add( 'woolab_icdic_' . $error['code'], woolab_icdic_checkout_error_message( $error, $country ) );
+		// WooCommerce shows these above the section, and keeps no field key in them,
+		// so the code names the field and blocks.js moves the message under it.
+		$legacy = woolab_icdic_checkout_error_field( $error['code'], $country );
+		$field  = 'billing_company' === $legacy
+			? ( woolab_icdic_blocks_owns_company() ? 'kybernaut/company' : null )
+			: woolab_icdic_blocks_field_for( $legacy, $country );
+		$errors->add( $field ? 'woolab_icdic:' . $field . ':' . $error['code'] : 'woolab_icdic_' . $error['code'], woolab_icdic_checkout_error_message( $error, $country ) );
 	}
 
 	// Read back in woolab_icdic_blocks_update_order(), which stands in for
@@ -664,7 +670,7 @@ function woolab_icdic_blocks_apply_vat_exempt( $country, $dic, $dic_dph, $is_com
 	if ( empty( $country ) || $country === $base_country || ! in_array( $country, $vat_countries, true ) ) {
 		woolab_icdic_vat_exempt_reset();
 		if ( WC()->session ) {
-			WC()->session->set( 'woolab_icdic_vat_not_registered', null );
+			WC()->session->set( 'woolab_icdic_vat_notice', null );
 		}
 		return;
 	}
@@ -675,11 +681,6 @@ function woolab_icdic_blocks_apply_vat_exempt( $country, $dic, $dic_dph, $is_com
 		? woolab_icdic_vat_number_exempt( $vat_num, woolab_icdic_ignore_check_fail() )
 		: false;
 
-	// For woolab_icdic_blocks_cart_data(), which blocks.js shows as a notice.
-	if ( WC()->session ) {
-		WC()->session->set( 'woolab_icdic_vat_not_registered', ! $is_vat_exempt && $is_company && woolab_icdic_vat_not_registered( $country, (string) $vat_num ) ? 'yes' : null );
-	}
-
 	$data = array(
 		'billing_country' => $country,
 		'billing_dic'     => $dic,
@@ -687,7 +688,21 @@ function woolab_icdic_blocks_apply_vat_exempt( $country, $dic, $dic_dph, $is_com
 		'billing_iscomp'  => $is_company ? 1 : 0,
 	);
 
-	woolab_icdic_vat_exempt_set( apply_filters( 'woolab_icdic_vat_exempt_company', $is_vat_exempt, $data ) );
+	/**
+	 * Whether a company's order is VAT exempt.
+	 *
+	 * @since 1.6.0
+	 * @param bool  $is_vat_exempt
+	 * @param array $data          billing_country, billing_dic, billing_dic_dph, billing_iscomp.
+	 */
+	$is_vat_exempt = (bool) apply_filters( 'woolab_icdic_vat_exempt_company', $is_vat_exempt, $data );
+
+	woolab_icdic_vat_exempt_set( $is_vat_exempt );
+
+	// For woolab_icdic_blocks_cart_data(), which blocks.js shows as a notice.
+	if ( WC()->session ) {
+		WC()->session->set( 'woolab_icdic_vat_notice', $is_company ? woolab_icdic_vat_notice( $country, (string) $vat_num, $is_vat_exempt ) : null );
+	}
 }
 
 /**
@@ -720,15 +735,17 @@ function woolab_icdic_blocks_apply_vat_exempt_from_fields( $country, array $fiel
  * woocommerce_store_api_checkout_update_order_from_request does not run while the
  * form is filled; this is the documented route for totals that depend on input.
  *
- * @param array $data 'fields' => array( 'kybernaut/…' => value ), 'country' => billing country.
+ * @param array $data 'fields' => array( 'kybernaut/…' => value ), 'country' => billing country, 'addresses' => the shipping and billing address as typed (woolab_icdic_blocks_save_address()).
  */
 function woolab_icdic_blocks_update_vat_exempt( $data ) {
 	if ( empty( WC()->customer ) ) {
 		return;
 	}
 
-	if ( isset( $data['address'] ) && is_array( $data['address'] ) ) {
-		woolab_icdic_blocks_save_address( $data['address'] );
+	foreach ( isset( $data['addresses'] ) && is_array( $data['addresses'] ) ? $data['addresses'] : array() as $address ) {
+		if ( is_array( $address ) ) {
+			woolab_icdic_blocks_save_address( $address );
+		}
 	}
 
 	$country = isset( $data['country'] ) ? strtoupper( wc_clean( (string) $data['country'] ) ) : '';
@@ -770,13 +787,13 @@ function woolab_icdic_blocks_save_address( $address ) {
 		return;
 	}
 
-	foreach ( array( 'first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country', 'phone' ) as $key ) {
+	foreach ( array( 'first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country', 'phone', 'email' ) as $key ) {
 		$setter = 'set_' . $type . '_' . $key;
 		if ( ! isset( $address[ $key ] ) || ! is_callable( array( WC()->customer, $setter ) ) ) {
 			continue;
 		}
 		$value = wc_clean( (string) $address[ $key ] );
-		if ( 'country' === $key && ! array_key_exists( $value, WC()->countries->get_allowed_countries() ) ) {
+		if ( ( 'country' === $key && ! array_key_exists( $value, WC()->countries->get_allowed_countries() ) ) || ( 'email' === $key && '' !== $value && ! is_email( $value ) ) ) {
 			continue;
 		}
 		WC()->customer->$setter( $value );
@@ -859,15 +876,15 @@ function woolab_icdic_blocks_register_update_callback() {
 }
 
 /**
- * The notice blocks.js shows: a Czech DIČ VIES does not list
- * (woolab_icdic_vat_not_registered()), or null.
+ * The notice blocks.js shows (woolab_icdic_vat_notice()), or null.
  *
  * @return array{vat_notice:string|null}
  */
 function woolab_icdic_blocks_cart_data() {
 	$session = WC()->session;
+	$notice  = $session ? $session->get( 'woolab_icdic_vat_notice' ) : null;
 
-	return array( 'vat_notice' => $session && 'yes' === $session->get( 'woolab_icdic_vat_not_registered' ) ? woolab_icdic_vat_not_registered_message() : null );
+	return array( 'vat_notice' => is_string( $notice ) ? $notice : null );
 }
 
 /**

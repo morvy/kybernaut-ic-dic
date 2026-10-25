@@ -115,7 +115,7 @@ for ( const [ mode, marks ] of Object.entries( MARKS ) ) {
 	} );
 }
 
-test( '"SK: Require DIČ" makes the Slovak DIČ required for companies', async ( { page, context, baseURL } ) => {
+test( '"Require DIČ" makes the DIČ of the shop\'s country required for companies', async ( { page, context, baseURL } ) => {
 	const set = async ( section, key, apply ) => {
 		await page.goto( url( section ) );
 		await apply( setting( page, key ) );
@@ -123,7 +123,7 @@ test( '"SK: Require DIČ" makes the Slovak DIČ required for companies', async (
 		await save( page );
 	};
 	await set( '', 'company_fields', ( el ) => el.selectOption( 'required' ) );
-	await set( 'validation', 'sk_dic_required', ( el ) => el.check() );
+	await set( '', 'dic_required', ( el ) => el.check() );
 	try {
 		await fillCart( page );
 		await page.goto( '/checkout/' );
@@ -139,19 +139,19 @@ test( '"SK: Require DIČ" makes the Slovak DIČ required for companies', async (
 		await expect( page.locator( 'label[for="billing_dic"]' ) ).toHaveText( ends( 'Tax ID', ' *' ) );
 	} finally {
 		await context.clearCookies( { name: 'woolab_e2e_checkout' } );
-		await set( 'validation', 'sk_dic_required', ( el ) => el.uncheck() );
+		await set( '', 'dic_required', ( el ) => el.uncheck() );
 		await set( '', 'company_fields', ( el ) => el.selectOption( 'optional' ) );
 	}
 } );
 
 test( 'a 1.x filter decides over its checkbox, and saving keeps the stored value', async ( { page, context, baseURL } ) => {
-	const checkbox = () => setting( page, 'sk_dic_required' );
-	await page.goto( url( 'validation' ) );
+	const checkbox = () => setting( page, 'dic_required' );
+	await page.goto( url() );
 	await checkbox().check();
 	await save( page );
 	try {
 		await context.addCookies( [ { name: 'woolab_e2e_filter', value: 'sk_dic', url: baseURL } ] );
-		await page.goto( url( 'validation' ) );
+		await page.goto( url() );
 		await expect( checkbox() ).not.toBeChecked();
 		await expect( checkbox() ).toBeDisabled();
 		await expect( page.locator( '#mainform' ) ).toContainText( 'Set by the woolab_icdic_sk_required_ic_and_dic filter' );
@@ -159,12 +159,12 @@ test( 'a 1.x filter decides over its checkbox, and saving keeps the stored value
 		await save( page );
 
 		await context.clearCookies( { name: 'woolab_e2e_filter' } );
-		await page.goto( url( 'validation' ) );
+		await page.goto( url() );
 		await expect( checkbox() ).toBeChecked();
 		await expect( checkbox() ).toBeEnabled();
 	} finally {
 		await context.clearCookies( { name: 'woolab_e2e_filter' } );
-		await page.goto( url( 'validation' ) );
+		await page.goto( url() );
 		await checkbox().uncheck();
 		await save( page );
 	}

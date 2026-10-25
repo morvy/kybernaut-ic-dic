@@ -43,7 +43,7 @@ class ValidationSkTest extends TestCase {
 			'vies_check'            => false,
 			'ignore_check_fail'     => false,
 			'check_country_match'   => true,
-			'require_sk_ic_and_dic' => true,
+			'require_dic_for_firms' => true,
 			'check_dic_dph_match'   => true,
 			'country_in_eu'         => true,
 			'sk_check'              => true,
@@ -84,7 +84,7 @@ class ValidationSkTest extends TestCase {
 			'DIČ of another company'                   => array( array( 'ic' => '47455411', 'dic' => '1085180173' ), array( 'dic_ico_mismatch' ) ),
 			'IČ DPH of another company'                => array( array( 'ic' => '53102461', 'dic' => '1085180173', 'dic_dph' => 'SK2023913485' ), array( 'dic_dph_mismatch' ) ),
 			'unknown DIČ'                              => array( array( 'ic' => '47455411', 'dic' => '2023913496' ), array( 'invalid_tax_id_sk' ) ),
-			'IČO not in the lists, accepted'           => array( array( 'ic' => '12345679', 'sk_fill' => true, 'company' => 'New s.r.o.', 'require_sk_ic_and_dic' => false ), array() ),
+			'IČO not in the lists, accepted'           => array( array( 'ic' => '12345679', 'sk_fill' => true, 'company' => 'New s.r.o.', 'require_dic_for_firms'           => false ), array() ),
 			'IČO not in the lists, foreign DIČ'        => array( array( 'ic' => '12345679', 'dic' => '2023913485' ), array( 'dic_ico_mismatch' ) ),
 			'IČO failing checksum but listed'          => array( array( 'ic' => '33024610' ), array( 'invalid_tax_id_sk' ) ),
 			'fill mismatch on city'                    => array( array( 'ic' => '47455411', 'dic' => '2023913485', 'sk_fill' => true, 'company' => 'Invelity s.r.o.', 'address_1' => 'Strážska cesta 22', 'postcode' => '960 01', 'city' => 'Bratislava' ), array( 'sk_mismatch' ) ),
@@ -104,7 +104,7 @@ class ValidationSkTest extends TestCase {
 	public function testIcoLookupUnavailable() {
 		$result = $this->run_sk( array(
 			'ic'                    => '47455411',
-			'require_sk_ic_and_dic' => false,
+			'require_dic_for_firms' => false,
 			'lookup_sk_ico'         => function () {
 				return array( 'error' => 'down', 'internal_error' => true );
 			},

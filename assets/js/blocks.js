@@ -66,13 +66,23 @@
    * with an underscore, "order_kybernaut/ic"; the element's own id swaps the
    * slash for a dash.
    */
+  function fieldInput(field) {
+    return document.querySelector('[id$="' + field.replace('/', '-') + '"]');
+  }
   function icInput() {
-    return document.querySelector('[id$="' + IC.replace('/', '-') + '"]');
+    return fieldInput(IC);
+  }
+
+  /**
+   * The validation store key whose error shows under a field.
+   */
+  function fieldErrorId(field) {
+    var input = fieldInput(field);
+    // WooCommerce 11 also puts the key in the input's name; 10.0 leaves it empty.
+    return input && input.name ? input.name : 'order_' + field;
   }
   function errorId() {
-    var input = icInput();
-    // WooCommerce 11 also puts the key in the input's name; 10.0 leaves it empty.
-    return input && input.name ? input.name : 'order_' + IC;
+    return fieldErrorId(IC);
   }
 
   /**
@@ -188,13 +198,6 @@
     } else {
       cart.setBillingAddress(address);
     }
-
-    // The VAT update the DIČ below triggers would come back with the address the
-    // server still has (the Checkout block saves after a pause), and the block
-    // would store that over the one just filled: that update carries it.
-    if (ares.dic) {
-      saveAddress = shipping ? 'shipping' : 'billing';
-    }
     if (Object.keys(fields).length) {
       wp.data.dispatch(CHECKOUT).setAdditionalFields(fields);
     }
@@ -262,22 +265,22 @@
    */
   var lastVat = null;
   var sentVat = false;
-  var saveAddress = null;
   var updateVat = debounce(function (fields, country) {
+    var customer = wp.data.select(CART).getCustomerData();
+
+    // The update comes back with the cart, address included, and the block stores
+    // that over its own. It saves what was typed only after a pause, so an
+    // address just filled in (by ARES, by the browser) would be lost: the update
+    // carries it, in the same request.
     var data = {
       fields: fields,
-      country: country
+      country: country,
+      addresses: [Object.assign({
+        type: 'shipping'
+      }, customer.shippingAddress), Object.assign({
+        type: 'billing'
+      }, customer.billingAddress)]
     };
-
-    // The address as it is now, not as ARES filled it: the shopper may have
-    // edited it since.
-    if (saveAddress) {
-      var customer = wp.data.select(CART).getCustomerData();
-      data.address = Object.assign({
-        type: saveAddress
-      }, 'shipping' === saveAddress ? customer.shippingAddress : customer.billingAddress);
-      saveAddress = null;
-    }
     wc.blocksCheckout.extensionCartUpdate({
       namespace: 'woolab-ic-dic',
       data: data
@@ -347,8 +350,31 @@
     checkLater(ico);
   });
 
-  // A Czech DIČ VIES does not list: the order is placed with VAT, and the
-  // checkout says why (woolab_icdic_blocks_cart_data()).
+  // The order's validation errors (woolab_icdic_blocks_validate()) arrive as
+  // notices above the form, their id and context depending on the WooCommerce
+  // version ("additional_fields_" + code in wc/cart on 11.2). Each code names its
+  // field, so the message goes under the field instead, where WooCommerce shows
+  // its own.
+  var ERROR_CONTEXTS = ['wc/cart', 'wc/checkout', 'wc/checkout/order-information'];
+  wp.data.subscribe(function () {
+    ERROR_CONTEXTS.forEach(function (context) {
+      wp.data.select('core/notices').getNotices(context).forEach(function (notice) {
+        var field = /woolab_icdic:([^:]+):/.exec(notice.id || '');
+        var errors = {};
+        if (!field || !fieldInput(field[1])) {
+          return;
+        }
+        errors[fieldErrorId(field[1])] = {
+          message: notice.content,
+          hidden: false
+        };
+        wp.data.dispatch('core/notices').removeNotice(notice.id, context);
+        wp.data.dispatch(VALIDATION).setValidationErrors(errors);
+      });
+    });
+  }, 'core/notices');
+
+  // Reverse charge, or why there is none (woolab_icdic_blocks_cart_data()).
   var vatNotice = null;
   wp.data.subscribe(function () {
     var extensions = wp.data.select(CART).getCartData().extensions || {};

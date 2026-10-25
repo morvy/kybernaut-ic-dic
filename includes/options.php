@@ -36,7 +36,7 @@ function woolab_icdic_settings_schema() {
 		'vat_exempt'            => array( 'woolab_icdic_vat_exempt_switch', 'no' ),
 		'ignore_check_fail'     => array( 'woolab_icdic_ignore_check_fail', 'no' ),
 		'disable_dic_dph_match' => array( 'woolab_icdic_disable_dic_dicdph_match', 'no' ),
-		'sk_dic_required'       => array( null, 'no' ),
+		'dic_required'          => array( null, 'no' ),
 		'toggle'                => array( 'woolab_icdic_toggle_switch', 'no' ),
 		'country_ontop'         => array( 'woolab_icdic_country_switch', 'no' ),
 		'ic_countries_only'     => array( null, 'no' ),

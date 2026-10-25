@@ -76,6 +76,7 @@ test( 'a valid foreign EU VAT ID makes the order VAT exempt', async ( { page } )
 	await input( page, 'dic' ).blur();
 	await page.evaluate( () => jQuery( document.body ).trigger( 'update_checkout' ) );
 	await expect( vatRow( page ) ).toHaveCount( 0, { timeout: 30000 } );
+	await expect( page.getByText( 'Reverse charge' ).first() ).toBeVisible();
 
 	await setCountry( page, 'SK' );
 	await expect( vatRow( page ) ).toHaveCount( 1, { timeout: 30000 } );
@@ -93,6 +94,8 @@ test( 'an invalid IČO stops the order', async ( { page } ) => {
 	await page.locator( '#place_order' ).click();
 	await expect( page.locator( '.woocommerce-error, .woocommerce-NoticeGroup-checkout' ).first() ).toBeVisible( { timeout: 30000 } );
 	await expect( page ).not.toHaveURL( /order-received/ );
+	// Under the field, as WooCommerce reports its own.
+	await expect( row( page, 'ic' ).locator( '.checkout-inline-error-message' ) ).toContainText( 'Business ID' );
 } );
 
 test( 'the order carries the company and no VAT', async ( { page } ) => {

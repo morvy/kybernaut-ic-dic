@@ -288,7 +288,7 @@ function woolab_icdic_checkout_field_process() {
 		 * @param bool $check
 		 */
 		'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
-		'require_sk_ic_and_dic' => woolab_icdic_sk_dic_required(),
+		'require_dic_for_firms' => woolab_icdic_dic_required( $country ),
 		'check_dic_dph_match'   => (bool) woolab_icdic_dic_dicdph_match_enabled(),
 		'require_company'       => 'required' === woolab_icdic_fields_mode(),
 		// Only where every company has one, and not where the field is hidden.
@@ -308,13 +308,42 @@ function woolab_icdic_checkout_field_process() {
 
 	// Map each structured error code back to its exact original notice.
 	foreach ( $result['errors'] as $error ) {
-		wc_add_notice( woolab_icdic_checkout_error_message( $error, $country ), 'error' );
+		// Under its field, as WooCommerce shows its own (checkout.js show_inline_errors()).
+		wc_add_notice( woolab_icdic_checkout_error_message( $error, $country ), 'error', array( 'id' => woolab_icdic_checkout_error_field( $error['code'], $country ) ) );
 	}
 
 	// Set flag about Business ID or VAT number check fails.
 	// The information will be saved in the order meta in woocommerce_new_order hook.
 	WC()->session->set( 'woolab_icdic_vat_check_fail_ignored', $result['check_fail_ignored'] );
 
+}
+
+/**
+ * The field a validation error is about.
+ *
+ * @param string $code    woolab_icdic_validate_checkout() error code.
+ * @param string $country Billing country.
+ * @return string billing_company, billing_ic, billing_dic or billing_dic_dph.
+ */
+function woolab_icdic_checkout_error_field( $code, $country ) {
+	$fields = array(
+		'missing_company'     => 'billing_company',
+		'missing_business_id' => 'billing_ic',
+		'invalid_business_id' => 'billing_ic',
+		'ares_unexpected'     => 'billing_ic',
+		'ares_mismatch'       => 'billing_ic',
+		'sk_mismatch'         => 'billing_ic',
+		'invalid_dic_cz'      => 'billing_dic',
+		'missing_dic'         => 'billing_dic',
+		'invalid_tax_id_sk'   => 'billing_dic',
+		'dic_ico_mismatch'    => 'billing_dic',
+		'sk_unverifiable'     => 'billing_dic',
+		'invalid_vat_dph'     => 'billing_dic_dph',
+		'dic_dph_mismatch'    => 'billing_dic_dph',
+	);
+
+	// The rest is about the VAT number: the IČ DPH in Slovakia.
+	return $fields[ $code ] ?? ( 'SK' === $country ? 'billing_dic_dph' : 'billing_dic' );
 }
 
 /**
@@ -382,6 +411,7 @@ function woolab_icdic_checkout_error_message( array $error, $country = '' ) {
 			return sprintf( _x( '%s has not a correct format.', 'field label', 'woolab-ic-dic' ), $vat_label );
 
 		case 'invalid_vat':
+		case 'missing_dic':
 		case 'invalid_dic_cz':
 		case 'invalid_vat_dph':
 			/* translators: %s: field label, e.g. "VAT ID" */
@@ -589,9 +619,9 @@ function woolab_icdic_toggle_iscomp_field($value, $input) {
  * @return bool
  */
 /**
- * Whether a Czech DIČ is a real one VIES does not list: every Czech business has a
- * DIČ, only VAT payers are in VIES. Such a company orders with VAT
- * (woolab_icdic_validate_checkout()), and the checkout says why.
+ * Whether a tax number is a real one VIES does not list: every Czech, Polish and
+ * Hungarian business has one (woolab_icdic_tax_number_valid()), only VAT payers
+ * are in VIES. Such a company orders with VAT (woolab_icdic_validate_checkout()).
  *
  * @param string $country Billing country.
  * @param string $vat     The VAT number woolab_icdic_select_vat_number() picked.
@@ -601,18 +631,31 @@ function woolab_icdic_vat_not_registered( $country, $vat ) {
 	$vat = preg_replace( '/\s+/', '', (string) $vat );
 
 	// The VIES answer is cached (woolab_icdic_make_vies_verifier()), the exemption just asked.
-	return 'CZ' === $country && woolab_icdic_vies_check() && woolab_icdic_cz_dic_valid( $vat )
+	return substr( $vat, 0, 2 ) === $country && woolab_icdic_vies_check() && woolab_icdic_tax_number_valid( $vat )
 		&& 'invalid' === call_user_func( woolab_icdic_make_vies_verifier( 'Could not validate VAT number: %s' ), $vat );
 }
 
 /**
- * What the checkout tells such a company (woolab_icdic_vat_not_registered()).
+ * What the checkout tells a company about the VAT on its order: reverse charge
+ * when the order is VAT exempt, why it is not when its tax number is no VAT
+ * registration (woolab_icdic_vat_not_registered()), nothing otherwise.
  *
- * @return string
+ * @param string $country Billing country.
+ * @param string $vat     The VAT number entered.
+ * @param bool   $exempt  Whether the order is VAT exempt.
+ * @return string|null
  */
-function woolab_icdic_vat_not_registered_message() {
-	/* translators: %s: field label, e.g. "VAT ID" */
-	return sprintf( __( 'This %s is not registered for VAT in the EU (VIES), so the order is placed with VAT.', 'woolab-ic-dic' ), woolab_icdic_labels( 'CZ' )['dic'] );
+function woolab_icdic_vat_notice( $country, $vat, $exempt ) {
+	if ( $exempt ) {
+		return __( 'Reverse charge: the order is without VAT, the buyer accounts for it.', 'woolab-ic-dic' );
+	}
+
+	if ( $vat && woolab_icdic_vat_not_registered( $country, $vat ) ) {
+		/* translators: %s: field label, e.g. "VAT ID" */
+		return sprintf( __( 'This %s is not registered for VAT in the EU (VIES), so the order is placed with VAT.', 'woolab-ic-dic' ), woolab_icdic_labels( $country )['dic'] );
+	}
+
+	return null;
 }
 
 /**
@@ -727,8 +770,9 @@ function woolab_icdic_validate_vat_exempt_for_company( $post_data ) {
 		woolab_icdic_vat_exempt_set( $is_vat_exempt );
 
 		// Shown with the order review WooCommerce is sending back.
-		if ( ! $is_vat_exempt && woolab_icdic_vat_not_registered( $country, $vat_num ) ) {
-			wc_add_notice( woolab_icdic_vat_not_registered_message(), 'notice' );
+		$notice = woolab_icdic_vat_notice( $country, $vat_num, $is_vat_exempt );
+		if ( $notice ) {
+			wc_add_notice( $notice, 'notice' );
 		}
 	} else {
 		woolab_icdic_vat_exempt_set( false );

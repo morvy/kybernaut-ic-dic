@@ -32,7 +32,7 @@ if ( ! defined( 'WPINC' ) ) {
  *     @type bool        sk_fill            Optional. Compare the SK company and address with those lists.
  *     @type bool        ignore_check_fail
  *     @type bool        check_country_match
- *     @type bool        require_sk_ic_and_dic
+ *     @type bool        require_dic_for_firms A company from this country needs a DIČ (woolab_icdic_dic_required()).
  *     @type bool        check_dic_dph_match
  *     @type bool        require_company    Optional. A company must enter its name ("Required" mode).
  *     @type bool        require_ic         Optional. A company must enter a Business ID in this country ("Required" mode).
@@ -177,9 +177,10 @@ function woolab_icdic_validate_checkout( array $input ) {
 					// validateVatNumber() short-circuits to false (no VIES call, no exception).
 					$errors[] = array( 'code' => 'vat_format' );
 					$errors[] = array( 'code' => 'invalid_vat' );
-				} elseif ( 'invalid' === $state && 'CZ' === $country && woolab_icdic_cz_dic_valid( $dic ) ) {
-					// Not an error: every Czech business has a DIČ, VIES lists only the
-					// VAT payers. The order goes through as a company's, with VAT.
+				} elseif ( 'invalid' === $state && substr( $dic, 0, 2 ) === $country && woolab_icdic_tax_number_valid( $dic ) ) {
+					// Not an error: every Czech, Polish and Hungarian business has a tax
+					// number, VIES lists only the VAT payers. The order goes through as a
+					// company's, with VAT.
 					$notices[] = array( 'code' => 'vat_not_registered' );
 				} elseif ( 'invalid' === $state ) {
 					$errors[] = array( 'code' => 'invalid_vat' );
@@ -216,10 +217,10 @@ function woolab_icdic_validate_checkout( array $input ) {
 
 		}
 
-	} elseif ( 'SK' === $country && $input['require_sk_ic_and_dic'] && ( $is_company || ! empty( $input['ic'] ) ) ) {
+	} elseif ( ! empty( $input['require_dic_for_firms'] ) && ( $is_company || ! empty( $input['ic'] ) ) ) {
 		// Opt-in, with an IČO and for a company in the "Required" mode: non-profit
-		// organisations have an IČO but no DIČ.
-		$errors[] = array( 'code' => 'invalid_tax_id_sk' );
+		// organisations may have an IČO but no DIČ.
+		$errors[] = array( 'code' => 'SK' === $country ? 'invalid_tax_id_sk' : 'missing_dic' );
 	}
 
 	// IC DPH / DIC DPH
@@ -290,6 +291,42 @@ function woolab_icdic_validate_checkout( array $input ) {
  */
 function woolab_icdic_cz_dic_valid( $dic ) {
 	return 'CZ' === substr( $dic, 0, 2 ) && ( woolab_icdic_verify_rc( substr( $dic, 2 ) ) || woolab_icdic_verify_dic( substr( $dic, 2 ) ) );
+}
+
+/**
+ * Whether a VAT number is the well-formed tax number of a country where every
+ * business has one in that form, VAT payer or not: the Czech DIČ, the Polish NIP,
+ * the Hungarian adószám (its first 8 digits). VIES lists only the VAT payers.
+ *
+ * @param string $vat Country prefix and number, whitespace stripped.
+ * @return bool
+ */
+function woolab_icdic_tax_number_valid( $vat ) {
+	$prefix = substr( $vat, 0, 2 );
+	$number = substr( $vat, 2 );
+
+	if ( 'CZ' === $prefix ) {
+		return woolab_icdic_cz_dic_valid( $vat );
+	}
+
+	// Weighted sums: modulo 11 is the NIP's last digit, 10 minus modulo 10 the adószám's.
+	$checks = array(
+		'PL' => array( 10, array( 6, 5, 7, 2, 3, 4, 5, 6, 7 ) ),
+		'HU' => array( 8, array( 9, 7, 3, 1, 9, 7, 3 ) ),
+	);
+
+	if ( ! isset( $checks[ $prefix ] ) || ! preg_match( '/^\d{' . $checks[ $prefix ][0] . '}$/', $number ) ) {
+		return false;
+	}
+
+	$sum = 0;
+	foreach ( $checks[ $prefix ][1] as $i => $weight ) {
+		$sum += $weight * (int) $number[ $i ];
+	}
+
+	$check = 'PL' === $prefix ? $sum % 11 : ( 10 - $sum % 10 ) % 10;
+
+	return (int) substr( $number, -1 ) === $check;
 }
 
 /**

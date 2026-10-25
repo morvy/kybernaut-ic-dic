@@ -35,7 +35,7 @@ class ValidationTest extends TestCase {
 			'vies_check'            => true,
 			'ignore_check_fail'     => false,
 			'check_country_match'   => true,
-			'require_sk_ic_and_dic' => true,
+			'require_dic_for_firms' => false,
 			'check_dic_dph_match'   => true,
 			'country_in_eu'         => true,
 			'verify_vat'            => function ( $v ) { return 'valid'; },
@@ -291,6 +291,46 @@ class ValidationTest extends TestCase {
 		$this->assertSame( array( array( 'code' => 'vat_not_registered' ) ), $result['notices'] );
 	}
 
+	/**
+	 * @dataProvider taxNumbers
+	 */
+	public function testTaxNumberValid( $vat, $valid ) {
+		$this->assertSame( $valid, woolab_icdic_tax_number_valid( $vat ) );
+	}
+
+	public static function taxNumbers() {
+		return array(
+			'CZ IČO-based'      => array( 'CZ27082440', true ),
+			'CZ bad checksum'   => array( 'CZ27082441', false ),
+			'PL NIP'            => array( 'PL5260250995', true ),
+			'PL bad checksum'   => array( 'PL5260250994', false ),
+			'PL too short'      => array( 'PL526025099', false ),
+			'HU adószám'        => array( 'HU12892312', true ),
+			'HU bad checksum'   => array( 'HU12892313', false ),
+			'DE: not this kind' => array( 'DE123456789', false ),
+		);
+	}
+
+	/**
+	 * @dataProvider notVatPayers
+	 */
+	public function testPlAndHuTaxNumbersNotInViesOrderWithVat( $country, $vat ) {
+		$result = woolab_icdic_validate_checkout( $this->input( array(
+			'country'    => $country,
+			'dic'        => $vat,
+			'verify_vat' => function ( $v ) { return 'invalid'; },
+		) ) );
+		$this->assertSame( array(), $this->codes( $result ) );
+		$this->assertSame( array( array( 'code' => 'vat_not_registered' ) ), $result['notices'] );
+	}
+
+	public static function notVatPayers() {
+		return array(
+			'PL' => array( 'PL', 'PL5260250995' ),
+			'HU' => array( 'HU', 'HU12892312' ),
+		);
+	}
+
 	public function testCzDicNotInViesAndMalformedIsAnError() {
 		$result = woolab_icdic_validate_checkout( $this->input( array(
 			'dic'        => 'CZ27082441',
@@ -361,9 +401,10 @@ class ValidationTest extends TestCase {
 
 	public function testSkRequiredDicMissing() {
 		$result = woolab_icdic_validate_checkout( $this->input( array(
-			'country' => 'SK',
-			'ic'      => '27082440',
-			'dic'     => '',
+			'country'               => 'SK',
+			'ic'                    => '27082440',
+			'dic'                   => '',
+			'require_dic_for_firms' => true,
 		) ) );
 		$this->assertSame( array( 'invalid_tax_id_sk' ), $this->codes( $result ) );
 	}
@@ -373,7 +414,7 @@ class ValidationTest extends TestCase {
 			'country'               => 'SK',
 			'ic'                    => '27082440',
 			'dic'                   => '',
-			'require_sk_ic_and_dic' => false,
+			'require_dic_for_firms' => false,
 		) ) );
 		$this->assertSame( array(), $this->codes( $result ) );
 	}
@@ -397,9 +438,11 @@ class ValidationTest extends TestCase {
 		return array(
 			'CZ company, nothing entered'        => array( array(), array( 'missing_company', 'missing_business_id' ) ),
 			'CZ company, all entered'            => array( array( 'company' => 'Alza.cz a.s.', 'ic' => '27082440', 'ares_check' => false ), array() ),
-			'SK non-profit, no Tax ID'           => array( array( 'country' => 'SK', 'company' => 'Združenie o.z.', 'ic' => '27082440', 'require_sk_ic_and_dic' => false ), array() ),
-			'SK, Tax ID required by the store'   => array( array( 'country' => 'SK', 'company' => 'Firma s.r.o.', 'ic' => '27082440' ), array( 'invalid_tax_id_sk' ) ),
-			'SK, Tax ID required, no IČO either' => array( array( 'country' => 'SK', 'company' => 'Firma s.r.o.' ), array( 'missing_business_id', 'invalid_tax_id_sk' ) ),
+			'SK non-profit, no Tax ID'           => array( array( 'country' => 'SK', 'company' => 'Združenie o.z.', 'ic' => '27082440', 'require_dic_for_firms'           => false ), array() ),
+			'SK, Tax ID required by the store'   => array( array( 'country' => 'SK', 'company' => 'Firma s.r.o.', 'ic' => '27082440', 'require_dic_for_firms' => true ), array( 'invalid_tax_id_sk' ) ),
+			'SK, Tax ID required, no IČO either' => array( array( 'country' => 'SK', 'company' => 'Firma s.r.o.', 'require_dic_for_firms' => true ), array( 'missing_business_id', 'invalid_tax_id_sk' ) ),
+			'CZ shop, DIČ required by the store' => array( array( 'company' => 'Firma s.r.o.', 'ic' => '27082440', 'ares_check' => false, 'require_dic_for_firms' => true ), array( 'missing_dic' ) ),
+			'CZ non-profit, no DIČ'              => array( array( 'company' => 'Spolek z.s.', 'ic' => '27082440', 'ares_check' => false ), array() ),
 			'AT company, no Business ID asked'   => array( array( 'country' => 'AT', 'company' => 'Firma GmbH', 'require_ic' => false ), array() ),
 			'not buying as a company'            => array( array( 'iscomp' => false ), array() ),
 			'mode off'                           => array( array( 'require_company' => false, 'require_ic' => false ), array() ),

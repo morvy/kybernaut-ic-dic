@@ -133,10 +133,12 @@ test( 'a valid foreign EU VAT ID makes the order VAT exempt, live', async ( { pa
 	await field( page, 'dic-cz' ).fill( COMPANY.dic );
 	await field( page, 'dic-cz' ).blur();
 	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).toBe( '0' );
+	await expect( page.getByText( 'Reverse charge' ).first() ).toBeVisible();
 
 	// Back to the shop's own country: VAT again.
 	await setCountry( page, 'SK' );
 	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).not.toBe( '0' );
+	await expect( page.locator( '.wc-block-components-notice-banner' ).getByText( 'Reverse charge' ) ).toHaveCount( 0 );
 } );
 
 test( 'after a reload the VAT ID and the VAT agree', async ( { page } ) => {
@@ -217,4 +219,29 @@ test( 'a Czech DIČ VIES does not list orders with VAT, and says why', async ( {
 	await page.locator( '.wc-block-components-checkout-place-order-button' ).click();
 	await expect( page ).toHaveURL( /order-received/, { timeout: 30000 } );
 	await expect( page.locator( 'body' ) ).toContainText( /12[.,]30/ );
+} );
+
+test( 'a Polish NIP VIES does not list orders with VAT too', async ( { page } ) => {
+	await setCountry( page, 'PL' );
+	await asCompany( page );
+	await field( page, 'dic' ).fill( 'PL5260250995' );
+	await field( page, 'dic' ).blur();
+	await expect( page.getByText( 'is not registered for VAT in the EU (VIES)' ).first() ).toBeVisible( { timeout: 30000 } );
+} );
+
+test( 'a VAT ID the server rejects is reported under its field', async ( { page } ) => {
+	await setCountry( page, 'DE' );
+	// The address first, as the form has it: the VAT update answers with the cart.
+	await asCompany( page );
+	await fillAddress( page );
+	await page.locator( '#shipping-postcode' ).fill( '10115' );
+	await field( page, 'company' ).fill( 'Firma GmbH' );
+	await field( page, 'dic' ).fill( 'DE123456789' );
+	await field( page, 'dic' ).blur();
+	await page.waitForResponse( ( r ) => r.url().includes( 'cart/extensions' ), { timeout: 15000 } ).catch( () => null );
+	await page.locator( '.wc-block-components-checkout-place-order-button' ).click();
+
+	const row = page.locator( '.wc-block-components-text-input' ).filter( { has: field( page, 'dic' ) } );
+	await expect( row.locator( '.wc-block-components-validation-error' ) ).toContainText( 'Enter a valid VAT ID', { timeout: 30000 } );
+	await expect( page ).not.toHaveURL( /order-received/ );
 } );
