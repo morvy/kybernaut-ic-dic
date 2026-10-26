@@ -62,7 +62,7 @@ E2E_BASE_URL=https://woolab-test.local npm run test:e2e:site
 ```
 Specs: `block-checkout`, `classic-checkout` (fields, labels, ARES fill, VIES exemption,
 placed order), `rest` (arguments, rate limit), `settings` (every section saves, settings
-reach the checkout). Not covered: the Finančná správa import (190 MB download).
+reach the checkout), `ec-sales-list` (an exempt order in the CSV and the SK XML). Not covered: the Finančná správa import (190 MB download).
 
 ### Static analysis
 ```bash
@@ -89,7 +89,8 @@ the tool's config with the reason (rector.php skips three, see there).
 - `src/Services/` - one class per external service: `Ares/Ares.php`, `Vies/Vies.php`, `FinancnaSprava/` (`FinancnaSprava`, `Importer`: daily WP-Cron import + WP-CLI `wp woolab-icdic sk-import`, `Storage`: the SQLite file in uploads); `Service` interface, `AbstractService`, `CallbackService` (closures), `Services` (the country → feature → services map)
 - `src/Numbers/Checksum.php` - mathematical IČO / DIČ / RČ / NIP / adószám checks
 - `src/Checkout/` - `Classic` (shortcode checkout fields, `checkout_field_process`), `Blocks` (Additional Checkout Fields API, Store API validation), `BlocksIntegration`, `CartExtension`, `VatExempt`
-- `src/Order/` - `Meta` (order meta), `AdminScreen` (admin billing fields, check-failed notices), `Display` (addresses, order details, e-mails), `Customer` (user meta)
+- `src/Order/` - `Meta` (order meta), `AdminScreen` (admin billing fields, check-failed notices), `Evidence` (the VAT ID check kept with the order, "Validate VAT ID" order action), `EvidenceBox` (its "VAT ID check" box, the orders list reverse-charge column), `Privacy` (personal data export / erasure), `Display` (addresses, order details, e-mails), `Customer` (user meta)
+- `src/EcSalesList/` - `Report` (the period's exempt orders with a VAT ID and their refunds → rows per country, VAT number, goods / services; SK half-up, CZ ceil rounding; an order's period is `_woolab_icdic_ec_date`, kept the first time it reaches a paid status; orders not verified in VIES are flagged), `Xml` (SK SVDPHv20 and CZ DPHSHV, validated against `tests/fixtures/*.xsd`), `ExportPage` (WooCommerce → EC Sales List, CSV / XML downloads via admin-post.php); the shop's details are the `ec_*` settings (Settings → IČO DIČ → EC Sales List)
 - `src/Rest/Routes.php` - `woolab-ic-dic/v1/lookup` and `/search`
 - `src/Assets.php` - enqueues, script data (per-country `services`), colour CSS variables
 - `src/Admin/PluginLinks.php`, `src/Logger.php`

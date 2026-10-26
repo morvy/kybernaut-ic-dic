@@ -21,7 +21,7 @@ test.beforeEach( async ( { page } ) => {
 	await expect( page.locator( '#wpadminbar' ) ).toBeVisible();
 } );
 
-for ( const section of [ '', 'validation', 'appearance' ] ) {
+for ( const section of [ '', 'validation', 'appearance', 'ec_sales_list' ] ) {
 	test( `the ${ section || 'general' } section saves`, async ( { page } ) => {
 		await page.goto( url( section ) );
 		// WooCommerce enables Save only once the form changed; nothing is changed.

@@ -1,7 +1,7 @@
 <?php
 /**
- * WooCommerce → Settings → IČO DIČ, in four sections: General, Validation,
- * Appearance and the Finančná správa status. Every field saves into the one
+ * WooCommerce → Settings → IČO DIČ, in five sections: General, Validation,
+ * Appearance, the Finančná správa status and the EC Sales List details. Every field saves into the one
  * settings array (Settings\Options).
  *
  * @package KybernautIcDic
@@ -29,6 +29,7 @@ final class Fields {
 	public static function register(): void {
 		add_filter( 'woocommerce_get_settings_pages', array( self::class, 'settings_pages' ) );
 		add_action( 'woocommerce_admin_field_woolab_icdic_sk_status', array( self::class, 'sk_status_field' ) );
+		add_filter( 'woocommerce_admin_settings_sanitize_option', array( self::class, 'sanitize_code' ), 10, 2 );
 	}
 
 	/**
@@ -380,6 +381,108 @@ final class Fields {
 				'id'   => 'woolab_icdic_sk_status',
 			),
 		);
+	}
+
+	/**
+	 * EC Sales List: the shop's details the SK and CZ files need, beyond what
+	 * WooCommerce and "Your VAT ID" give.
+	 *
+	 * @return array<int,array<string,mixed>> WooCommerce settings fields.
+	 */
+	public static function ec_sales_list() {
+		$text = ( fn( $key, $title, $desc, $attributes = array() ) => array(
+			'title'             => $title,
+			'desc'              => $desc,
+			'id'                => self::id( $key ),
+			'default'           => '',
+			'type'              => 'text',
+			'custom_attributes' => $attributes,
+		) );
+
+		return array(
+			array(
+				'title' => __( 'EC Sales List', 'woolab-ic-dic' ),
+				'type'  => 'title',
+				'desc'  => sprintf(
+					/* translators: 1: link to the EC Sales List page, 2: link to the Validation settings, 3: link to WooCommerce → Settings → General */
+					__( 'The shop in the Slovak and Czech XML files of the %1$s. The VAT ID is "Your VAT ID" in %2$s, the address the store address in %3$s.', 'woolab-ic-dic' ),
+					'<a href="' . esc_url( admin_url( 'admin.php?page=woolab-icdic-ec-sales-list' ) ) . '">' . esc_html__( 'EC Sales List', 'woolab-ic-dic' ) . '</a>',
+					'<a href="' . esc_url( self::url( 'validation' ) ) . '">' . esc_html__( 'Validation', 'woolab-ic-dic' ) . '</a>',
+					'<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=general' ) ) . '">' . esc_html__( 'WooCommerce → Settings → General', 'woolab-ic-dic' ) . '</a>'
+				),
+				'id'    => 'woolab_icdic_ec_sales_list',
+			),
+			$text( 'ec_company', __( 'Company name', 'woolab-ic-dic' ), __( 'As in the business register.', 'woolab-ic-dic' ) ),
+			$text( 'ec_person', __( 'Authorised person', 'woolab-ic-dic' ), __( 'First name and surname of who signs the statement (SK: konateľ). A Czech natural person: the taxpayer.', 'woolab-ic-dic' ) ),
+			$text( 'ec_person_role', __( 'Position of the authorised person', 'woolab-ic-dic' ), __( 'CZ, a legal person: e.g. jednatel.', 'woolab-ic-dic' ) ),
+			$text( 'ec_phone', __( 'Phone', 'woolab-ic-dic' ), __( 'Optional.', 'woolab-ic-dic' ) ),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'woolab_icdic_ec_sales_list',
+			),
+
+			array(
+				'title' => __( 'Czech Republic', 'woolab-ic-dic' ),
+				'type'  => 'title',
+				'id'    => 'woolab_icdic_ec_cz',
+			),
+			$text(
+				'ec_cz_ufo',
+				__( 'Tax office code', 'woolab-ic-dic' ),
+				__( 'Finanční úřad, 3 digits (číselník ufo), e.g. 451 for Praha.', 'woolab-ic-dic' ),
+				array(
+					'pattern'   => '[0-9]{3}',
+					'maxlength' => 3,
+				)
+			),
+			$text(
+				'ec_cz_pracufo',
+				__( 'Local office code', 'woolab-ic-dic' ),
+				__( 'Územní pracoviště, 4 digits (číselník pracufo). Optional.', 'woolab-ic-dic' ),
+				array(
+					'pattern'   => '[0-9]{4}',
+					'maxlength' => 4,
+				)
+			),
+			array(
+				'title'   => __( 'Taxpayer', 'woolab-ic-dic' ),
+				'id'      => self::id( 'ec_cz_type' ),
+				'default' => 'P',
+				'type'    => 'select',
+				'options' => array(
+					'P' => __( 'Legal person', 'woolab-ic-dic' ),
+					'F' => __( 'Natural person', 'woolab-ic-dic' ),
+				),
+			),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'woolab_icdic_ec_cz',
+			),
+		);
+	}
+
+	/**
+	 * Keep the stored tax office codes when the new one has the wrong number of digits.
+	 *
+	 * @param mixed               $value  Sanitized value.
+	 * @param array<string,mixed> $option WooCommerce settings field.
+	 * @return mixed
+	 */
+	public static function sanitize_code( $value, $option ) {
+		$digits = array(
+			'ec_cz_ufo'     => 3,
+			'ec_cz_pracufo' => 4,
+		);
+		$key    = isset( $option['id'] ) && preg_match( '/^' . Options::NAME . '\[(\w+)\]$/', $option['id'], $m ) ? $m[1] : '';
+
+		if ( ! isset( $digits[ $key ] ) || '' === $value || preg_match( '/^\d{' . $digits[ $key ] . '}$/', (string) $value ) ) {
+			return $value;
+		}
+
+		/* translators: 1: setting, 2: number of digits */
+		\WC_Admin_Settings::add_error( sprintf( __( '%1$s has %2$d digits, the previous value is kept.', 'woolab-ic-dic' ), $option['title'], $digits[ $key ] ) );
+
+		return Options::get( $key );
 	}
 
 	/**

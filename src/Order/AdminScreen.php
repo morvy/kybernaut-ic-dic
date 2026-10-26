@@ -1,7 +1,7 @@
 <?php
 /**
  * The company fields on the admin order screen, the "VAT number check failed"
- * warnings (order lists, order edit, the admin e-mail) and the VAT ID evidence.
+ * warnings (order lists, order edit, the admin e-mail).
  *
  * @package KybernautIcDic
  */
@@ -23,7 +23,6 @@ final class AdminScreen {
 		add_action( 'manage_shop_order_posts_custom_column', array( self::class, 'show_check_failed_notice_on_orders_table' ), 20, 2 );
 		add_action( 'woocommerce_shop_order_list_table_custom_column', array( self::class, 'show_check_failed_notice_on_orders_table_hpos' ), 10, 2 );
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( self::class, 'show_check_failed_notice_on_order_edit' ) );
-		add_action( 'woocommerce_admin_order_data_after_billing_address', array( self::class, 'show_vat_evidence' ), 20 );
 		add_action( 'woocommerce_email_order_details', array( self::class, 'show_check_failed_notice_on_admin_email' ), 5, 3 );
 	}
 
@@ -254,51 +253,6 @@ final class AdminScreen {
 		</p>
 	</div>
 
-		<?php
-	}
-
-	/**
-	 * The VAT ID check kept with the order (Evidence), under the billing address.
-	 *
-	 * @param \WC_Order $order Order.
-	 */
-	public static function show_vat_evidence( $order ): void {
-		$evidence = $order instanceof \WC_Order ? $order->get_meta( Evidence::META ) : null;
-
-		if ( ! is_array( $evidence ) || empty( $evidence['vat_number'] ) ) {
-			return;
-		}
-
-		$date     = (string) ( empty( $evidence['requested_at'] ) ? ( $evidence['checked_at'] ?? '' ) : $evidence['requested_at'] );
-		$time     = $date ? strtotime( $date ) : false;
-		$rows     = array(
-			_x( 'VAT ID', 'EU VAT number field', 'woolab-ic-dic' ) => $evidence['vat_number'],
-			__( 'Result', 'woolab-ic-dic' )              => Evidence::state_label( (string) ( $evidence['state'] ?? '' ) ),
-			__( 'Consultation number', 'woolab-ic-dic' ) => $evidence['consultation_number'] ?? '',
-			__( 'Date of the check', 'woolab-ic-dic' )   => $time ? wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $time ) : '',
-			__( 'Name', 'woolab-ic-dic' )                => $evidence['name'] ?? '',
-			__( 'Address', 'woolab-ic-dic' )             => $evidence['address'] ?? '',
-			__( 'Reason', 'woolab-ic-dic' )              => Evidence::reason_label( (string) ( $evidence['reason'] ?? '' ) ),
-			__( 'IP address country', 'woolab-ic-dic' )  => $evidence['ip_country'] ?? '',
-			__( 'Billing country', 'woolab-ic-dic' )     => $evidence['billing_country'] ?? '',
-			__( 'VAT ID country', 'woolab-ic-dic' )      => $evidence['vat_country'] ?? '',
-		);
-		$mismatch = Evidence::mismatch( $evidence );
-
-		?>
-	<div class="woolab-icdic-vat-evidence">
-		<h3><?php esc_html_e( 'VAT ID check', 'woolab-ic-dic' ); ?></h3>
-		<p>
-		<?php
-		foreach ( array_filter( $rows, static fn ( $value ) => '' !== (string) $value ) as $label => $value ) {
-			echo '<strong>' . esc_html( $label ) . ':</strong> ' . nl2br( esc_html( (string) $value ) ) . '<br>';
-		}
-		?>
-		</p>
-		<?php if ( $mismatch ) : ?>
-		<p class="woolab-icdic-vat-evidence-mismatch" style="color:#996800;"><span class="dashicons dashicons-warning" aria-hidden="true"></span> <?php echo esc_html( $mismatch ); ?></p>
-		<?php endif; ?>
-	</div>
 		<?php
 	}
 

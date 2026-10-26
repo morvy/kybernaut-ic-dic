@@ -224,11 +224,12 @@ final class Assets {
 	 * @param string $hook The admin page.
 	 */
 	public static function enqueue_admin( $hook ): void {
-		// 'shop_order' for the legacy post type, the wc-orders page under HPOS. Without
+		// 'shop_order' (and its list 'edit-shop_order') for the legacy post type, the
+		// wc-orders page (list and edit) under HPOS. Without
 		// the HPOS one the country-based show/hide never loads, so the SK-only IČ DPH
 		// field stayed visible on CZ orders under HPOS.
 		$screen = get_current_screen();
-		if ( $screen && in_array( $screen->id, array( 'shop_order', wc_get_page_screen_id( 'shop-order' ) ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( 'shop_order', 'edit-shop_order', wc_get_page_screen_id( 'shop-order' ) ), true ) ) {
 			wp_enqueue_style( 'woolab-ic-dic-admin', WOOLAB_IC_DIC_URL . 'assets/css/admin.css', array(), WOOLAB_IC_DIC_VERSION );
 			self::register_script( 'woolab-ic-dic-admin-edit', 'admin-edit', array( 'jquery' ) );
 			wp_enqueue_script( 'woolab-ic-dic-admin-edit' );

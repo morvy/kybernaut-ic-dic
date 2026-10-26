@@ -1,1 +1,1 @@
-!function(n){function i(i){var l=n("._billing_billing_dic_dph_field ");"SK"===i?l.show():l.hide()}n(document).ready(function(){var l=n("#_billing_country");i(l.val()),l.change(function(){i(l.val())})})}(jQuery);
+!function(i){function n(n){var c=i("._billing_billing_dic_dph_field ");"SK"===n?c.show():c.hide()}i(document).ready(function(){var c=i("#_billing_country");n(c.val()),c.change(function(){n(c.val())}),i(".woolab-icdic-revalidate").on("click",function(){i('select[name="wc_order_action"]').val(i(this).data("action")),i("button.save_order").trigger("click")})})}(jQuery);

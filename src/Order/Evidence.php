@@ -10,6 +10,7 @@
 namespace KybernautIcDic\Order;
 
 use KybernautIcDic\Checkout\VatExempt;
+use KybernautIcDic\EcSalesList\Report;
 use KybernautIcDic\Fields\Countries;
 use KybernautIcDic\Numbers\Checksum;
 use KybernautIcDic\Services\Services;
@@ -121,6 +122,7 @@ final class Evidence {
 		$reason = self::reason( $answer['state'], 'yes' === $order->get_meta( 'is_vat_exempt' ), Flags::ignore_check_fail() );
 
 		$order->update_meta_data( self::META, self::build( $vat, $answer, $reason, gmdate( 'c' ) ) + self::order_location( $order, $vat ) );
+		Report::stamp( $order );
 	}
 
 	/**
@@ -242,6 +244,7 @@ final class Evidence {
 			$order->update_meta_data( self::HISTORY, array_slice( array_merge( array( $previous ), is_array( $history ) ? $history : array() ), 0, self::HISTORY_SIZE ) );
 		}
 		$order->update_meta_data( self::META, $evidence );
+		Report::stamp( $order );
 		$order->save();
 
 		$order->add_order_note( self::note( $evidence, $exempt ), 0, true );

@@ -5,6 +5,7 @@ namespace KybernautIcDic\Test;
 // Brain Monkey (tests/TestCase.php) defines the WordPress functions per test.
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/TestCase.php';
+require_once __DIR__ . '/wc-classes.php';
 
 if ( ! defined( 'WPINC' ) ) {
 	define( 'WPINC', 'wp-includes' );

@@ -36,10 +36,12 @@ final class Plugin {
 		Checkout\VatExempt::class,
 		Order\Meta::class,
 		Order\Evidence::class,
+		Order\EvidenceBox::class,
 		Order\Privacy::class,
 		Order\AdminScreen::class,
 		Order\Display::class,
 		Order\Customer::class,
+		EcSalesList\ExportPage::class,
 		Admin\PluginLinks::class,
 	);
 

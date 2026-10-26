@@ -59,6 +59,14 @@ final class Options {
 			'color_list_border'     => array( null, '' ),
 			'color_list_highlight'  => array( null, '' ),
 			'list_radius'           => array( null, '' ),
+			// The shop's details in the EC Sales List files (EcSalesList\Xml).
+			'ec_company'            => array( null, '' ),
+			'ec_person'             => array( null, '' ),
+			'ec_person_role'        => array( null, '' ),
+			'ec_phone'              => array( null, '' ),
+			'ec_cz_ufo'             => array( null, '' ),
+			'ec_cz_pracufo'         => array( null, '' ),
+			'ec_cz_type'            => array( null, 'P' ),
 		);
 	}
 

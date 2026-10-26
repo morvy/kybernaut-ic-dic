@@ -10,6 +10,13 @@
             based_on_country( country.val() );
         });
 
+        // "Validate again in VIES" (VAT ID check box): the order action, run by the
+        // order save so that a VAT ID edited with it is checked.
+        $( '.woolab-icdic-revalidate' ).on( 'click', function() {
+            $( 'select[name="wc_order_action"]' ).val( $( this ).data( 'action' ) );
+            $( 'button.save_order' ).trigger( 'click' );
+        });
+
 
     });
 

@@ -52,12 +52,19 @@ async function openOrder( id ) {
 async function expectEvidence( id ) {
 	await openOrder( id );
 	const box = admin.locator( '.woolab-icdic-vat-evidence' );
-	await expect( box ).toContainText( 'VAT ID: ' + COMPANY.dic );
-	await expect( box ).toContainText( 'Result: Valid' );
-	await expect( box ).toContainText( /Consultation number: WAPIE2E\w{9}/ );
-	await expect( box ).toContainText( 'Name: Alza.cz a.s.' );
-	await expect( box ).toContainText( 'Reason: Reverse charge, without VAT' );
-	await expect( box ).toContainText( 'VAT ID country: CZ' );
+	await expect( box.locator( '.woolab-icdic-badge--valid' ) ).toHaveText( 'Valid' );
+	await expect( box ).toContainText( 'Reverse charge, without VAT' );
+	await expect( box ).toContainText( 'VAT ID ' + COMPANY.dic );
+	await expect( box ).toContainText( /Consultation number\s+WAPIE2E\w{9}/ );
+	await expect( box ).toContainText( 'Name Alza.cz a.s.' );
+	await expect( box ).toContainText( 'billing CZ, VAT ID CZ' );
+
+	// The orders list marks it in its narrow column.
+	await admin.goto( '/wp-admin/admin.php?page=wc-orders' );
+	if ( ! ( await admin.locator( '.wp-list-table' ).count() ) ) {
+		await admin.goto( '/wp-admin/edit.php?post_type=shop_order' );
+	}
+	await expect( admin.locator( `#order-${ id } .woolab-icdic-reverse-charge, #post-${ id } .woolab-icdic-reverse-charge` ) ).toHaveCount( 1 );
 }
 
 test( 'an exempt block checkout order keeps the VIES consultation number', async ( { page } ) => {
@@ -138,18 +145,20 @@ test( '"Validate VAT ID" on the order screen asks VIES again and removes the VAT
 	}
 
 	await openOrder( id );
-	await expect( admin.locator( '.woolab-icdic-vat-evidence' ) ).toContainText( 'Reason: With VAT' );
+	await expect( admin.locator( '.woolab-icdic-vat-evidence' ) ).toContainText( 'With VAT' );
 
 	// The admin corrects the VAT ID, and validates it in the same save.
 	await admin.locator( '.order_data_column' ).nth( 1 ).locator( 'a.edit_address' ).click();
 	await admin.locator( '#_billing_billing_dic' ).fill( COMPANY.dic );
-	await admin.locator( 'select[name="wc_order_action"]' ).selectOption( 'woolab_icdic_validate_vat' );
-	await admin.locator( 'button.save_order' ).click();
+	await admin.locator( '.woolab-icdic-revalidate' ).click();
 
 	await expect( admin.locator( '#order_data' ) ).toBeVisible();
 	await expect( admin.locator( '.order_notes' ) ).toContainText( `VAT ID ${ COMPANY.dic } is valid in VIES: the order is without VAT (reverse charge), totals recalculated.` );
 	await expect( admin.locator( '.order_notes' ) ).toContainText( /Consultation number: WAPIE2E\w{9}\./ );
-	await expect( admin.locator( '.woolab-icdic-vat-evidence' ) ).toContainText( 'Reason: Reverse charge, without VAT' );
+	await expect( admin.locator( '.woolab-icdic-vat-evidence' ) ).toContainText( 'Reverse charge, without VAT' );
+	await expect( admin.locator( '.woolab-icdic-vat-evidence-history summary' ) ).toHaveText( '1 earlier check' );
+	await admin.locator( '.woolab-icdic-vat-evidence-history summary' ).click();
+	await expect( admin.locator( '.woolab-icdic-vat-evidence-history' ) ).toContainText( 'CZ00006947' );
 	const totals = admin.locator( '.wc-order-totals' ).first();
 	await expect( totals ).toContainText( /10[.,]00/ );
 	await expect( totals ).not.toContainText( /12[.,]30/ );

@@ -24,6 +24,7 @@ class EvidenceTest extends TestCase {
 		Functions\when( 'WC' )->justReturn( (object) array( 'countries' => $countries ) );
 		Functions\when( 'get_option' )->justReturn( array( 'vat_exempt' => 'yes', 'shop_vat_id' => 'SK2020317068' ) );
 		Functions\when( 'wc_tax_enabled' )->justReturn( true );
+		Functions\when( 'wc_get_is_paid_statuses' )->justReturn( array( 'processing', 'completed' ) );
 	}
 
 	#[DataProvider( 'reasons' )]
@@ -79,6 +80,8 @@ class EvidenceTest extends TestCase {
 		$order = Mockery::mock( 'WC_Order' );
 		$order->shouldReceive( 'get_billing_country' )->andReturn( $country );
 		$order->shouldReceive( 'get_customer_ip_address' )->andReturn( $ip );
+		// A checkout order is not paid yet when its evidence is kept: no EC period date.
+		$order->shouldReceive( 'get_status' )->andReturn( 'checkout-draft' );
 		$order->shouldReceive( 'get_meta' )->andReturnUsing( static fn ( $key ) => $meta[ $key ] ?? '' );
 		return $order;
 	}
