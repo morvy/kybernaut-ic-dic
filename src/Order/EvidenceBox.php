@@ -10,25 +10,44 @@ namespace KybernautIcDic\Order;
 
 /**
  * The "VAT ID check" box on the order screen (Evidence, its earlier checks and a
- * button for Evidence::revalidate()), and a narrow "Reverse charge" column on the
- * orders list.
+ * button for Evidence::revalidate()), and a reverse-charge icon after the billing
+ * address on the orders list.
  */
 final class EvidenceBox {
 
 	/**
-	 * The orders list column.
+	 * The AJAX action of the box's button.
 	 */
-	public const COLUMN = 'woolab_icdic_reverse_charge';
+	public const AJAX = 'woolab_icdic_revalidate';
 
 	/**
-	 * Hook the box and the column, for HPOS and for orders kept as posts.
+	 * Hook the box and the icon, for HPOS and for orders kept as posts.
 	 */
 	public static function register(): void {
 		add_action( 'add_meta_boxes', array( self::class, 'add_meta_box' ) );
-		add_filter( 'manage_woocommerce_page_wc-orders_columns', array( self::class, 'columns' ) );
-		add_filter( 'manage_edit-shop_order_columns', array( self::class, 'columns' ) );
-		add_action( 'woocommerce_shop_order_list_table_custom_column', array( self::class, 'column' ), 10, 2 );
-		add_action( 'manage_shop_order_posts_custom_column', array( self::class, 'column' ), 10, 2 );
+		add_action( 'wp_ajax_' . self::AJAX, array( self::class, 'ajax_revalidate' ) );
+		// After WooCommerce's own cell (priority 10): HPOS draws it on this action, not
+		// on woocommerce_shop_order_list_table_custom_column, which fires before.
+		add_action( 'manage_woocommerce_page_wc-orders_custom_column', array( self::class, 'column' ), 20, 2 );
+		add_action( 'manage_shop_order_posts_custom_column', array( self::class, 'column' ), 20, 2 );
+	}
+
+	/**
+	 * The box's button: Evidence::revalidate() without saving the order, for a VAT ID
+	 * that was not edited (the script saves the order with the order action when it
+	 * was).
+	 */
+	public static function ajax_revalidate(): void {
+		$id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+		check_ajax_referer( self::AJAX . '-' . $id );
+
+		$order = wc_get_order( $id );
+		if ( ! $order instanceof \WC_Order || ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json_error( null, 403 );
+		}
+
+		Evidence::revalidate( $order );
+		wp_send_json_success();
 	}
 
 	/**
@@ -86,10 +105,10 @@ final class EvidenceBox {
 		}
 
 		?>
-		<p>
-			<button type="button" class="button woolab-icdic-revalidate" data-action="<?php echo esc_attr( Evidence::ACTION ); ?>"><?php esc_html_e( 'Validate again in VIES', 'woolab-ic-dic' ); ?></button>
-			<span class="description"><?php esc_html_e( 'Saves the order first, then sets or removes the VAT by the answer.', 'woolab-ic-dic' ); ?></span>
+		<p class="woolab-icdic-revalidate-row">
+			<button type="button" class="button woolab-icdic-revalidate" data-action="<?php echo esc_attr( Evidence::ACTION ); ?>" data-order="<?php echo esc_attr( (string) $order->get_id() ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( self::AJAX . '-' . $order->get_id() ) ); ?>" data-error="<?php esc_attr_e( 'The VAT ID could not be checked. Reload the page and try again.', 'woolab-ic-dic' ); ?>"><?php esc_html_e( 'Validate again in VIES', 'woolab-ic-dic' ); ?></button>
 		</p>
+		<p class="description"><?php esc_html_e( 'Sets or removes the VAT by the answer. An edited VAT ID is saved with the order first.', 'woolab-ic-dic' ); ?></p>
 		<?php
 
 		$history = $order->get_meta( Evidence::HISTORY );
@@ -176,33 +195,14 @@ final class EvidenceBox {
 	}
 
 	/**
-	 * Add the column after the order number.
-	 *
-	 * @param array<string,string> $columns Column => header.
-	 * @return array<string,string>
-	 */
-	public static function columns( $columns ) {
-		$header = '<span class="dashicons dashicons-update" aria-hidden="true" title="' . esc_attr__( 'Reverse charge', 'woolab-ic-dic' ) . '"></span><span class="screen-reader-text">' . esc_html__( 'Reverse charge', 'woolab-ic-dic' ) . '</span>';
-		$result = array();
-
-		foreach ( $columns as $key => $label ) {
-			$result[ $key ] = $label;
-			if ( 'order_number' === $key ) {
-				$result[ self::COLUMN ] = $header;
-			}
-		}
-
-		return $result + array( self::COLUMN => $header );
-	}
-
-	/**
-	 * The column: the icon when the order is without VAT by reverse charge, else empty.
+	 * The billing address cell: the icon at its end when the order is without VAT by
+	 * reverse charge.
 	 *
 	 * @param string        $column Column ID.
 	 * @param \WC_Order|int $order  The order (HPOS) or its post ID.
 	 */
 	public static function column( $column, $order ): void {
-		if ( self::COLUMN !== $column ) {
+		if ( 'billing_address' !== $column ) {
 			return;
 		}
 
@@ -211,6 +211,7 @@ final class EvidenceBox {
 			return;
 		}
 
-		echo '<span class="dashicons dashicons-update woolab-icdic-reverse-charge" title="' . esc_attr__( 'Reverse charge, without VAT', 'woolab-ic-dic' ) . '" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Reverse charge, without VAT', 'woolab-ic-dic' ) . '</span>';
+		// The order script moves it before WooCommerce's "via …" line.
+		echo ' <span class="woolab-icdic-reverse-charge"><span class="dashicons dashicons-update" title="' . esc_attr__( 'Reverse charge, without VAT', 'woolab-ic-dic' ) . '" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Reverse charge, without VAT', 'woolab-ic-dic' ) . '</span></span>';
 	}
 }

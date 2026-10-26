@@ -8,7 +8,7 @@ use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * The orders list "Reverse charge" column (src/Order/EvidenceBox.php).
+ * Which orders the orders list marks as reverse charge (src/Order/EvidenceBox.php).
  */
 class EvidenceBoxTest extends TestCase {
 
@@ -33,17 +33,5 @@ class EvidenceBoxTest extends TestCase {
 			'no evidence: exempt without a VAT ID'   => array( array( 'is_vat_exempt' => 'yes' ), false ),
 			'no evidence: a VAT ID, with VAT'        => array( array( '_billing_dic' => 'CZ27082440' ), false ),
 		);
-	}
-
-	public function testTheColumnFollowsTheOrderNumber() {
-		$columns = EvidenceBox::columns( array( 'cb' => '', 'order_number' => 'Order', 'order_date' => 'Date' ) );
-
-		$this->assertSame( array( 'cb', 'order_number', EvidenceBox::COLUMN, 'order_date' ), array_keys( $columns ) );
-	}
-
-	public function testTheColumnGoesLastWithoutAnOrderNumber() {
-		$columns = EvidenceBox::columns( array( 'cb' => '', 'order_date' => 'Date' ) );
-
-		$this->assertSame( array( 'cb', 'order_date', EvidenceBox::COLUMN ), array_keys( $columns ) );
 	}
 }

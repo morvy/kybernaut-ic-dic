@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
-"PO-Revision-Date: 2026-10-26T15:32:14+00:00\n"
+"PO-Revision-Date: 2026-10-26T16:04:41+00:00\n"
 "Language: pl_PL\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Domain: woolab-ic-dic\n"
@@ -367,7 +367,7 @@ msgstr "NIP-UE"
 
 #: src/Fields/Labels.php:38
 #: src/Order/Evidence.php:291
-#: src/Order/EvidenceBox.php:140
+#: src/Order/EvidenceBox.php:159
 msgctxt "EU VAT number field"
 msgid "VAT ID"
 msgstr "NIP-UE"
@@ -463,22 +463,22 @@ msgid "Checked"
 msgstr "Zweryfikowano"
 
 #: src/Order/Evidence.php:295
-#: src/Order/EvidenceBox.php:142
+#: src/Order/EvidenceBox.php:161
 msgid "Date of the check"
 msgstr "Data weryfikacji"
 
 #: src/Order/Evidence.php:296
-#: src/Order/EvidenceBox.php:141
+#: src/Order/EvidenceBox.php:160
 msgid "Consultation number"
 msgstr "Numer konsultacji"
 
 #: src/Order/Evidence.php:297
-#: src/Order/EvidenceBox.php:143
+#: src/Order/EvidenceBox.php:162
 msgid "Name"
 msgstr "Nazwa"
 
 #: src/Order/Evidence.php:298
-#: src/Order/EvidenceBox.php:144
+#: src/Order/EvidenceBox.php:163
 msgid "Address"
 msgstr "Adres"
 
@@ -537,30 +537,34 @@ msgstr "Z VAT"
 msgid "The check failed and was ignored"
 msgstr "Weryfikacja nie powiodła się i została zignorowana"
 
-#: src/Order/EvidenceBox.php:38
+#: src/Order/EvidenceBox.php:57
 msgid "VAT ID check"
 msgstr "Weryfikacja NIP-UE"
 
-#: src/Order/EvidenceBox.php:77
+#: src/Order/EvidenceBox.php:96
 msgid "The order has no VAT ID."
 msgstr "Zamówienie nie ma NIP-UE."
 
 #. translators: %s: VAT ID
-#: src/Order/EvidenceBox.php:85
+#: src/Order/EvidenceBox.php:104
 #, php-format
 msgid "VAT ID %s has not been checked yet."
 msgstr "NIP-UE %s nie został jeszcze zweryfikowany."
 
-#: src/Order/EvidenceBox.php:90
+#: src/Order/EvidenceBox.php:109
+msgid "The VAT ID could not be checked. Reload the page and try again."
+msgstr "Nie udało się zweryfikować NIP-UE. Odśwież stronę i spróbuj ponownie."
+
+#: src/Order/EvidenceBox.php:109
 msgid "Validate again in VIES"
 msgstr "Zweryfikuj ponownie w VIES"
 
-#: src/Order/EvidenceBox.php:91
-msgid "Saves the order first, then sets or removes the VAT by the answer."
-msgstr "Najpierw zapisuje zamówienie, potem zgodnie z odpowiedzią nalicza lub usuwa VAT."
+#: src/Order/EvidenceBox.php:111
+msgid "Sets or removes the VAT by the answer. An edited VAT ID is saved with the order first."
+msgstr "Zgodnie z odpowiedzią nalicza lub usuwa VAT. Zmieniony NIP-UE zostanie najpierw zapisany z zamówieniem."
 
 #. translators: %d: number of earlier checks
-#: src/Order/EvidenceBox.php:99
+#: src/Order/EvidenceBox.php:118
 #, php-format
 msgid "%d earlier check"
 msgid_plural "%d earlier checks"
@@ -569,30 +573,26 @@ msgstr[1] "%d wcześniejsze weryfikacje"
 msgstr[2] "%d wcześniejszych weryfikacji"
 
 #. translators: %s: country code
-#: src/Order/EvidenceBox.php:132
+#: src/Order/EvidenceBox.php:151
 #, php-format
 msgid "billing %s"
 msgstr "rozliczenie %s"
 
 #. translators: %s: country code
-#: src/Order/EvidenceBox.php:134
+#: src/Order/EvidenceBox.php:153
 #, php-format
 msgid "VAT ID %s"
 msgstr "NIP-UE %s"
 
 #. translators: %s: country code
-#: src/Order/EvidenceBox.php:136
+#: src/Order/EvidenceBox.php:155
 #, php-format
 msgid "IP address %s"
 msgstr "adres IP %s"
 
-#: src/Order/EvidenceBox.php:145
+#: src/Order/EvidenceBox.php:164
 msgid "Countries"
 msgstr "Kraje"
-
-#: src/Order/EvidenceBox.php:185
-msgid "Reverse charge"
-msgstr "Odwrotne obciążenie"
 
 #: src/Order/Privacy.php:48
 msgid "When you order as a company and enter a VAT ID, we check it in the EU VIES register run by the European Commission (and a Business ID in the Czech ARES or the Slovak Finančná správa register), sending it with our own VAT ID. We keep the result with the order as the proof of the VAT treatment: the VAT ID, the result, the VIES consultation number and date, the name and address VIES returned, and the countries of the billing address, of the VAT ID and of the IP address your order was placed from (the IP address itself is the one stored with every order). It is part of our VAT records, kept for the period the tax law requires, and an erasure request does not delete it. Orders without a VAT ID get none of this."

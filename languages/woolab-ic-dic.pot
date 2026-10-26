@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-26T15:31:48+00:00\n"
+"POT-Creation-Date: 2026-10-26T16:04:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woolab-ic-dic\n"
@@ -366,7 +366,7 @@ msgstr ""
 
 #: src/Fields/Labels.php:38
 #: src/Order/Evidence.php:291
-#: src/Order/EvidenceBox.php:140
+#: src/Order/EvidenceBox.php:159
 msgctxt "EU VAT number field"
 msgid "VAT ID"
 msgstr ""
@@ -462,22 +462,22 @@ msgid "Checked"
 msgstr ""
 
 #: src/Order/Evidence.php:295
-#: src/Order/EvidenceBox.php:142
+#: src/Order/EvidenceBox.php:161
 msgid "Date of the check"
 msgstr ""
 
 #: src/Order/Evidence.php:296
-#: src/Order/EvidenceBox.php:141
+#: src/Order/EvidenceBox.php:160
 msgid "Consultation number"
 msgstr ""
 
 #: src/Order/Evidence.php:297
-#: src/Order/EvidenceBox.php:143
+#: src/Order/EvidenceBox.php:162
 msgid "Name"
 msgstr ""
 
 #: src/Order/Evidence.php:298
-#: src/Order/EvidenceBox.php:144
+#: src/Order/EvidenceBox.php:163
 msgid "Address"
 msgstr ""
 
@@ -536,30 +536,34 @@ msgstr ""
 msgid "The check failed and was ignored"
 msgstr ""
 
-#: src/Order/EvidenceBox.php:38
+#: src/Order/EvidenceBox.php:57
 msgid "VAT ID check"
 msgstr ""
 
-#: src/Order/EvidenceBox.php:77
+#: src/Order/EvidenceBox.php:96
 msgid "The order has no VAT ID."
 msgstr ""
 
 #. translators: %s: VAT ID
-#: src/Order/EvidenceBox.php:85
+#: src/Order/EvidenceBox.php:104
 #, php-format
 msgid "VAT ID %s has not been checked yet."
 msgstr ""
 
-#: src/Order/EvidenceBox.php:90
+#: src/Order/EvidenceBox.php:109
+msgid "The VAT ID could not be checked. Reload the page and try again."
+msgstr ""
+
+#: src/Order/EvidenceBox.php:109
 msgid "Validate again in VIES"
 msgstr ""
 
-#: src/Order/EvidenceBox.php:91
-msgid "Saves the order first, then sets or removes the VAT by the answer."
+#: src/Order/EvidenceBox.php:111
+msgid "Sets or removes the VAT by the answer. An edited VAT ID is saved with the order first."
 msgstr ""
 
 #. translators: %d: number of earlier checks
-#: src/Order/EvidenceBox.php:99
+#: src/Order/EvidenceBox.php:118
 #, php-format
 msgid "%d earlier check"
 msgid_plural "%d earlier checks"
@@ -567,29 +571,25 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: country code
-#: src/Order/EvidenceBox.php:132
+#: src/Order/EvidenceBox.php:151
 #, php-format
 msgid "billing %s"
 msgstr ""
 
 #. translators: %s: country code
-#: src/Order/EvidenceBox.php:134
+#: src/Order/EvidenceBox.php:153
 #, php-format
 msgid "VAT ID %s"
 msgstr ""
 
 #. translators: %s: country code
-#: src/Order/EvidenceBox.php:136
+#: src/Order/EvidenceBox.php:155
 #, php-format
 msgid "IP address %s"
 msgstr ""
 
-#: src/Order/EvidenceBox.php:145
+#: src/Order/EvidenceBox.php:164
 msgid "Countries"
-msgstr ""
-
-#: src/Order/EvidenceBox.php:185
-msgid "Reverse charge"
 msgstr ""
 
 #: src/Order/Privacy.php:48

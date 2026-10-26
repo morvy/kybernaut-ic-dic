@@ -47,26 +47,29 @@
     color: #996800;
 }
 
-.woolab-icdic-vat-evidence .description {
-    display: block;
-    margin-top: 4px;
+.woolab-icdic-vat-evidence p.description {
+    margin-top: 0;
 }
 
 .woolab-icdic-vat-evidence-history ul {
     margin: 6px 0 0;
 }
 
-/* The orders list column: only as wide as its icon. WooCommerce gives every cell 12ch
-   and the fixed layout spreads spare width over the columns by their widths, so the
-   column gets the icon's width (as specific as WooCommerce's rule), unpadded. */
-.post-type-shop_order .wp-list-table .column-woolab_icdic_reverse_charge,
-.woocommerce_page_wc-orders .wp-list-table .column-woolab_icdic_reverse_charge {
-    width: 20px;
-    padding-left: 0;
-    padding-right: 0;
-    text-align: center;
+/* The reverse-charge icon after the billing address on the orders list. */
+.woolab-icdic-reverse-charge .dashicons {
+    color: #2271b1;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-left: 3px;
+    vertical-align: text-bottom;
 }
 
-.wp-list-table .column-woolab_icdic_reverse_charge .dashicons {
-    color: #2271b1;
+.woolab-icdic-revalidate-row .spinner {
+    float: none;
+    margin-top: 0;
+}
+
+.woolab-icdic-revalidate-error {
+    color: #d63638;
 }

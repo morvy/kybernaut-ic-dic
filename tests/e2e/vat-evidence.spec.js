@@ -59,12 +59,12 @@ async function expectEvidence( id ) {
 	await expect( box ).toContainText( 'Name Alza.cz a.s.' );
 	await expect( box ).toContainText( 'billing CZ, VAT ID CZ' );
 
-	// The orders list marks it in its narrow column.
+	// The orders list marks it after the billing address.
 	await admin.goto( '/wp-admin/admin.php?page=wc-orders' );
 	if ( ! ( await admin.locator( '.wp-list-table' ).count() ) ) {
 		await admin.goto( '/wp-admin/edit.php?post_type=shop_order' );
 	}
-	await expect( admin.locator( `#order-${ id } .woolab-icdic-reverse-charge, #post-${ id } .woolab-icdic-reverse-charge` ) ).toHaveCount( 1 );
+	await expect( admin.locator( `#order-${ id } .column-billing_address .woolab-icdic-reverse-charge, #post-${ id } .column-billing_address .woolab-icdic-reverse-charge` ) ).toHaveCount( 1 );
 }
 
 test( 'an exempt block checkout order keeps the VIES consultation number', async ( { page } ) => {
@@ -159,6 +159,15 @@ test( '"Validate VAT ID" on the order screen asks VIES again and removes the VAT
 	await expect( admin.locator( '.woolab-icdic-vat-evidence-history summary' ) ).toHaveText( '1 earlier check' );
 	await admin.locator( '.woolab-icdic-vat-evidence-history summary' ).click();
 	await expect( admin.locator( '.woolab-icdic-vat-evidence-history' ) ).toContainText( 'CZ00006947' );
+
+	// Nothing edited: the button checks again over AJAX, without saving the order.
+	const saves = [];
+	admin.on( 'request', ( r ) => r.method() === 'POST' && /wc-orders|post\.php/.test( r.url() ) && saves.push( r.url() ) );
+	const checked = admin.waitForResponse( ( r ) => /admin-ajax\.php/.test( r.url() ) && r.request().postData()?.includes( 'woolab_icdic_revalidate' ) );
+	await admin.locator( '.woolab-icdic-revalidate' ).click();
+	expect( ( await checked ).status() ).toBe( 200 );
+	await expect( admin.locator( '.woolab-icdic-vat-evidence-history summary' ) ).toHaveText( '2 earlier checks' );
+	expect( saves, 'the order form is not submitted' ).toEqual( [] );
 	const totals = admin.locator( '.wc-order-totals' ).first();
 	await expect( totals ).toContainText( /10[.,]00/ );
 	await expect( totals ).not.toContainText( /12[.,]30/ );
