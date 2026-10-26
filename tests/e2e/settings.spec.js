@@ -237,3 +237,25 @@ test( 'the suggestion list corner radius reaches the checkout', async ( { page }
 		await save( page );
 	}
 } );
+
+test( 'a message colour reaches the checkout', async ( { page } ) => {
+	await page.goto( url( 'appearance' ) );
+	await setting( page, 'color_error' ).fill( '#654321' );
+	await save( page );
+	try {
+		await expect( setting( page, 'color_error' ) ).toHaveValue( '#654321' );
+		await fillCart( page );
+		await page.goto( '/checkout/' );
+		await expect.poll( () => page.evaluate( () => getComputedStyle( document.documentElement ).getPropertyValue( '--woolab-ic-dic-color-error' ).trim() ) ).toBe( '#654321' );
+		// The block checkout's error under the Business ID takes it.
+		await page.locator( '#shipping-country' ).selectOption( 'CZ' );
+		await page.locator( '#order-kybernaut-iscomp' ).check();
+		await page.locator( '#order-kybernaut-ic' ).fill( '12345678' );
+		await page.locator( '#order-kybernaut-ic' ).blur();
+		await expect( page.locator( '.wc-block-components-address-form__kybernaut-ic .wc-block-components-validation-error' ) ).toHaveCSS( 'color', 'rgb(101, 67, 33)' );
+	} finally {
+		await page.goto( url( 'appearance' ) );
+		await setting( page, 'color_error' ).fill( '' );
+		await save( page );
+	}
+} );

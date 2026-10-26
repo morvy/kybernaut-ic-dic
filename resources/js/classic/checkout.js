@@ -289,7 +289,7 @@ import suggest from '../shared/suggest';
         if ( value !== last_ico_value ) {
 
             var ico_class = $('#billing_ic_field');
-            var not_valid = '<span role="alert" class="woolab-ic-dic-tip">'+woolab.l18n_not_valid+'</span>';
+            var not_valid = '<span role="alert" class="woolab-ic-dic-tip woolab-ic-dic-message woolab-ic-dic-message--error">'+woolab.l18n_not_valid+'</span>';
 
             $('.woolab-ic-dic-tip').remove();
             unmark_filled();
@@ -303,7 +303,7 @@ import suggest from '../shared/suggest';
                     beforeSend: function() {
                         busy( ico, true );
                         ico_class.addClass( 'kbnt-validating' );
-                        ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+texts.validating+'</span>' );
+                        ico_class.append( '<span role="info" class="woolab-ic-dic-tip woolab-ic-dic-message woolab-ic-dic-message--info">'+texts.validating+'</span>' );
                     },
                     success: function ( data ) {
                         ico_class.removeClass( 'kbnt-validating' );
@@ -319,7 +319,7 @@ import suggest from '../shared/suggest';
                                     $('#billing_company, #billing_dic, #billing_dic_dph, #billing_postcode, #billing_city, #billing_address_1').val('');
                                 }
                                 ares_remove_disabled_from_input();
-                                ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+data.error+'</span>' );
+                                ico_class.append( '<span role="info" class="woolab-ic-dic-tip woolab-ic-dic-message woolab-ic-dic-message--info">'+data.error+'</span>' );
 
                             } else if ( data.error == false ) {
 
@@ -378,7 +378,7 @@ import suggest from '../shared/suggest';
                                     $('#billing_address_1').val(data.adresa).attr('readonly', true);
                                     $('#billing_postcode').val(data.psc).attr('readonly', true);
                                     $('#billing_city').val(data.mesto).attr('readonly', true);
-                                    ico_class.append( '<span role="info" class="woolab-ic-dic-tip">'+texts.ok+'</span>' );
+                                    ico_class.append( '<span role="info" class="woolab-ic-dic-tip woolab-ic-dic-message woolab-ic-dic-message--success">'+texts.ok+'</span>' );
 
                                     mark_filled();
 
@@ -397,7 +397,7 @@ import suggest from '../shared/suggest';
                                 ares_remove_disabled_from_input();
 
                                 if ( ! data.internal_error || ! woolab.ignore_check_fail ) {
-                                    ico_class.append('<span role="alert" class="woolab-ic-dic-tip error">' + data.error + '</span>');
+                                    ico_class.append('<span role="alert" class="woolab-ic-dic-tip woolab-ic-dic-message woolab-ic-dic-message--error error">' + data.error + '</span>');
                                 }
 
                             }
@@ -421,7 +421,7 @@ import suggest from '../shared/suggest';
                         if ( $('.woolab-ic-dic-tip').length == 0 ) {
                             ico.val('');
                             ares_error( ico_class );
-                            ico_class.append( '<span role="alert" class="woolab-ic-dic-tip error">'+woolab.l18n_error+'</span>' );
+                            ico_class.append( '<span role="alert" class="woolab-ic-dic-tip woolab-ic-dic-message woolab-ic-dic-message--error error">'+woolab.l18n_error+'</span>' );
                         }
                     }
                 };

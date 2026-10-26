@@ -46,4 +46,12 @@ class OptionsTest extends TestCase {
 		$this->assertSame( 'no', woolab_icdic_setting( 'ares_check' ) );
 		$this->assertSame( array( 'woolab_icdic_settings', array( 'ares_check' => 'no', 'vat_exempt' => 'yes', 'toggle' => 'yes' ) ), $added );
 	}
+
+	public function testTheMessageColoursBecomeCustomProperties() {
+		$this->options( array( 'woolab_icdic_settings' => array( 'color_success' => '#123456', 'color_error' => 'red', 'color_info' => '' ) ) );
+		Functions\when( 'sanitize_hex_color' )->alias( static fn ( $color ) => preg_match( '/^#[0-9a-f]{6}$/i', $color ) ? $color : null );
+
+		// Not a hex colour, or empty: lookup.css falls back to its default.
+		$this->assertSame( ':root{--woolab-ic-dic-color-success:#123456}', \KybernautIcDic\Assets::lookup_colors_css() );
+	}
 }

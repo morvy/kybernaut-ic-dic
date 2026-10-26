@@ -2,5 +2,5 @@
 	'dependencies' => array(
 		'wp-data'
 	),
-	'version' => '46460d2ba38c887d4d1d'
+	'version' => '12769bc7912f80f2d2e3'
 );

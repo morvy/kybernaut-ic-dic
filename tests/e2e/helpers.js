@@ -34,4 +34,26 @@ async function expectIdentifiersOnce( page ) {
 	expect( text.match( new RegExp( 'VAT ID: ' + COMPANY.dic, 'g' ) ) ).toHaveLength( 1 );
 }
 
-module.exports = { fillCart, expectIdentifiersOnce, COMPANY, PL_COMPANY, SHOPPER };
+// A message under a field has its type's colour: Settings → IČO DIČ → Appearance,
+// otherwise resources/css/lookup.css's default.
+const MESSAGE_COLORS = { success: '#007518', error: '#cc1818', info: '#007cba' };
+
+async function expectMessageColor( locator, type ) {
+	const color = await locator.page().evaluate( ( [ name, fallback ] ) => {
+		const probe = document.createElement( 'span' );
+		probe.style.color = getComputedStyle( document.documentElement ).getPropertyValue( '--woolab-ic-dic-color-' + name ).trim() || fallback;
+		document.body.append( probe );
+		const value = getComputedStyle( probe ).color;
+		probe.remove();
+		return value;
+	}, [ type, MESSAGE_COLORS[ type ] ] );
+	await expect( locator ).toHaveCSS( 'color', color );
+}
+
+// Every error a field can show: the plugin's and WooCommerce's, in both checkouts.
+async function expectOneError( row ) {
+	const errors = row.locator( '.woolab-ic-dic-message--error, .checkout-inline-error-message, .wc-block-components-validation-error' );
+	await expect( errors.filter( { visible: true } ) ).toHaveCount( 1 );
+}
+
+module.exports = { fillCart, expectIdentifiersOnce, expectMessageColor, expectOneError, COMPANY, PL_COMPANY, SHOPPER };

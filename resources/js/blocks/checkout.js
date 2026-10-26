@@ -105,6 +105,35 @@ import suggest from '../shared/suggest';
 	}
 
 	/**
+	 * The lookup's message under the IČO field, as the classic checkout shows it:
+	 * 'info' (validating, not listed) or 'success' (resources/css/lookup.css).
+	 * Errors go through the validation store, which shows them in the same place
+	 * and keeps the order from being placed.
+	 */
+	var shown = null;
+
+	function message( type, text ) {
+		var input = icInput();
+
+		if ( shown ) {
+			shown.remove();
+			shown = null;
+		}
+
+		if ( ! type || ! text || ! input ) {
+			return;
+		}
+
+		shown = document.createElement( 'div' );
+		shown.className = 'woolab-ic-dic-message woolab-ic-dic-message--' + type;
+		shown.setAttribute( 'role', 'status' );
+		shown.textContent = text;
+		// After the input's wrapper: inside it, the text would push the spinner,
+		// centred on the wrapper, off the input.
+		input.parentNode.after( shown );
+	}
+
+	/**
 	 * Only an error this script set is cleared: the key is the field's, and with the
 	 * Business ID required (woolab_icdic_fields_mode()) WooCommerce's own "enter a
 	 * valid Business ID" is on it too.
@@ -219,6 +248,8 @@ import suggest from '../shared/suggest';
 		// Outside the IČO home countries kybernaut/ic-eu has no checks
 		// (Checkout\Blocks::fields()) unless a service looks companies up there, so a
 		// stored value is no error.
+		message( null );
+
 		if ( ! ico || ! ( home || enabled ) ) {
 			setError( null );
 			return;
@@ -239,9 +270,11 @@ import suggest from '../shared/suggest';
 		}
 
 		busy( true );
+		message( 'info', service( woolab, country ).validating );
 
 		lookup( woolab.rest, ico, country ).then( function ( ares ) {
 			busy( false );
+			message( null );
 
 			if ( ! ares ) {
 				setError( woolab.l18n_not_valid );
@@ -251,6 +284,7 @@ import suggest from '../shared/suggest';
 			// Not in the Slovak lists yet: accepted, nothing to fill.
 			if ( ares.unlisted ) {
 				setError( null );
+				message( 'info', ares.error );
 				return;
 			}
 
@@ -267,9 +301,11 @@ import suggest from '../shared/suggest';
 
 			if ( service( woolab, country ).autofill ) {
 				fillAddress( ares, country );
+				message( 'success', service( woolab, country ).ok );
 			}
 		} ).catch( function () {
 			busy( false );
+			message( null );
 			setError( woolab.l18n_error );
 		} );
 	}

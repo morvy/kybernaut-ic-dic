@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kybernaut IC DIC 2.0.0\n"
 "Report-Msgid-Bugs-To: https://kybernaut.cz/kontakt/\n"
-"POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
-"PO-Revision-Date: 2026-10-25T23:11:42+00:00\n"
 "Last-Translator: Peter Morvay <moped@jepan.sk>\n"
 "Language-Team: Polski\n"
-"Language: pl_PL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
+"PO-Revision-Date: 2026-10-26T00:04:50+00:00\n"
+"Language: pl_PL\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Domain: woolab-ic-dic\n"
 "X-Generator: WP-CLI 2.12.0\n"
@@ -63,7 +63,10 @@ msgstr "Ustawienia"
 msgid "Business ID is invalid."
 msgstr "Numer identyfikacyjny firmy jest nieprawidłowy."
 
-#: src/Assets.php:81 src/Rest/Routes.php:121 src/Rest/Routes.php:197 src/Validation/Errors.php:80
+#: src/Assets.php:81
+#: src/Rest/Routes.php:121
+#: src/Rest/Routes.php:197
+#: src/Validation/Errors.php:80
 msgid "Unexpected error occurred. Try it again."
 msgstr "Wystąpił nieoczekiwany błąd. Spróbuj ponownie."
 
@@ -76,7 +79,7 @@ msgid "Validating data in ARES."
 msgstr "Trwa weryfikacja danych w ARES."
 
 #: src/Assets.php:133
-msgid "Information loaded succesfully from ARES."
+msgid "Information loaded successfully from ARES."
 msgstr "Dane zostały wczytane z ARES."
 
 #: src/Assets.php:136
@@ -84,7 +87,7 @@ msgid "Validating data in Finančná správa."
 msgstr "Trwa weryfikacja danych w Finančná správa."
 
 #: src/Assets.php:137
-msgid "Information loaded succesfully from Finančná správa."
+msgid "Information loaded successfully from Finančná správa."
 msgstr "Dane zostały wczytane z Finančná správa."
 
 #. translators: %s: name of the company register, e.g. "GUS"
@@ -100,24 +103,27 @@ msgid "Information loaded successfully from %s."
 msgstr "Dane zostały wczytane z rejestru %s."
 
 #. translators: %s: name of the setting, e.g. "CZ: Validate Business ID in ARES"
-#: src/Assets.php:242
+#: src/Assets.php:245
 #, php-format
 msgid "Turn on \"%s\" first."
 msgstr "Najpierw włącz „%s”."
 
-#: src/Assets.php:249 src/Settings/Fields.php:173
+#: src/Assets.php:252
+#: src/Settings/Fields.php:173
 msgid "CZ: Validate Business ID in ARES"
 msgstr "CZ: Weryfikuj IČO w ARES"
 
-#: src/Assets.php:250 src/Settings/Fields.php:197
+#: src/Assets.php:253
+#: src/Settings/Fields.php:197
 msgid "SK: Validate in Finančná správa"
 msgstr "SK: Weryfikuj w Finančná správa"
 
-#: src/Assets.php:251
+#: src/Assets.php:254
 msgid "Turn on at least one of the ARES, Finančná správa or VIES checks first."
 msgstr "Najpierw włącz co najmniej jedną z weryfikacji: ARES, Finančná správa lub VIES."
 
-#: src/Checkout/Blocks.php:298 src/Checkout/Classic.php:96
+#: src/Checkout/Blocks.php:298
+#: src/Checkout/Classic.php:96
 msgid "Buying as a company"
 msgstr "Faktura na firmę"
 
@@ -137,11 +143,13 @@ msgstr "Ten numer podatkowy jest prawidłowy. Bez kodu kraju (%s) nie jest to nu
 msgid "This %s is not registered for VAT in the EU (VIES), so the order is placed with VAT."
 msgstr "Numer z pola %s nie jest zarejestrowany do celów VAT w UE (VIES), dlatego zamówienie będzie zawierać VAT."
 
-#: src/Compat/PdfInvoices.php:47 src/Fields/Labels.php:42
+#: src/Compat/PdfInvoices.php:47
+#: src/Fields/Labels.php:42
 msgid "Business ID"
 msgstr "Numer identyfikacyjny firmy"
 
-#: src/Compat/PdfInvoices.php:50 src/Fields/Labels.php:34
+#: src/Compat/PdfInvoices.php:50
+#: src/Fields/Labels.php:34
 msgid "Tax ID"
 msgstr "NIP"
 
@@ -154,7 +162,9 @@ msgctxt "Czech DIČ field"
 msgid "VAT ID"
 msgstr "NIP-UE"
 
-#: src/Fields/Labels.php:38 src/Order/AdminScreen.php:275 src/Order/Evidence.php:288
+#: src/Fields/Labels.php:38
+#: src/Order/AdminScreen.php:275
+#: src/Order/Evidence.php:288
 msgctxt "EU VAT number field"
 msgid "VAT ID"
 msgstr "NIP-UE"
@@ -175,51 +185,65 @@ msgctxt "label before a value"
 msgid "%s: "
 msgstr "%s: "
 
-#: src/Order/AdminScreen.php:198 src/Order/AdminScreen.php:227 src/Order/AdminScreen.php:252 src/Order/AdminScreen.php:345
+#: src/Order/AdminScreen.php:198
+#: src/Order/AdminScreen.php:227
+#: src/Order/AdminScreen.php:252
+#: src/Order/AdminScreen.php:345
 msgid "Verification of VAT number has failed."
 msgstr "Weryfikacja numeru NIP-UE nie powiodła się."
 
-#: src/Order/AdminScreen.php:251 src/Order/AdminScreen.php:344
+#: src/Order/AdminScreen.php:251
+#: src/Order/AdminScreen.php:344
 msgid "Caution!"
 msgstr "Uwaga!"
 
-#: src/Order/AdminScreen.php:253 src/Order/AdminScreen.php:346
+#: src/Order/AdminScreen.php:253
+#: src/Order/AdminScreen.php:346
 msgid "Please, make sure the VAT number is valid before processing the order."
 msgstr "Przed realizacją zamówienia upewnij się, że numer NIP-UE jest prawidłowy."
 
-#: src/Order/AdminScreen.php:276 src/Order/Evidence.php:289
+#: src/Order/AdminScreen.php:276
+#: src/Order/Evidence.php:289
 msgid "Result"
 msgstr "Wynik"
 
-#: src/Order/AdminScreen.php:277 src/Order/Evidence.php:293
+#: src/Order/AdminScreen.php:277
+#: src/Order/Evidence.php:293
 msgid "Consultation number"
 msgstr "Numer konsultacji"
 
-#: src/Order/AdminScreen.php:278 src/Order/Evidence.php:292
+#: src/Order/AdminScreen.php:278
+#: src/Order/Evidence.php:292
 msgid "Date of the check"
 msgstr "Data weryfikacji"
 
-#: src/Order/AdminScreen.php:279 src/Order/Evidence.php:294
+#: src/Order/AdminScreen.php:279
+#: src/Order/Evidence.php:294
 msgid "Name"
 msgstr "Nazwa"
 
-#: src/Order/AdminScreen.php:280 src/Order/Evidence.php:295
+#: src/Order/AdminScreen.php:280
+#: src/Order/Evidence.php:295
 msgid "Address"
 msgstr "Adres"
 
-#: src/Order/AdminScreen.php:281 src/Order/Evidence.php:290
+#: src/Order/AdminScreen.php:281
+#: src/Order/Evidence.php:290
 msgid "Reason"
 msgstr "Powód"
 
-#: src/Order/AdminScreen.php:282 src/Order/Evidence.php:297
+#: src/Order/AdminScreen.php:282
+#: src/Order/Evidence.php:297
 msgid "IP address country"
 msgstr "Kraj adresu IP"
 
-#: src/Order/AdminScreen.php:283 src/Order/Evidence.php:298
+#: src/Order/AdminScreen.php:283
+#: src/Order/Evidence.php:298
 msgid "Billing country"
 msgstr "Kraj rozliczeniowy"
 
-#: src/Order/AdminScreen.php:284 src/Order/Evidence.php:299
+#: src/Order/AdminScreen.php:284
+#: src/Order/Evidence.php:299
 msgid "VAT ID country"
 msgstr "Kraj NIP-UE"
 
@@ -234,7 +258,8 @@ msgid "VAT ID %1$s: %2$s."
 msgstr "NIP-UE %1$s: %2$s."
 
 #. translators: %s: VIES consultation number
-#: src/Order/AdminScreen.php:324 src/Order/Evidence.php:260
+#: src/Order/AdminScreen.php:324
+#: src/Order/Evidence.php:260
 #, php-format
 msgid "Consultation number: %s."
 msgstr "Numer konsultacji: %s."
@@ -321,7 +346,9 @@ msgstr "Weryfikacja nie powiodła się i została zignorowana"
 msgid "When you order as a company and enter a VAT ID, we check it in the EU VIES register run by the European Commission (and a Business ID in the Czech ARES or the Slovak Finančná správa register), sending it with our own VAT ID. We keep the result with the order as the proof of the VAT treatment: the VAT ID, the result, the VIES consultation number and date, the name and address VIES returned, and the countries of the billing address, of the VAT ID and of the IP address your order was placed from (the IP address itself is the one stored with every order). It is part of our VAT records, kept for the period the tax law requires, and an erasure request does not delete it. Orders without a VAT ID get none of this."
 msgstr "Gdy zamawiasz jako firma i podajesz NIP-UE, weryfikujemy go w unijnym rejestrze VIES prowadzonym przez Komisję Europejską (a numer identyfikacyjny w czeskim rejestrze ARES lub w słowackich wykazach Finančná správa), podając nasz własny NIP-UE. Wynik przechowujemy przy zamówieniu jako dowód rozliczenia VAT: NIP-UE, wynik, numer konsultacji VIES i datę, nazwę i adres zwrócone przez VIES oraz kraj adresu rozliczeniowego, NIP-UE i adresu IP, z którego złożono zamówienie (sam adres IP to ten zapisywany przy każdym zamówieniu). Jest to część naszej ewidencji VAT, przechowywana przez okres wymagany przepisami podatkowymi, i żądanie usunięcia danych jej nie usuwa. Zamówienia bez NIP-UE nie są tym objęte."
 
-#: src/Order/Privacy.php:62 src/Order/Privacy.php:77 src/Order/Privacy.php:145
+#: src/Order/Privacy.php:62
+#: src/Order/Privacy.php:77
+#: src/Order/Privacy.php:145
 msgid "VAT ID checks"
 msgstr "Weryfikacje NIP-UE"
 
@@ -335,11 +362,13 @@ msgstr "Numer zamówienia"
 msgid "The VAT ID check of order %s has been retained: it is part of the VAT records the shop must keep (Directive 2006/112/EC, Art. 242–249)."
 msgstr "Weryfikacja NIP-UE zamówienia %s została zachowana: jest częścią ewidencji VAT, którą sklep musi przechowywać (dyrektywa 2006/112/WE, art. 242–249)."
 
-#: src/Services/Ares/Ares.php:43 src/Services/FinancnaSprava/FinancnaSprava.php:98
+#: src/Services/Ares/Ares.php:43
+#: src/Services/FinancnaSprava/FinancnaSprava.php:98
 msgid "Business ID not set."
 msgstr "Nie podano numeru identyfikacyjnego firmy."
 
-#: src/Services/Ares/Ares.php:48 src/Services/FinancnaSprava/FinancnaSprava.php:103
+#: src/Services/Ares/Ares.php:48
+#: src/Services/FinancnaSprava/FinancnaSprava.php:103
 msgid "Business ID must be a number and 8 digits long."
 msgstr "Numer identyfikacyjny firmy musi składać się z 8 cyfr."
 
@@ -367,11 +396,13 @@ msgstr "Nie znaleziono numeru identyfikacyjnego firmy w bazie Finančná správa
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists are missing or older than a week, so those numbers cannot be validated. The import runs daily through WP-Cron (or run \"wp woolab-icdic sk-import\"); failures are logged in WooCommerce → Status → Logs."
 msgstr "Kybernaut IČO DIČ: listy DIČ / IČ DPH z Finančná správa nie zostały zaimportowane lub są starsze niż tydzień, więc tych numerów nie można zweryfikować. Import uruchamia się codziennie przez WP-Cron (możesz też uruchomić „wp woolab-icdic sk-import”); błędy są zapisywane w WooCommerce → Status → Dziennik zdarzeń."
 
-#: src/Services/FinancnaSprava/Importer.php:80 src/Settings/Fields.php:162
+#: src/Services/FinancnaSprava/Importer.php:80
+#: src/Settings/Fields.php:162
 msgid "Kybernaut IČO DIČ: the Finančná správa DIČ / IČ DPH lists cannot be imported, the zip, xmlreader and pdo_sqlite PHP extensions are required (ask your hosting)."
 msgstr "Kybernaut IČO DIČ: nie można zaimportować list DIČ / IČ DPH z Finančná správa, ponieważ brakuje rozszerzeń PHP zip, xmlreader i pdo_sqlite (zapytaj dostawcę hostingu)."
 
-#: src/Services/FinancnaSprava/Importer.php:82 src/Settings/Fields.php:160
+#: src/Services/FinancnaSprava/Importer.php:82
+#: src/Settings/Fields.php:160
 msgid "Import status"
 msgstr "Stan importu"
 
@@ -560,132 +591,165 @@ msgid "The X the padlock turns into. Leave empty for red (#a00)."
 msgstr "Krzyżyk, w który zmienia się kłódka. Pozostaw puste, aby użyć koloru czerwonego (#a00)."
 
 #: src/Settings/Fields.php:317
+msgid "Messages"
+msgstr "Komunikaty"
+
+#: src/Settings/Fields.php:319
+msgid "The text under the Business ID field: the lookup's result, an error, information."
+msgstr "Tekst pod polem numeru firmy: wynik wyszukiwania, błąd, informacja."
+
+#: src/Settings/Fields.php:322
+msgid "Success"
+msgstr "Sukces"
+
+#: src/Settings/Fields.php:322
+msgid "The company was found. Leave empty for green (#007518)."
+msgstr "Firma została znaleziona. Pozostaw puste dla zielonego (#007518)."
+
+#: src/Settings/Fields.php:323
+msgid "Error"
+msgstr "Błąd"
+
+#: src/Settings/Fields.php:323
+msgid "A number is invalid or the lookup failed. Leave empty for red (#cc1818)."
+msgstr "Numer jest nieprawidłowy lub wyszukiwanie się nie powiodło. Pozostaw puste dla czerwonego (#cc1818)."
+
+#: src/Settings/Fields.php:324
+msgid "Information"
+msgstr "Informacja"
+
+#: src/Settings/Fields.php:324
+msgid "Validating, not listed, fill in the details manually. Leave empty for blue (#007cba)."
+msgstr "Weryfikacja, brak na liście, uzupełnij dane ręcznie. Pozostaw puste dla niebieskiego (#007cba)."
+
+#: src/Settings/Fields.php:331
 msgid "Company name suggestions"
 msgstr "Podpowiedzi nazw firm"
 
-#: src/Settings/Fields.php:319
+#: src/Settings/Fields.php:333
 msgid "By default the list takes its colours from the company field."
 msgstr "Domyślnie lista przejmuje kolory z pola nazwy firmy."
 
-#: src/Settings/Fields.php:322
+#: src/Settings/Fields.php:336
 msgid "Background"
 msgstr "Tło"
 
-#: src/Settings/Fields.php:323
+#: src/Settings/Fields.php:337
 msgid "Text"
 msgstr "Tekst"
 
-#: src/Settings/Fields.php:324
+#: src/Settings/Fields.php:338
 msgid "Border"
 msgstr "Obramowanie"
 
-#: src/Settings/Fields.php:325
+#: src/Settings/Fields.php:339
 msgid "Highlighted suggestion"
 msgstr "Wyróżniona podpowiedź"
 
-#: src/Settings/Fields.php:325
+#: src/Settings/Fields.php:339
 msgid "Leave empty for a tint of the text colour."
 msgstr "Pozostaw puste, aby użyć odcienia koloru tekstu."
 
-#: src/Settings/Fields.php:327
+#: src/Settings/Fields.php:341
 msgid "Corner radius"
 msgstr "Zaokrąglenie narożników"
 
-#: src/Settings/Fields.php:328
+#: src/Settings/Fields.php:342
 msgid "In pixels. Leave empty for the company field's own."
 msgstr "W pikselach. Pozostaw puste, aby użyć zaokrąglenia pola nazwy firmy."
 
-#: src/Settings/Fields.php:355
+#: src/Settings/Fields.php:369
 msgid "Finančná správa lists"
 msgstr "Listy Finančná správa"
 
-#: src/Settings/Fields.php:357
+#: src/Settings/Fields.php:371
 msgid "The DIČ and IČ DPH lists the Slovak checks run against, imported daily."
 msgstr "Listy DIČ i IČ DPH, na podstawie których weryfikowane są słowackie numery, importowane codziennie."
 
 #. translators: 1: date and time, 2: time span, e.g. "3 hours"
-#: src/Settings/Fields.php:379
+#: src/Settings/Fields.php:393
 #, php-format
 msgid "%1$s (%2$s ago)"
 msgstr "%1$s (%2$s temu)"
 
 #. translators: %s: link to the Validation settings
-#: src/Settings/Fields.php:386
+#: src/Settings/Fields.php:400
 #, php-format
 msgid "Off. Enable \"SK: Validate in Finančná správa\" in %s."
 msgstr "Wyłączone. Włącz „SK: Weryfikuj w Finančná správa” w sekcji %s."
 
-#: src/Settings/Fields.php:387 src/Settings/SettingsPage.php:37
+#: src/Settings/Fields.php:401
+#: src/Settings/SettingsPage.php:37
 msgid "Validation"
 msgstr "Weryfikacja"
 
-#: src/Settings/Fields.php:390
+#: src/Settings/Fields.php:404
 msgid "Up to date"
 msgstr "Aktualne"
 
-#: src/Settings/Fields.php:392
+#: src/Settings/Fields.php:406
 msgid "Older than a week: Slovak numbers are checked in VIES only, or let through when \"ignore when the check fails\" is on."
 msgstr "Starsze niż tydzień: słowackie numery są sprawdzane tylko w VIES albo akceptowane bez weryfikacji, gdy włączona jest opcja „Ignoruj nieudaną weryfikację”."
 
-#: src/Settings/Fields.php:394
+#: src/Settings/Fields.php:408
 msgid "Not imported yet"
 msgstr "Jeszcze nie zaimportowano"
 
-#: src/Settings/Fields.php:397
+#: src/Settings/Fields.php:411
 msgid "Status"
 msgstr "Stan"
 
-#: src/Settings/Fields.php:400
+#: src/Settings/Fields.php:414
 msgid "Last import"
 msgstr "Ostatni import"
 
 #. translators: 1: number of DIČ, 2: number of IČ DPH
-#: src/Settings/Fields.php:402
+#: src/Settings/Fields.php:416
 #, php-format
 msgid "%1$s DIČ, %2$s IČ DPH"
 msgstr "%1$s DIČ, %2$s IČ DPH"
 
-#: src/Settings/Fields.php:403
+#: src/Settings/Fields.php:417
 msgid "Database"
 msgstr "Baza danych"
 
-#: src/Settings/Fields.php:404
+#: src/Settings/Fields.php:418
 msgid "The file is missing, the next import creates it again."
 msgstr "Brak pliku, następny import utworzy go ponownie."
 
-#: src/Settings/Fields.php:409
+#: src/Settings/Fields.php:423
 msgid "Last failed import"
 msgstr "Ostatni nieudany import"
 
-#: src/Settings/Fields.php:414
+#: src/Settings/Fields.php:428
 msgid "Not scheduled, it is scheduled again on the next page load."
 msgstr "Nie zaplanowano. Import zostanie zaplanowany przy następnym wczytaniu strony."
 
 #. translators: %s: date and time
-#: src/Settings/Fields.php:417
+#: src/Settings/Fields.php:431
 #, php-format
 msgid "%s, overdue: WP-Cron has not run since. It runs on page visits, or set up a server cron job for wp-cron.php."
 msgstr "%s, zaległy: WP-Cron od tego czasu nie działał. Uruchamia się przy odwiedzinach witryny; możesz też ustawić na serwerze zadanie cron dla wp-cron.php."
 
-#: src/Settings/Fields.php:421
+#: src/Settings/Fields.php:435
 msgid "Next import"
 msgstr "Następny import"
 
-#: src/Settings/Fields.php:428
+#: src/Settings/Fields.php:442
 msgid "PHP extensions"
 msgstr "Rozszerzenia PHP"
 
-#: src/Settings/Fields.php:430
+#: src/Settings/Fields.php:444
 msgid "Import now"
 msgstr "Importuj teraz"
 
 #. translators: %s: link to WooCommerce → Status → Logs
-#: src/Settings/Fields.php:433
+#: src/Settings/Fields.php:447
 #, php-format
 msgid "Every import is logged in %s."
 msgstr "Każdy import jest zapisywany w %s."
 
-#: src/Settings/Fields.php:434
+#: src/Settings/Fields.php:448
 msgid "WooCommerce → Status → Logs"
 msgstr "WooCommerce → Status → Dziennik zdarzeń"
 
@@ -707,7 +771,8 @@ msgstr "Wygląd"
 msgid "Finančná správa"
 msgstr "Finančná správa"
 
-#: src/Validation/Errors.php:70 src/Validation/Errors.php:73
+#: src/Validation/Errors.php:70
+#: src/Validation/Errors.php:73
 msgid "Enter a valid Business ID"
 msgstr "Wpisz prawidłowy numer identyfikacyjny firmy"
 
@@ -760,7 +825,8 @@ msgid "%s has not a correct format."
 msgstr "Pole %s ma nieprawidłowy format."
 
 #. translators: %s: field label, e.g. "VAT ID"
-#: src/Validation/Errors.php:126 src/Validation/Errors.php:134
+#: src/Validation/Errors.php:126
+#: src/Validation/Errors.php:134
 #, php-format
 msgctxt "field label"
 msgid "Enter a valid %s."

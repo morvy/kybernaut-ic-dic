@@ -2,9 +2,12 @@
 // a company" toggle, the billing country behind "Use same address for billing",
 // the ARES autofill, the live intra-EU VAT exemption, and the order it places.
 const { test, expect } = require( '@playwright/test' );
-const { fillCart, expectIdentifiersOnce, COMPANY, PL_COMPANY, SHOPPER } = require( './helpers' );
+const { fillCart, expectIdentifiersOnce, expectMessageColor, expectOneError, COMPANY, PL_COMPANY, SHOPPER } = require( './helpers' );
 
 const field = ( page, id ) => page.locator( `#order-kybernaut-${ id }` );
+// The field with what shows under it: WooCommerce's error inside its wrapper, the
+// lookup's message after it.
+const fieldRow = ( page, id ) => page.locator( '.wc-block-components-address-form' ).filter( { has: field( page, id ) } );
 
 async function openCheckout( page ) {
 	await fillCart( page );
@@ -194,7 +197,24 @@ test( 'an invalid IČO is reported at the field', async ( { page } ) => {
 	await asCompany( page );
 	await field( page, 'ic' ).fill( '12345678' );
 	await field( page, 'ic' ).blur();
-	await expect( page.locator( '.wc-block-components-validation-error' ).first() ).toBeVisible();
+	const error = page.locator( '.wc-block-components-validation-error' ).first();
+	await expect( error ).toBeVisible();
+	await expectMessageColor( error, 'error' );
+
+	// Placing the order adds no second one.
+	await fillAddress( page );
+	await page.locator( '.wc-block-components-checkout-place-order-button' ).click();
+	await expect( page ).not.toHaveURL( /order-received/ );
+	await expectOneError( fieldRow( page, 'ic' ) );
+} );
+
+test( 'the lookup says it found the company, in the success colour', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await field( page, 'ic' ).fill( COMPANY.ico );
+	const message = fieldRow( page, 'ic' ).locator( '.woolab-ic-dic-message--success' );
+	await expect( message ).toContainText( 'ARES' );
+	await expectMessageColor( message, 'success' );
 } );
 
 test( 'the order carries the company and no VAT', async ( { page } ) => {
@@ -260,6 +280,7 @@ test( 'a VAT ID the server rejects is reported under its field', async ( { page 
 
 	const row = page.locator( '.wc-block-components-text-input' ).filter( { has: field( page, 'dic' ) } );
 	await expect( row.locator( '.wc-block-components-validation-error' ) ).toContainText( 'Enter a valid VAT ID', { timeout: 30000 } );
+	await expectOneError( fieldRow( page, 'dic' ) );
 	await expect( page ).not.toHaveURL( /order-received/ );
 } );
 

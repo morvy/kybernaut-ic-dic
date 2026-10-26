@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-25T23:11:41+00:00\n"
+"POT-Creation-Date: 2026-10-26T00:04:49+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woolab-ic-dic\n"
@@ -79,7 +79,7 @@ msgid "Validating data in ARES."
 msgstr ""
 
 #: src/Assets.php:133
-msgid "Information loaded succesfully from ARES."
+msgid "Information loaded successfully from ARES."
 msgstr ""
 
 #: src/Assets.php:136
@@ -87,7 +87,7 @@ msgid "Validating data in Finančná správa."
 msgstr ""
 
 #: src/Assets.php:137
-msgid "Information loaded succesfully from Finančná správa."
+msgid "Information loaded successfully from Finančná správa."
 msgstr ""
 
 #. translators: %s: name of the company register, e.g. "GUS"
@@ -103,22 +103,22 @@ msgid "Information loaded successfully from %s."
 msgstr ""
 
 #. translators: %s: name of the setting, e.g. "CZ: Validate Business ID in ARES"
-#: src/Assets.php:242
+#: src/Assets.php:245
 #, php-format
 msgid "Turn on \"%s\" first."
 msgstr ""
 
-#: src/Assets.php:249
+#: src/Assets.php:252
 #: src/Settings/Fields.php:173
 msgid "CZ: Validate Business ID in ARES"
 msgstr ""
 
-#: src/Assets.php:250
+#: src/Assets.php:253
 #: src/Settings/Fields.php:197
 msgid "SK: Validate in Finančná správa"
 msgstr ""
 
-#: src/Assets.php:251
+#: src/Assets.php:254
 msgid "Turn on at least one of the ARES, Finančná správa or VIES checks first."
 msgstr ""
 
@@ -591,133 +591,165 @@ msgid "The X the padlock turns into. Leave empty for red (#a00)."
 msgstr ""
 
 #: src/Settings/Fields.php:317
-msgid "Company name suggestions"
+msgid "Messages"
 msgstr ""
 
 #: src/Settings/Fields.php:319
-msgid "By default the list takes its colours from the company field."
+msgid "The text under the Business ID field: the lookup's result, an error, information."
 msgstr ""
 
 #: src/Settings/Fields.php:322
-msgid "Background"
+msgid "Success"
+msgstr ""
+
+#: src/Settings/Fields.php:322
+msgid "The company was found. Leave empty for green (#007518)."
 msgstr ""
 
 #: src/Settings/Fields.php:323
-msgid "Text"
+msgid "Error"
+msgstr ""
+
+#: src/Settings/Fields.php:323
+msgid "A number is invalid or the lookup failed. Leave empty for red (#cc1818)."
 msgstr ""
 
 #: src/Settings/Fields.php:324
+msgid "Information"
+msgstr ""
+
+#: src/Settings/Fields.php:324
+msgid "Validating, not listed, fill in the details manually. Leave empty for blue (#007cba)."
+msgstr ""
+
+#: src/Settings/Fields.php:331
+msgid "Company name suggestions"
+msgstr ""
+
+#: src/Settings/Fields.php:333
+msgid "By default the list takes its colours from the company field."
+msgstr ""
+
+#: src/Settings/Fields.php:336
+msgid "Background"
+msgstr ""
+
+#: src/Settings/Fields.php:337
+msgid "Text"
+msgstr ""
+
+#: src/Settings/Fields.php:338
 msgid "Border"
 msgstr ""
 
-#: src/Settings/Fields.php:325
+#: src/Settings/Fields.php:339
 msgid "Highlighted suggestion"
 msgstr ""
 
-#: src/Settings/Fields.php:325
+#: src/Settings/Fields.php:339
 msgid "Leave empty for a tint of the text colour."
 msgstr ""
 
-#: src/Settings/Fields.php:327
+#: src/Settings/Fields.php:341
 msgid "Corner radius"
 msgstr ""
 
-#: src/Settings/Fields.php:328
+#: src/Settings/Fields.php:342
 msgid "In pixels. Leave empty for the company field's own."
 msgstr ""
 
-#: src/Settings/Fields.php:355
+#: src/Settings/Fields.php:369
 msgid "Finančná správa lists"
 msgstr ""
 
-#: src/Settings/Fields.php:357
+#: src/Settings/Fields.php:371
 msgid "The DIČ and IČ DPH lists the Slovak checks run against, imported daily."
 msgstr ""
 
 #. translators: 1: date and time, 2: time span, e.g. "3 hours"
-#: src/Settings/Fields.php:379
+#: src/Settings/Fields.php:393
 #, php-format
 msgid "%1$s (%2$s ago)"
 msgstr ""
 
 #. translators: %s: link to the Validation settings
-#: src/Settings/Fields.php:386
+#: src/Settings/Fields.php:400
 #, php-format
 msgid "Off. Enable \"SK: Validate in Finančná správa\" in %s."
 msgstr ""
 
-#: src/Settings/Fields.php:387
+#: src/Settings/Fields.php:401
 #: src/Settings/SettingsPage.php:37
 msgid "Validation"
 msgstr ""
 
-#: src/Settings/Fields.php:390
+#: src/Settings/Fields.php:404
 msgid "Up to date"
 msgstr ""
 
-#: src/Settings/Fields.php:392
+#: src/Settings/Fields.php:406
 msgid "Older than a week: Slovak numbers are checked in VIES only, or let through when \"ignore when the check fails\" is on."
 msgstr ""
 
-#: src/Settings/Fields.php:394
+#: src/Settings/Fields.php:408
 msgid "Not imported yet"
 msgstr ""
 
-#: src/Settings/Fields.php:397
+#: src/Settings/Fields.php:411
 msgid "Status"
 msgstr ""
 
-#: src/Settings/Fields.php:400
+#: src/Settings/Fields.php:414
 msgid "Last import"
 msgstr ""
 
 #. translators: 1: number of DIČ, 2: number of IČ DPH
-#: src/Settings/Fields.php:402
+#: src/Settings/Fields.php:416
 #, php-format
 msgid "%1$s DIČ, %2$s IČ DPH"
 msgstr ""
 
-#: src/Settings/Fields.php:403
+#: src/Settings/Fields.php:417
 msgid "Database"
 msgstr ""
 
-#: src/Settings/Fields.php:404
+#: src/Settings/Fields.php:418
 msgid "The file is missing, the next import creates it again."
 msgstr ""
 
-#: src/Settings/Fields.php:409
+#: src/Settings/Fields.php:423
 msgid "Last failed import"
 msgstr ""
 
-#: src/Settings/Fields.php:414
+#: src/Settings/Fields.php:428
 msgid "Not scheduled, it is scheduled again on the next page load."
 msgstr ""
 
 #. translators: %s: date and time
-#: src/Settings/Fields.php:417
+#: src/Settings/Fields.php:431
 #, php-format
 msgid "%s, overdue: WP-Cron has not run since. It runs on page visits, or set up a server cron job for wp-cron.php."
 msgstr ""
 
-#: src/Settings/Fields.php:421
+#: src/Settings/Fields.php:435
 msgid "Next import"
 msgstr ""
 
-#: src/Settings/Fields.php:428
+#: src/Settings/Fields.php:442
 msgid "PHP extensions"
 msgstr ""
 
-#: src/Settings/Fields.php:430
+#: src/Settings/Fields.php:444
 msgid "Import now"
 msgstr ""
 
 #. translators: %s: link to WooCommerce → Status → Logs
-#: src/Settings/Fields.php:433
+#: src/Settings/Fields.php:447
 #, php-format
 msgid "Every import is logged in %s."
 msgstr ""
 
-#: src/Settings/Fields.php:434
+#: src/Settings/Fields.php:448
 msgid "WooCommerce → Status → Logs"
 msgstr ""
 

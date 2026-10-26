@@ -144,3 +144,43 @@
 	outline: 2px solid var(--woolab-ic-dic-color-clear, #a00);
 	outline-offset: 3px;
 }
+
+/* The message under a field (classic/checkout.js ares_check(), blocks/checkout.js
+   message()), by type, and the errors WooCommerce shows under the plugin's fields:
+   whichever reports it, a problem with a field looks the same. The defaults are
+   WooCommerce's notice colours, the success one darkened to its #007518: the
+   banner's #4ab866 reads at 2.5:1 on white. */
+.woolab-ic-dic-message--success {
+	color: var(--woolab-ic-dic-color-success, #007518);
+}
+
+.woolab-ic-dic-message--error,
+:is(#billing_company_field, #billing_ic_field, #billing_dic_field, #billing_dic_dph_field) .checkout-inline-error-message,
+[class*="wc-block-components-address-form__kybernaut-"] .wc-block-components-validation-error {
+	color: var(--woolab-ic-dic-color-error, #cc1818);
+}
+
+/* WooCommerce's own for dark themes, unless one is set. */
+.has-dark-controls [class*="wc-block-components-address-form__kybernaut-"] .wc-block-components-validation-error {
+	color: var(--woolab-ic-dic-color-error, #f18c8c);
+}
+
+.woolab-ic-dic-message--info {
+	color: var(--woolab-ic-dic-color-info, #007cba);
+}
+
+/* The block checkout's, a row of its own in the field grid, set like
+   WooCommerce's validation error. */
+.wc-block-components-address-form > .woolab-ic-dic-message {
+	flex: 0 0 100%;
+	padding-top: 8px;
+	font-size: var(--wp--preset--font-size--small, 14px);
+	line-height: 1.4;
+}
+
+/* One message per field: an error WooCommerce shows, from the last validation,
+   is the only one. The plugin's shows again once WooCommerce removes its own. */
+.form-row:has(.checkout-inline-error-message) .woolab-ic-dic-message,
+.has-error + .woolab-ic-dic-message {
+	display: none;
+}

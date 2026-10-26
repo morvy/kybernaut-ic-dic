@@ -56,7 +56,7 @@ final class Assets {
 	}
 
 	/**
-	 * The lookup spinner, status icons and suggestion list (lookup.css), with the
+	 * The lookup spinner, status icons, messages and suggestion list (lookup.css), with the
 	 * colours from Settings → IČO DIČ → Appearance. Shared by both checkouts.
 	 */
 	public static function enqueue_lookup_style(): void {
@@ -130,11 +130,11 @@ final class Assets {
 			switch ( $service->id() ) {
 				case 'ares':
 					$validating = __( 'Validating data in ARES.', 'woolab-ic-dic' );
-					$ok         = __( 'Information loaded succesfully from ARES.', 'woolab-ic-dic' );
+					$ok         = __( 'Information loaded successfully from ARES.', 'woolab-ic-dic' );
 					break;
 				case 'financna_sprava':
 					$validating = __( 'Validating data in Finančná správa.', 'woolab-ic-dic' );
-					$ok         = __( 'Information loaded succesfully from Finančná správa.', 'woolab-ic-dic' );
+					$ok         = __( 'Information loaded successfully from Finančná správa.', 'woolab-ic-dic' );
 					break;
 				default:
 					/* translators: %s: name of the company register, e.g. "GUS" */
@@ -194,6 +194,9 @@ final class Assets {
 		$colors     = array(
 			'color_ok'             => 'ok',
 			'color_clear'          => 'clear',
+			'color_success'        => 'success',
+			'color_error'          => 'error',
+			'color_info'           => 'info',
 			'color_list_bg'        => 'list-bg',
 			'color_list_text'      => 'list-text',
 			'color_list_border'    => 'list-border',

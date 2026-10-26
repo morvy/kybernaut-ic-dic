@@ -51,6 +51,9 @@ final class Options {
 			// Appearance (lookup.css); empty follows the theme and WooCommerce.
 			'color_ok'              => array( null, '' ),
 			'color_clear'           => array( null, '' ),
+			'color_success'         => array( null, '' ),
+			'color_error'           => array( null, '' ),
+			'color_info'            => array( null, '' ),
 			'color_list_bg'         => array( null, '' ),
 			'color_list_text'       => array( null, '' ),
 			'color_list_border'     => array( null, '' ),

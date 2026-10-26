@@ -1,7 +1,7 @@
 // Classic (shortcode) checkout: the same rules as the block checkout, on
 // /classic-checkout/ (tests/e2e/mu-plugin.php makes it WooCommerce's checkout page).
 const { test, expect } = require( '@playwright/test' );
-const { fillCart, expectIdentifiersOnce, COMPANY, PL_COMPANY, SHOPPER } = require( './helpers' );
+const { fillCart, expectIdentifiersOnce, expectMessageColor, expectOneError, COMPANY, PL_COMPANY, SHOPPER } = require( './helpers' );
 
 const row = ( page, id ) => page.locator( `#billing_${ id }_field` );
 const input = ( page, id ) => page.locator( `#billing_${ id }` );
@@ -85,6 +85,15 @@ test( 'a Czech IČO fills the company and the address from ARES', async ( { page
 	await expect( input( page, 'city' ) ).toHaveValue( 'Praha 7' );
 } );
 
+test( 'the lookup says it found the company, in the success colour', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await input( page, 'ic' ).fill( COMPANY.ico );
+	const message = row( page, 'ic' ).locator( '.woolab-ic-dic-message--success' );
+	await expect( message ).toContainText( 'ARES' );
+	await expectMessageColor( message, 'success' );
+} );
+
 test( 'a valid foreign EU VAT ID makes the order VAT exempt', async ( { page } ) => {
 	await setCountry( page, 'CZ' );
 	await asCompany( page );
@@ -109,12 +118,18 @@ test( 'an invalid IČO stops the order', async ( { page } ) => {
 		await input( page, key ).fill( SHOPPER[ key ] );
 	}
 	await input( page, 'company' ).fill( 'Test s.r.o.' );
+	// The lookup's error, in the error colour.
+	const message = row( page, 'ic' ).locator( '.woolab-ic-dic-message--error' );
+	await expect( message ).toBeVisible( { timeout: 30000 } );
+	await expectMessageColor( message, 'error' );
 	await settled( page );
 	await page.locator( '#place_order' ).click();
 	await expect( page.locator( '.woocommerce-error, .woocommerce-NoticeGroup-checkout' ).first() ).toBeVisible( { timeout: 30000 } );
 	await expect( page ).not.toHaveURL( /order-received/ );
-	// Under the field, as WooCommerce reports its own.
+	// Under the field, as WooCommerce reports its own, and in its place.
 	await expect( row( page, 'ic' ).locator( '.checkout-inline-error-message' ) ).toContainText( 'Business ID' );
+	await expectOneError( row( page, 'ic' ) );
+	await expectMessageColor( row( page, 'ic' ).locator( '.checkout-inline-error-message' ), 'error' );
 } );
 
 test( 'a store\'s own check is reported under its field', async ( { page, context, baseURL } ) => {
@@ -133,6 +148,7 @@ test( 'a store\'s own check is reported under its field', async ( { page, contex
 		await settled( page );
 		await page.locator( '#place_order' ).click();
 		await expect( row( page, 'dic' ).locator( '.checkout-inline-error-message' ) ).toContainText( 'E2E: this NIP is not on the whitelist.', { timeout: 30000 } );
+		await expectOneError( row( page, 'dic' ) );
 		await expect( page ).not.toHaveURL( /order-received/ );
 	} finally {
 		await context.clearCookies( { name: 'woolab_e2e_check' } );

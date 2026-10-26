@@ -72,7 +72,7 @@ final class Errors {
 			case 'invalid_business_id':
 				$message = __( 'Enter a valid Business ID', 'woolab-ic-dic' );
 				if ( isset( $error['data']['ares_message'] ) ) {
-					$message .= ' ' . $error['data']['ares_message'];
+					$message .= '. ' . $error['data']['ares_message'];
 				}
 				return $message;
 

@@ -314,6 +314,20 @@ final class Fields {
 			),
 
 			array(
+				'title' => __( 'Messages', 'woolab-ic-dic' ),
+				'type'  => 'title',
+				'desc'  => __( 'The text under the Business ID field: the lookup\'s result, an error, information.', 'woolab-ic-dic' ),
+				'id'    => 'woolab_icdic_messages',
+			),
+			$color( 'color_success', __( 'Success', 'woolab-ic-dic' ), __( 'The company was found. Leave empty for green (#007518).', 'woolab-ic-dic' ) ),
+			$color( 'color_error', __( 'Error', 'woolab-ic-dic' ), __( 'A number is invalid or the lookup failed. Leave empty for red (#cc1818).', 'woolab-ic-dic' ) ),
+			$color( 'color_info', __( 'Information', 'woolab-ic-dic' ), __( 'Validating, not listed, fill in the details manually. Leave empty for blue (#007cba).', 'woolab-ic-dic' ) ),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'woolab_icdic_messages',
+			),
+
+			array(
 				'title' => __( 'Company name suggestions', 'woolab-ic-dic' ),
 				'type'  => 'title',
 				'desc'  => __( 'By default the list takes its colours from the company field.', 'woolab-ic-dic' ),
