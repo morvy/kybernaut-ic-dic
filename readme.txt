@@ -58,7 +58,6 @@ Requires WooCommerce 10.0, WordPress 6.7 and PHP 8.1. For older stacks use the 1
 === Credits ===
 
 * 10up and their [WordPress.org Plugin Deploy](https://github.com/10up/action-wordpress-plugin-deploy) and [WordPress.org Plugin Readme/Assets Update](https://github.com/10up/action-wordpress-plugin-asset-update) Github Actions
-* [ibericode/vat](https://github.com/ibericode/vat)
 
 
 If you want to help, join the [Github](https://github.com/vyskoczilova/kybernaut-ic-dic).
@@ -291,7 +290,8 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 * Fix: My Account → Addresses never showed IČ DPH for Slovak customers (`get_user_meta()` returned an array).
 * Fix: Slovak and Czech translations: "IČ DPH" used for the DIČ field, trailing spaces in the field labels, "IČ DIČ" for "IČO DIČ", typos.
 * Performance: scripts load only where they are used: the block checkout script through WooCommerce's Checkout block integration (settings via `wcSettings`), the classic one on the checkout form only (not on the order-received or pay pages), deferred in the footer; the order screen script only on order screens. The classic checkout no longer adds another set of IČO handlers, and another lookup per keystroke, every time the country changes.
-* Tweak: VAT numbers are checked through the VIES REST API instead of SOAP, so the PHP SoapClient extension is no longer needed ("turn on Soap Client" is gone from the settings). ibericode/vat is still used for the number formats.
+* Tweak: no bundled third-party code any more: ibericode/vat is dropped (the EU country list comes from WooCommerce, the VAT number formats are checked by the plugin), which also fixes the PHP 8.4 deprecation it raised.
+* Tweak: VAT numbers are checked through the VIES REST API instead of SOAP, so the PHP SoapClient extension is no longer needed ("turn on Soap Client" is gone from the settings).
 * Tweak: the IČO lookup and the company name search are REST routes (`GET /wp-json/woolab-ic-dic/v1/lookup`, `/search`) instead of admin-ajax, rate limited per client with WooCommerce's Store API limiter (`RateLimits`, 25 requests per 10 s by default; limit, window and proxy support from `woocommerce_store_api_rate_limit_options`, off with `woolab_icdic_rest_rate_limit`). They answer only for the registers that are switched on. Removed: the `ajaxAres` admin-ajax action.
 * Feature: **company name search** in the classic and block checkout. Typing at least 3 letters of the company name lists matching subjects from ARES (CZ) or the Finančná správa lists (SK); picking one fills the IČO and the rest is autofilled. Enabled together with the autofill options.
 * Fix: the classic checkout forgot the company name, IČO, DIČ, IČ DPH and "Buying as a company" on a reload (guests, and logged-in customers before their first order): WooCommerce keeps only its own address fields there. They are kept in the session now. The block checkout keeps them itself.

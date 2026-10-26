@@ -75,4 +75,3 @@ Or use the checkbox in WooCommerce > Settings > IČO DIČ.
 ## Credits
 
 * 10up and their [WordPress.org Plugin Deploy](https://github.com/10up/action-wordpress-plugin-deploy) and [WordPress.org Plugin Readme/Assets Update](https://github.com/10up/action-wordpress-plugin-asset-update) Github Actions
-* [ibericode/vat](https://github.com/ibericode/vat)

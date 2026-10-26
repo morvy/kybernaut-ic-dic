@@ -8,12 +8,12 @@
 
 namespace KybernautIcDic\Checkout;
 
+use KybernautIcDic\Fields\Countries;
 use KybernautIcDic\Services\Services;
 use KybernautIcDic\Settings\Flags;
 use KybernautIcDic\Validation\Context;
 use KybernautIcDic\Validation\Errors;
 use KybernautIcDic\Validation\Validator;
-use KybernautIcDicDeps\Ibericode\Vat\Countries;
 
 /**
  * The woocommerce_checkout_* and form hooks of the classic checkout.
@@ -253,8 +253,6 @@ final class Classic {
 
 		$country = wc_clean( wp_unslash( $_POST['billing_country'] ) );
 
-		$countries = new Countries();
-
 		$input = array(
 			'country'               => $country,
 			'ic'                    => isset( $_POST['billing_ic'] ) && woolab_icdic_ic_shown( $country ) ? wc_clean( wp_unslash( $_POST['billing_ic'] ) ) : '',
@@ -289,7 +287,7 @@ final class Classic {
 			'toggle_enabled'        => Flags::toggle(),
 			// The toggle is a plain checkbox: posted as "1" when ticked, absent otherwise.
 			'iscomp'                => ! empty( $_POST['billing_iscomp'] ),
-			'country_in_eu'         => $countries->isCountryCodeInEU( $country ),
+			'country_in_eu'         => Countries::in_eu( $country ),
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 

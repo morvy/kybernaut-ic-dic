@@ -23,7 +23,7 @@ return RectorConfig::configure()
 	->withPhpSets( php81: true )
 	->withSets( array( WordPressLevelSetList::UP_TO_WP_6_7, WooCommerceLevelSetList::UP_TO_WC_10_0 ) )
 	->withBootstrapFiles( array( __DIR__ . '/tests/phpstan/bootstrap.php' ) )
-	->withAutoloadPaths( array( __DIR__ . '/deps', __DIR__ . '/vendor/php-stubs/wordpress-stubs/wordpress-stubs.php', __DIR__ . '/vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php' ) )
+	->withAutoloadPaths( array( __DIR__ . '/vendor/php-stubs/wordpress-stubs/wordpress-stubs.php', __DIR__ . '/vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php' ) )
 	->withSkip(
 		array(
 			// The WordPress coding standards (phpcs.xml.dist) require array() and list().

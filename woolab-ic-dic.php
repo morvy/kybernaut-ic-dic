@@ -26,15 +26,6 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-/**
- * Loads Composer dependencies.
- */
-if ( file_exists( __DIR__ . '/deps/scoper-autoload.php' ) ) {
-	require __DIR__ . '/deps/scoper-autoload.php';
-}
-if ( file_exists( __DIR__ . '/deps/autoload.php' ) ) {
-	require __DIR__ . '/deps/autoload.php';
-}
 // The plugin's own classes (src/, PSR-4) and src/functions.php.
 require __DIR__ . '/vendor/autoload.php';
 

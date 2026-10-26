@@ -279,7 +279,7 @@ function woolab_icdic_get_vat_number_country_code( $vat_number ) {
  *     @type bool        require_ic         Optional. A company must enter a Business ID in this country ("Required" mode).
  *     @type bool        toggle_enabled     Optional. Whether the "Buying as a company" toggle is on.
  *     @type bool        iscomp             Optional. Whether "Buying as a company" is checked.
- *     @type bool        country_in_eu      Resolved from ibericode Countries::isCountryCodeInEU().
+ *     @type bool        country_in_eu      Resolved from Fields\Countries::in_eu().
  *     @type callable    verify_vat         fn(string $vat): string 'valid'|'bad_format'|'invalid'|'unverifiable'
  *     @type callable    lookup_ares        fn(string $ico): array   raw woolab_icdic_ares() result (or falsy)
  *     @type callable    lookup_sk_ico      Optional. fn(string $ico): array, woolab_icdic_sk_lookup() — same shape as lookup_ares.

@@ -224,6 +224,53 @@ final class Checksum {
 	}
 
 	/**
+	 * Whether a VAT number has its country's format (not whether it was issued): the
+	 * patterns and handling of ibericode/vat 2.0's Validator, so only uppercased.
+	 *
+	 * @see https://ec.europa.eu/taxation_customs/vies/faq.html#item_11
+	 * @param string $vat VAT number with its prefix (EL for Greece).
+	 */
+	public static function vat_format( string $vat ): bool {
+		$patterns = array(
+			'AT' => 'U[A-Z\d]{8}',
+			'BE' => '(0|1)\d{9}',
+			'BG' => '\d{9,10}',
+			'CY' => '\d{8}[A-Z]',
+			'CZ' => '\d{8,10}',
+			'DE' => '\d{9}',
+			'DK' => '(\d{2} ?){3}\d{2}',
+			'EE' => '\d{9}',
+			'EL' => '\d{9}',
+			'ES' => '([A-Z]\d{7}[A-Z]|\d{8}[A-Z]|[A-Z]\d{8})',
+			'EU' => '\d{9}',
+			'FI' => '\d{8}',
+			'FR' => '[A-Z\d]{2}\d{9}',
+			'GB' => '(\d{9}|\d{12}|(GD|HA)\d{3})',
+			'HR' => '\d{11}',
+			'HU' => '\d{8}',
+			'IE' => '([A-Z\d]{8}|[A-Z\d]{9})',
+			'IT' => '\d{11}',
+			'LT' => '(\d{9}|\d{12})',
+			'LU' => '\d{8}',
+			'LV' => '\d{11}',
+			'MT' => '\d{8}',
+			'NL' => '\d{9}B\d{2}',
+			'PL' => '\d{10}',
+			'PT' => '\d{9}',
+			'RO' => '\d{2,10}',
+			'SE' => '\d{12}',
+			'SI' => '\d{8}',
+			'SK' => '\d{10}',
+			'SM' => '\d{5}',
+		);
+
+		$vat    = strtoupper( $vat );
+		$prefix = substr( $vat, 0, 2 );
+
+		return isset( $patterns[ $prefix ] ) && 1 === preg_match( '/^' . $patterns[ $prefix ] . '$/', substr( $vat, 2 ) );
+	}
+
+	/**
 	 * The WooCommerce country code of a VAT number: its prefix, EL for Greece is GR.
 	 *
 	 * @param string $vat_number VAT number with its prefix.

@@ -23,11 +23,6 @@ jobs:
           php-version: '8.3'
           tools: composer
 
-      # wpify/scoper builds the scoped deps/ (composer-deps.json) on install,
-      # which PHPStan reads; same as create-build.yml.
-      - run: composer global config --no-plugins allow-plugins.wpify/scoper true
-      - run: composer global require wpify/scoper
-
       - run: composer install --no-interaction --no-progress
 
       - name: PHPUnit
@@ -55,13 +50,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # The plugin loads deps/ (wpify/scoper) and vendor/ at runtime.
+      # The plugin loads vendor/ (its own autoloader) at runtime.
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           tools: composer
-      - run: composer global config --no-plugins allow-plugins.wpify/scoper true
-      - run: composer global require wpify/scoper
       - run: composer install --no-interaction --no-progress
 
       - uses: actions/setup-node@v5

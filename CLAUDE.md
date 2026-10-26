@@ -108,9 +108,7 @@ the tool's config with the reason (rector.php skips three, see there).
 - `languages/` - .pot and the bundled translations (`composer i18n`)
 
 **Dependencies:**
-- Uses `wpify/scoper` to namespace third-party dependencies (prefix: `KybernautIcDicDeps`)
-- Scoped dependencies are in `deps/` directory
-- Main dependency: `ibericode/vat` for VAT number formats and EU countries (VIES itself is called over REST, `src/Services/Vies/Vies.php`)
+- No bundled third-party code: the EU country list is WooCommerce's (`Fields\Countries::in_eu()`), the VAT number formats `Numbers\Checksum::vat_format()`, VIES is called over REST (`src/Services/Vies/Vies.php`)
 
 ### Key Architectural Patterns
 
@@ -137,7 +135,7 @@ the tool's config with the reason (rector.php skips three, see there).
 - **Slovak IC**: Finančná správa lists when `sk_check` is on (an IČO not listed is accepted, without autofill), otherwise the 8-digit modulo-11 check
 - **Slovak DIC**: Optional (non-profits have an IČO but no DIČ; "Require DIČ" for the shop's own country, `woolab_icdic_sk_required_ic_and_dic` decides for a Slovak shop), `TaxIdFormat`, then `TaxIdRegistry` (listed, belongs to the IČO)
 - **Slovak DIC DPH (VAT)**: `IcDphVerify` (lists first, VIES for what they lack), `IcDphTaxIdMatch` (SK + DIČ unless the lists tie both to the same IČO: VAT groups)
-- **EU VAT numbers**: `VatIdVies` (format, VIES REST); `DomesticTaxNumber` for a PL / HU number without prefix; `ibericode/vat` only for the formats and the EU country list
+- **EU VAT numbers**: `VatIdVies` (format, VIES REST); `DomesticTaxNumber` for a PL / HU number without prefix
 - **Other countries' Business ID**: checked by any `company_lookup` service a store assigns
 
 **ARES Integration** (`src/Services/Ares/Ares.php`):
@@ -211,15 +209,3 @@ A class extending `Services\AbstractService` (`id()`, `name()`, the features it 
 
 ### Tests
 Unit tests go in `tests/unit/` and extend `KybernautIcDic\Test\TestCase` (`tests/TestCase.php`). Mock WordPress functions with Brain Monkey: `Functions\when( 'fn' )->justReturn( … )` for a stub, `Functions\expect( 'fn' )->once()` for an expectation (see `tests/unit/ProcessShopOrderTest.php`); settings via `get_option` returning the `woolab_icdic_settings` array. Data providers are `#[DataProvider( 'name' )]` attributes on public static methods. Checks and filters: `ValidatorTest`, the 1.x validation cases: `ValidationTest`, `ValidationSkTest`. End-to-end specs in `tests/e2e/` (`mu-plugin.php` fakes VIES and, by cookie, a store's check or Polish service).
-
-### Scoping dependencies
-Dependencies are scoped using wpify/scoper to avoid conflicts. Configuration in composer.json:
-```json
-"extra": {
-    "wpify-scoper": {
-        "prefix": "KybernautIcDicDeps"
-    }
-}
-```
-
-After adding dependencies, run composer-scoper workflow to generate scoped versions in `deps/`.

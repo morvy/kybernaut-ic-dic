@@ -31,13 +31,13 @@
 
 namespace KybernautIcDic\Checkout;
 
+use KybernautIcDic\Fields\Countries;
 use KybernautIcDic\Order\Evidence;
 use KybernautIcDic\Services\Services;
 use KybernautIcDic\Settings\Flags;
 use KybernautIcDic\Validation\Context;
 use KybernautIcDic\Validation\Errors;
 use KybernautIcDic\Validation\Validator;
-use KybernautIcDicDeps\Ibericode\Vat\Countries;
 
 /**
  * The additional checkout fields and the Store API hooks.
@@ -562,7 +562,6 @@ final class Blocks {
 			return;
 		}
 
-		$countries = new Countries();
 		$dic_field = self::field_for( 'billing_dic', $country );
 
 		$input = array(
@@ -596,7 +595,7 @@ final class Blocks {
 			'check_country_match'   => (bool) apply_filters( 'woolab_icdic_check_billing_country_and_dic', true ),
 			'require_dic_for_firms' => woolab_icdic_dic_required( $country ),
 			'check_dic_dph_match'   => Flags::dic_dph_match(),
-			'country_in_eu'         => $countries->isCountryCodeInEU( $country ),
+			'country_in_eu'         => Countries::in_eu( $country ),
 		);
 
 		$input['services'] = Services::for_country( $country );

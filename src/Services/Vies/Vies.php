@@ -3,8 +3,8 @@
  * EU VIES over its REST API.
  *
  * The European Commission publishes VIES as a keyless JSON API next to the old SOAP
- * service, so the check needs no SoapClient. ibericode/vat stays for the number
- * formats and the EU country list.
+ * service, so the check needs no SoapClient. The number formats are
+ * Numbers\Checksum::vat_format().
  *
  * @see https://ec.europa.eu/taxation_customs/vies/#/technical-information
  * @package KybernautIcDic
@@ -14,9 +14,9 @@
 namespace KybernautIcDic\Services\Vies;
 
 use KybernautIcDic\Logger;
+use KybernautIcDic\Numbers\Checksum;
 use KybernautIcDic\Services\AbstractService;
 use KybernautIcDic\Settings\Options;
-use KybernautIcDicDeps\Ibericode\Vat\Validator as Formats;
 
 /**
  * VAT ID validation: the format first, then VIES; definitive answers cached.
@@ -72,7 +72,7 @@ final class Vies extends AbstractService {
 	 * @return array{state:string,evidence?:array<string,string>}
 	 */
 	public function check( string $vat, bool $fresh = false ): array {
-		if ( ! ( new Formats() )->validateVatNumberFormat( $vat ) ) {
+		if ( ! Checksum::vat_format( $vat ) ) {
 			return array( 'state' => 'bad_format' );
 		}
 

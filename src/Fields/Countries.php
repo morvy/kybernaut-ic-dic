@@ -57,6 +57,15 @@ final class Countries {
 	}
 
 	/**
+	 * Whether a country is an EU member state, by WooCommerce's list (GR for Greece).
+	 *
+	 * @param string $country Country code.
+	 */
+	public static function in_eu( string $country ): bool {
+		return in_array( $country, WC()->countries->get_european_union_countries(), true );
+	}
+
+	/**
 	 * Whether a company from this country needs a DIČ (Settings → IČO DIČ → General →
 	 * "Require DIČ"): with an IČO, and in the "Required" mode. Only in the shop's own
 	 * country, and off by default: non-profit organisations may have an IČO but no
