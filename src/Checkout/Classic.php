@@ -49,6 +49,9 @@ final class Classic {
 			'label'       => $labels[ $key ],
 			'placeholder' => $labels[ $key ],
 			'required'    => false,
+			// update_totals_on_change goes after the filter (themes replace the layout classes
+			// with it): WooCommerce refreshes the order review on a change, which keeps the
+			// value across a reload (remember_checkout_fields()).
 			/**
 			 * The CSS classes of a company field: woolab_icdic_class_billing_ic,
 			 * woolab_icdic_class_billing_dic, woolab_icdic_class_billing_dic_dph.
@@ -56,7 +59,7 @@ final class Classic {
 			 * @since 1.2.0
 			 * @param string[] $classes Classes.
 			 */
-			'class'       => apply_filters( 'woolab_icdic_class_billing_' . $key, array( 'form-row-wide', 'woolab-ic-dic-no_spaces' ) ),
+			'class'       => array_merge( (array) apply_filters( 'woolab_icdic_class_billing_' . $key, array( 'form-row-wide', 'woolab-ic-dic-no_spaces' ) ), array( 'update_totals_on_change' ) ),
 			'clear'       => true,
 			'priority'    => $priority,
 		) );

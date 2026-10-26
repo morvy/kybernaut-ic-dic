@@ -61,12 +61,19 @@ test( 'a guest\'s company fields survive a reload', async ( { page } ) => {
 	for ( const key of [ 'first_name', 'last_name', 'address_1', 'city', 'postcode', 'phone', 'email' ] ) {
 		await input( page, key ).fill( SHOPPER[ key ] );
 	}
+	// The refresh the toggle sends must end first: the browser aborts an overtaken
+	// refresh, but the server still runs it and would store the empty company last.
+	const ticked = page.waitForResponse( ( r ) => /update_order_review/.test( r.url() ) && r.request().postData()?.includes( 'billing_iscomp%3D1' ) );
 	await asCompany( page );
+	await ticked;
+	await settled( page );
 	// Typed, not filled: WooCommerce refreshes the order review on key presses.
 	await input( page, 'company' ).pressSequentially( 'Firma s.r.o.' );
+	// The refresh that carries the whole DIČ, not one sent while it was being typed.
+	const saved = page.waitForResponse( ( r ) => /update_order_review/.test( r.url() ) && r.request().postData()?.includes( '2020317057' ) );
 	await input( page, 'dic' ).pressSequentially( '2020317057' );
 	await input( page, 'dic' ).blur();
-	await page.waitForResponse( /update_order_review/ );
+	await saved;
 	await settled( page );
 
 	await page.reload();

@@ -13,7 +13,7 @@ const path = require( 'path' );
 
 function header( name ) {
 	const source = fs.readFileSync( path.join( __dirname, '../../woolab-ic-dic.php' ), 'utf8' );
-	const match = source.match( new RegExp( '^\\s*' + name + ':\\s*(\\S+)', 'm' ) );
+	const match = source.match( new RegExp( '^[\\s*]*' + name + ':\\s*(\\S+)', 'm' ) );
 	if ( ! match ) {
 		throw new Error( `No "${ name }" in the plugin header` );
 	}
