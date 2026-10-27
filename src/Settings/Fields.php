@@ -401,7 +401,7 @@ final class Fields {
 
 		return array(
 			array(
-				'title' => __( 'EC Sales List', 'woolab-ic-dic' ),
+				'title' => __( 'EC Sales List', 'woolab-ic-dic' ) . ' ' . __( '(beta)', 'woolab-ic-dic' ),
 				'type'  => 'title',
 				'desc'  => sprintf(
 					/* translators: 1: link to the EC Sales List page, 2: link to the Validation settings, 3: link to WooCommerce → Settings → General */

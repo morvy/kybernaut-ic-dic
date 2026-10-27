@@ -44,7 +44,8 @@ final class ExportPage {
 	 * Add the page under WooCommerce.
 	 */
 	public static function menu(): void {
-		add_submenu_page( 'woocommerce', __( 'EC Sales List', 'woolab-ic-dic' ), __( 'EC Sales List', 'woolab-ic-dic' ), 'manage_woocommerce', self::PAGE, array( self::class, 'render' ) );
+		$title = __( 'EC Sales List', 'woolab-ic-dic' ) . ' ' . __( '(beta)', 'woolab-ic-dic' );
+		add_submenu_page( 'woocommerce', $title, $title, 'manage_woocommerce', self::PAGE, array( self::class, 'render' ) );
 	}
 
 	/**
@@ -199,7 +200,7 @@ final class ExportPage {
 
 		?>
 		<div class="wrap woolab-icdic-ec-sales-list">
-			<h1><?php esc_html_e( 'EC Sales List', 'woolab-ic-dic' ); ?></h1>
+			<h1><?php echo esc_html( __( 'EC Sales List', 'woolab-ic-dic' ) . ' ' . __( '(beta)', 'woolab-ic-dic' ) ); ?></h1>
 			<p><?php esc_html_e( 'The reverse-charge sales to companies in other EU countries: the orders whose VAT ID was valid in VIES, net of discounts and refunds, per customer VAT number, goods (shipping included) and services (virtual products). An order counts in the month it was first processed (paid or sent for delivery), a refund in the month it was made.', 'woolab-ic-dic' ); ?></p>
 
 			<form method="get">

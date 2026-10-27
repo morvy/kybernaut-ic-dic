@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
-"PO-Revision-Date: 2026-10-26T16:04:41+00:00\n"
+"PO-Revision-Date: 2026-10-27T22:57:13+00:00\n"
 "Language: pl_PL\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Domain: woolab-ic-dic\n"
@@ -158,163 +158,169 @@ msgid "VAT reg. no."
 msgstr "NIP-UE"
 
 #: src/EcSalesList/ExportPage.php:47
-#: src/EcSalesList/ExportPage.php:202
+#: src/EcSalesList/ExportPage.php:203
 #: src/Settings/Fields.php:404
 #: src/Settings/Fields.php:409
 #: src/Settings/SettingsPage.php:40
 msgid "EC Sales List"
 msgstr "Informacja podsumowująca"
 
-#: src/EcSalesList/ExportPage.php:99
+#: src/EcSalesList/ExportPage.php:47
+#: src/EcSalesList/ExportPage.php:203
+#: src/Settings/Fields.php:404
+msgid "(beta)"
+msgstr "(beta)"
+
+#: src/EcSalesList/ExportPage.php:100
 msgid "Sorry, you are not allowed to export the EC Sales List."
 msgstr "Nie masz uprawnień do eksportu informacji podsumowującej."
 
-#: src/EcSalesList/ExportPage.php:105
+#: src/EcSalesList/ExportPage.php:106
 msgid "Unknown file format."
 msgstr "Nieznany format pliku."
 
 #. translators: %s: list of settings
-#: src/EcSalesList/ExportPage.php:120
+#: src/EcSalesList/ExportPage.php:121
 #, php-format
 msgid "Fill in the shop's details first: %s."
 msgstr "Najpierw uzupełnij dane sklepu: %s."
 
-#: src/EcSalesList/ExportPage.php:142
-#: src/EcSalesList/ExportPage.php:229
+#: src/EcSalesList/ExportPage.php:143
+#: src/EcSalesList/ExportPage.php:230
 msgid "Country"
 msgstr "Kraj"
 
-#: src/EcSalesList/ExportPage.php:143
-#: src/EcSalesList/ExportPage.php:230
+#: src/EcSalesList/ExportPage.php:144
+#: src/EcSalesList/ExportPage.php:231
 msgid "VAT number"
 msgstr "NIP-UE"
 
-#: src/EcSalesList/ExportPage.php:144
-#: src/EcSalesList/ExportPage.php:231
+#: src/EcSalesList/ExportPage.php:145
+#: src/EcSalesList/ExportPage.php:232
 msgid "Supply"
 msgstr "Dostawa"
 
-#: src/EcSalesList/ExportPage.php:145
+#: src/EcSalesList/ExportPage.php:146
 msgid "SK code"
 msgstr "Kod SK"
 
-#: src/EcSalesList/ExportPage.php:146
+#: src/EcSalesList/ExportPage.php:147
 msgid "CZ code"
 msgstr "Kod CZ"
 
-#: src/EcSalesList/ExportPage.php:147
-#: src/EcSalesList/ExportPage.php:233
+#: src/EcSalesList/ExportPage.php:148
+#: src/EcSalesList/ExportPage.php:234
 msgid "Value"
 msgstr "Wartość"
 
-#: src/EcSalesList/ExportPage.php:148
-#: src/EcSalesList/ExportPage.php:234
+#: src/EcSalesList/ExportPage.php:149
+#: src/EcSalesList/ExportPage.php:235
 msgid "Currency"
 msgstr "Waluta"
 
-#: src/EcSalesList/ExportPage.php:149
-#: src/EcSalesList/ExportPage.php:235
+#: src/EcSalesList/ExportPage.php:150
+#: src/EcSalesList/ExportPage.php:236
 msgid "Orders"
 msgstr "Zamówienia"
 
-#: src/EcSalesList/ExportPage.php:150
+#: src/EcSalesList/ExportPage.php:151
 msgid "VAT ID not verified"
 msgstr "NIP-UE niezweryfikowany"
 
-#: src/EcSalesList/ExportPage.php:195
+#: src/EcSalesList/ExportPage.php:196
 msgid "Goods"
 msgstr "Towary"
 
-#: src/EcSalesList/ExportPage.php:196
+#: src/EcSalesList/ExportPage.php:197
 msgid "Services"
 msgstr "Usługi"
 
-#: src/EcSalesList/ExportPage.php:203
+#: src/EcSalesList/ExportPage.php:204
 msgid "The reverse-charge sales to companies in other EU countries: the orders whose VAT ID was valid in VIES, net of discounts and refunds, per customer VAT number, goods (shipping included) and services (virtual products). An order counts in the month it was first processed (paid or sent for delivery), a refund in the month it was made."
 msgstr "Sprzedaż z odwrotnym obciążeniem firmom w innych krajach UE: zamówienia, których NIP-UE był ważny w VIES, po rabatach i zwrotach, według NIP-UE klienta, towary (z wysyłką) i usługi (produkty wirtualne). Zamówienie liczy się w miesiącu, w którym zostało po raz pierwszy zrealizowane (opłacone lub wysłane za pobraniem), zwrot w miesiącu, w którym został dokonany."
 
-#: src/EcSalesList/ExportPage.php:207
+#: src/EcSalesList/ExportPage.php:208
 msgid "Period"
 msgstr "Okres"
 
-#: src/EcSalesList/ExportPage.php:209
+#: src/EcSalesList/ExportPage.php:210
 msgid "Month"
 msgstr "Miesiąc"
 
-#: src/EcSalesList/ExportPage.php:214
+#: src/EcSalesList/ExportPage.php:215
 msgid "Quarter"
 msgstr "Kwartał"
 
 #. translators: %d: quarter, 1 to 4
-#: src/EcSalesList/ExportPage.php:217
+#: src/EcSalesList/ExportPage.php:218
 #, php-format
 msgid "Quarter %d"
 msgstr "%d. kwartał"
 
-#: src/EcSalesList/ExportPage.php:221
+#: src/EcSalesList/ExportPage.php:222
 msgid "Year"
 msgstr "Rok"
 
-#: src/EcSalesList/ExportPage.php:223
+#: src/EcSalesList/ExportPage.php:224
 msgid "Show"
 msgstr "Pokaż"
 
-#: src/EcSalesList/ExportPage.php:232
+#: src/EcSalesList/ExportPage.php:233
 msgid "Code SK / CZ"
 msgstr "Kod SK / CZ"
 
-#: src/EcSalesList/ExportPage.php:240
+#: src/EcSalesList/ExportPage.php:241
 msgid "No reverse-charge sales in this period."
 msgstr "Brak sprzedaży z odwrotnym obciążeniem w tym okresie."
 
-#: src/EcSalesList/ExportPage.php:248
+#: src/EcSalesList/ExportPage.php:249
 msgid "Not confirmed in VIES for an order: check the VAT ID"
 msgstr "VIES nie potwierdził przy zamówieniu: sprawdź NIP-UE"
 
-#: src/EcSalesList/ExportPage.php:263
+#: src/EcSalesList/ExportPage.php:264
 msgid "Sold without VAT, but VIES did not confirm the VAT ID (e.g. it did not answer, \"Ignore when a check fails\"): check these VAT IDs before filing."
 msgstr "Sprzedane bez VAT, ale VIES nie potwierdził NIP-UE (np. nie odpowiadał, „ignoruj nieudaną weryfikację”): sprawdź te numery NIP-UE przed złożeniem."
 
-#: src/EcSalesList/ExportPage.php:264
+#: src/EcSalesList/ExportPage.php:265
 msgid "Sold without VAT with no VIES record (created in the admin, or before version 2.0): check these VAT IDs before filing."
 msgstr "Sprzedane bez VAT bez zapisu z VIES (utworzone w panelu lub przed wersją 2.0): sprawdź te numery NIP-UE przed złożeniem."
 
-#: src/EcSalesList/ExportPage.php:275
+#: src/EcSalesList/ExportPage.php:276
 msgid "Download CSV"
 msgstr "Pobierz CSV"
 
-#: src/EcSalesList/ExportPage.php:278
+#: src/EcSalesList/ExportPage.php:279
 msgid "Download SK XML (eDane)"
 msgstr "Pobierz SK XML (eDane)"
 
-#: src/EcSalesList/ExportPage.php:279
+#: src/EcSalesList/ExportPage.php:280
 msgid "Download CZ XML (EPO)"
 msgstr "Pobierz CZ XML (EPO)"
 
 #. translators: %s: currency code
-#: src/EcSalesList/ExportPage.php:292
+#: src/EcSalesList/ExportPage.php:293
 #, php-format
 msgid "SK XML (in %s only)"
 msgstr "SK XML (tylko w %s)"
 
 #. translators: %s: currency code
-#: src/EcSalesList/ExportPage.php:294
+#: src/EcSalesList/ExportPage.php:295
 #, php-format
 msgid "CZ XML (in %s only)"
 msgstr "CZ XML (tylko w %s)"
 
 #. translators: 1: file, e.g. "SK XML (in EUR only)", 2: list of settings, 3: link to the settings
-#: src/EcSalesList/ExportPage.php:306
+#: src/EcSalesList/ExportPage.php:307
 #, php-format
 msgid "%1$s: fill in %2$s in %3$s."
 msgstr "%1$s: uzupełnij %2$s w %3$s."
 
-#: src/EcSalesList/ExportPage.php:309
+#: src/EcSalesList/ExportPage.php:310
 msgid "Settings → IČO DIČ"
 msgstr "Ustawienia → IČO DIČ"
 
 #. translators: 1: file, e.g. "SK XML (in EUR only)", 2: number of orders, 3: list of order links
-#: src/EcSalesList/ExportPage.php:314
+#: src/EcSalesList/ExportPage.php:315
 #, php-format
 msgid "%1$s leaves out %2$d order in another currency: %3$s"
 msgid_plural "%1$s leaves out %2$d orders in another currency: %3$s"
@@ -322,11 +328,11 @@ msgstr[0] "%1$s pomija %2$d zamówienie w innej walucie: %3$s"
 msgstr[1] "%1$s pomija %2$d zamówienia w innej walucie: %3$s"
 msgstr[2] "%1$s pomija %2$d zamówień w innej walucie: %3$s"
 
-#: src/EcSalesList/ExportPage.php:323
+#: src/EcSalesList/ExportPage.php:324
 msgid "CZ XML: the phone has more than 14 characters without spaces, it is left out."
 msgstr "CZ XML: telefon ma bez spacji więcej niż 14 znaków, został pominięty."
 
-#: src/EcSalesList/ExportPage.php:325
+#: src/EcSalesList/ExportPage.php:326
 msgid "The XML files are regular statements (no corrections, no call-off stock) to load into the Finančná správa eForm or EPO, check and sign there. Values are not converted between currencies."
 msgstr "Pliki XML to zwykłe deklaracje (bez korekt, bez magazynu call-off stock) do wczytania do eFormularza Finančnej správy lub do EPO, gdzie je sprawdzisz i podpiszesz. Wartości nie są przeliczane między walutami."
 
@@ -525,7 +531,7 @@ msgid "Could not be checked"
 msgstr "Nie udało się zweryfikować"
 
 #: src/Order/Evidence.php:346
-#: src/Order/EvidenceBox.php:214
+#: src/Order/EvidenceBox.php:215
 msgid "Reverse charge, without VAT"
 msgstr "Odwrotne obciążenie, bez VAT"
 
