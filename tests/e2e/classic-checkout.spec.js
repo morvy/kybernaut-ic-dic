@@ -56,6 +56,24 @@ test( 'the tax fields and their labels follow the billing country', async ( { pa
 	await expect( row( page, 'ic' ) ).toBeVisible();
 } );
 
+test( 'unticking keeps the company fields for ticking again, also across a country change', async ( { page } ) => {
+	await setCountry( page, 'CZ' );
+	await asCompany( page );
+	await input( page, 'ic' ).fill( COMPANY.ico );
+	await input( page, 'ic' ).blur();
+	await expect( input( page, 'company' ) ).toHaveValue( COMPANY.name );
+
+	await input( page, 'iscomp' ).uncheck();
+	await expect( input( page, 'ic' ) ).toHaveValue( '' );
+	await setCountry( page, 'SK' );
+	await setCountry( page, 'CZ' );
+	await input( page, 'iscomp' ).check();
+
+	await expect( input( page, 'company' ) ).toHaveValue( COMPANY.name );
+	await expect( input( page, 'ic' ) ).toHaveValue( COMPANY.ico );
+	await expect( input( page, 'dic' ) ).toHaveValue( COMPANY.dic );
+} );
+
 test( 'a guest\'s company fields survive a reload', async ( { page } ) => {
 	await setCountry( page, 'SK' );
 	for ( const key of [ 'first_name', 'last_name', 'address_1', 'city', 'postcode', 'phone', 'email' ] ) {

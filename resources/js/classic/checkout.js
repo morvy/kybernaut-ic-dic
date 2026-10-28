@@ -13,6 +13,8 @@ import suggest from '../shared/suggest';
     // Whether the company fields hold what the last lookup filled in.
     var filled = false;
     var filled_fields = '#billing_ic, #billing_dic, #billing_dic_dph, #billing_postcode, #billing_city, #billing_address_1';
+    // Whether the company fields are emptied, their values stashed in data-value.
+    var company_cleared = false;
 
     $(document).ready(function() {
 
@@ -167,6 +169,11 @@ import suggest from '../shared/suggest';
     }
 
     function clear_company_data() {
+        // Already cleared (e.g. the country changed while unticked): keep what was stashed.
+        if ( company_cleared ) {
+            return;
+        }
+        company_cleared = true;
         unmark_filled();
         var country   = $("#billing_country").val();
         var vat_field = country == 'SK' ? 'billing_dic_dph' : 'billing_dic';
@@ -180,6 +187,7 @@ import suggest from '../shared/suggest';
     }
 
     function restore_company_data() {
+        company_cleared = false;
         var country   = $("#billing_country").val();
         var vat_field = country == 'SK' ? 'billing_dic_dph' : 'billing_dic';
         $("#billing_company, #billing_ic, #billing_dic, #billing_dic_dph").each(function(index,el) {
