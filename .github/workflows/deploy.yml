@@ -1,69 +1,45 @@
 name: Deploy to WordPress.org
+
+# Publishing a GitHub release runs every test (unit, lint, both Playground stacks),
+# then deploys its tag to WordPress.org and attaches the zip to the release.
 on:
   release:
     types: [published]
+
 jobs:
-  build-test:
-    name: Run tests.
-    runs-on: ubuntu-latest
+  tests:
+    uses: ./.github/workflows/phpunit.yml
+    with:
+      e2e: true
 
-    ## todo later - run deploy.
-
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Cache Composer dependencies
-      uses: actions/cache@v3
-      with:
-        path: /tmp/composer-cache
-        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-    
-    - uses: php-actions/composer@v6
-    
-    - uses: php-actions/phpunit@v3
-      with:
-        version: 7.5.20
-        php_version: 7.3
-        bootstrap: tests/bootstrap.php
-        configuration: phpunit.xml
-
-  tag:
+  deploy:
     name: New release
+    needs: tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Cache Composer dependencies
-      uses: actions/cache@v3
-      with:
-        path: /tmp/composer-cache
-        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+      - uses: actions/checkout@v5
 
-    - name: Install composer
-      uses: php-actions/composer@v6
-      with:
-        php_extensions: json
-        version: 2
-        dev: no
-    - run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE/vendor
-    - run: composer install --no-dev --optimize-autoloader
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer
+      # The plugin's own autoloader, without the dev tools.
+      - run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-    - name: WordPress Plugin Deploy
-      id: deploy
-      uses: 10up/action-wordpress-plugin-deploy@stable
-      with:
-        generate-zip: true
-      env:
-        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-        SLUG: woolab-ic-dic
-    - name: Upload release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ${{github.workspace}}/woolab-ic-dic.zip
-        asset_name: woolab-ic-dic.zip
-        asset_content_type: application/zip
+      - name: WordPress Plugin Deploy
+        id: deploy
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        with:
+          generate-zip: true
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: woolab-ic-dic
+
+      - name: Attach the zip to the release
+        run: gh release upload "${{ github.event.release.tag_name }}" "${{ steps.deploy.outputs.zip-path }}" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

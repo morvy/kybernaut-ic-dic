@@ -2,11 +2,18 @@ name: CI
 
 on:
   push:
+    branches: [master]
   pull_request:
-  # The e2e "latest" stack follows WooCommerce releases, not pushes.
+  # The latest stack follows WordPress, WooCommerce and PHP releases, not pushes.
   schedule:
     - cron: '0 5 * * 1'
   workflow_dispatch:
+  # deploy.yml, on a published release: unit tests and both e2e stacks.
+  workflow_call:
+    inputs:
+      e2e:
+        type: boolean
+        default: false
 
 jobs:
   test:
@@ -38,14 +45,16 @@ jobs:
         run: composer lint:rector
 
   e2e:
-    name: Block checkout, ${{ matrix.stack }} stack (Playground)
+    name: Classic and block checkout, ${{ matrix.stack }} stack (Playground)
+    # A published release (deploy.yml) and by hand: both stacks; the weekly run: latest.
+    if: inputs.e2e || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         # min: the plugin header's minimums; latest: newest WordPress,
         # WooCommerce and PHP (tests/e2e/stack.js).
-        stack: [min, latest]
+        stack: ${{ fromJSON( github.event_name == 'schedule' && '["latest"]' || '["min","latest"]' ) }}
 
     steps:
       - uses: actions/checkout@v5
@@ -64,7 +73,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
 
-      # Calls ARES and VIES live, like the checkout does.
+      # Calls ARES live, like the checkout does; VIES is answered by tests/e2e/mu-plugin.php.
       - run: npm run test:e2e:${{ matrix.stack }}
 
       - uses: actions/upload-artifact@v5
