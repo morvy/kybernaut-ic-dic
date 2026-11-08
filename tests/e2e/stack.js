@@ -69,6 +69,8 @@ function blueprint( { wp, php, wc, zip } ) {
 			{ step: 'defineWpConfigConsts', consts: { AUTOMATIC_UPDATER_DISABLED: true, WP_AUTO_UPDATE_CORE: false } },
 			{ step: 'installPlugin', pluginData: { resource: 'url', url: zip } },
 			{ step: 'activatePlugin', pluginPath: 'woolab-ic-dic/woolab-ic-dic.php' },
+			// For fluid-checkout.spec.js; mu-plugin.php keeps it off for the other specs.
+			{ step: 'installPlugin', pluginData: { resource: 'wordpress.org/plugins', slug: 'fluid-checkout' } },
 			{ step: 'runPHP', code: `<?php require '/wordpress/wp-load.php'; ${ expect } require WP_PLUGIN_DIR . '/woolab-ic-dic/tests/e2e/setup.php';` },
 		],
 	};

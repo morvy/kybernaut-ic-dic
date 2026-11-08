@@ -59,10 +59,10 @@ final class Ares extends AbstractService {
 		$response = wp_remote_get( self::URL . $ico );
 
 		if ( is_wp_error( $response ) ) {
-			Logger::log( sprintf( 'An error occured while connecting to ARES: %s', $ico ) );
+			Logger::log( sprintf( 'An error occurred while connecting to ARES: %s', $ico ) );
 			Logger::log( $response );
 			$return = array(
-				'error'          => __( 'An error occured while connecting to ARES, try it again later.', 'woolab-ic-dic' ),
+				'error'          => __( 'An error occurred while connecting to ARES, try it again later.', 'woolab-ic-dic' ),
 				'internal_error' => true,
 			);
 		} else {

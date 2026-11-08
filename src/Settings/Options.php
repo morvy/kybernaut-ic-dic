@@ -67,6 +67,8 @@ final class Options {
 			'ec_cz_ufo'             => array( null, '' ),
 			'ec_cz_pracufo'         => array( null, '' ),
 			'ec_cz_type'            => array( null, 'P' ),
+			// Hidden features (KybernautIcDic\Features): no field, off by default.
+			'feature_ec_sales_list' => array( null, 'no' ),
 		);
 	}
 

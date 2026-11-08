@@ -15,7 +15,7 @@
  * Requires PHP:         8.1
  * Requires Plugins:     woocommerce
  * WC requires at least: 10.0
- * WC tested up to:      11.0
+ * WC tested up to:      11.2
  * Copyright:            © 2016-2026 Karolína Vyskočilová.
  *
  * @package KybernautIcDic

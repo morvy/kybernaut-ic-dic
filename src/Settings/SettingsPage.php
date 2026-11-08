@@ -10,6 +10,7 @@
 
 namespace KybernautIcDic\Settings;
 
+use KybernautIcDic\Features;
 use WC_Settings_Page;
 
 /**
@@ -32,13 +33,18 @@ final class SettingsPage extends WC_Settings_Page {
 	 * @return array<string,string>
 	 */
 	protected function get_own_sections() {
-		return array(
+		$sections = array(
 			''                => __( 'General', 'woocommerce' ),
 			'validation'      => __( 'Validation', 'woolab-ic-dic' ),
 			'appearance'      => __( 'Appearance', 'woolab-ic-dic' ),
 			'financna_sprava' => __( 'Finančná správa', 'woolab-ic-dic' ),
-			'ec_sales_list'   => __( 'EC Sales List', 'woolab-ic-dic' ),
 		);
+
+		if ( Features::enabled( 'ec_sales_list' ) ) {
+			$sections['ec_sales_list'] = __( 'EC Sales List', 'woolab-ic-dic' );
+		}
+
+		return $sections;
 	}
 
 	/**
@@ -80,11 +86,11 @@ final class SettingsPage extends WC_Settings_Page {
 	}
 
 	/**
-	 * EC Sales List: the shop's details in the files.
+	 * EC Sales List: the shop's details in the files, with the feature on (Features).
 	 *
 	 * @return array<int,array<string,mixed>>
 	 */
 	protected function get_settings_for_ec_sales_list_section() {
-		return Fields::ec_sales_list();
+		return Features::enabled( 'ec_sales_list' ) ? Fields::ec_sales_list() : array();
 	}
 }

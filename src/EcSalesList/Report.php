@@ -9,6 +9,7 @@
 
 namespace KybernautIcDic\EcSalesList;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use KybernautIcDic\Order\Evidence;
 
 /**
@@ -218,6 +219,11 @@ final class Report {
 	}
 
 	/**
+	 * The query var that carries a meta query to the posts storage (cpt_meta_query()).
+	 */
+	private const CPT_META_QUERY = 'woolab_icdic_meta_query';
+
+	/**
 	 * Orders in batches, by ID.
 	 *
 	 * @param array<string,mixed> $args wc_get_orders() arguments.
@@ -225,6 +231,13 @@ final class Report {
 	 */
 	private static function query( array $args ): array {
 		$found = array();
+
+		// Orders kept as posts ignore wc_get_orders()'s meta_query (and say so): it goes
+		// to WP_Query through cpt_meta_query() instead.
+		if ( isset( $args['meta_query'] ) && ! OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$args[ self::CPT_META_QUERY ] = $args['meta_query'];
+			unset( $args['meta_query'] );
+		}
 
 		for ( $page = 1; ; $page++ ) {
 			$batch = wc_get_orders(
@@ -245,6 +258,23 @@ final class Report {
 				return $found;
 			}
 		}
+	}
+
+	/**
+	 * The posts storage's WP_Query: the meta query query() passed along.
+	 *
+	 * @param array<string,mixed> $query      WP_Query arguments.
+	 * @param array<string,mixed> $query_vars wc_get_orders() arguments.
+	 * @return array<string,mixed>
+	 */
+	public static function cpt_meta_query( $query, $query_vars ) {
+		if ( ! empty( $query_vars[ self::CPT_META_QUERY ] ) ) {
+			$query['meta_query']   = (array) ( $query['meta_query'] ?? array() ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Orders with a VAT ID only.
+			$query['meta_query'][] = $query_vars[ self::CPT_META_QUERY ];
+			unset( $query[ self::CPT_META_QUERY ] );
+		}
+
+		return $query;
 	}
 
 	/**

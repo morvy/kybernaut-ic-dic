@@ -14,6 +14,7 @@
 namespace KybernautIcDic\EcSalesList;
 
 use Automattic\WooCommerce\Utilities\OrderUtil;
+use KybernautIcDic\Features;
 use KybernautIcDic\Settings\Fields;
 
 /**
@@ -32,12 +33,20 @@ final class ExportPage {
 	public const ACTION = 'woolab_icdic_ec_sales_list';
 
 	/**
-	 * Hook the page, the downloads, and the period date kept on a status change.
+	 * Hook the period date kept on a status change, and with the feature on
+	 * (Features), the page and the downloads.
 	 */
 	public static function register(): void {
+		// Kept while the feature is off too, so turning it on finds every order's period.
+		add_action( 'woocommerce_order_status_changed', array( Report::class, 'status_changed' ), 10, 4 );
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', array( Report::class, 'cpt_meta_query' ), 10, 2 );
+
+		if ( ! Features::enabled( 'ec_sales_list' ) ) {
+			return;
+		}
+
 		add_action( 'admin_menu', array( self::class, 'menu' ), 60 );
 		add_action( 'admin_post_' . self::ACTION, array( self::class, 'download' ) );
-		add_action( 'woocommerce_order_status_changed', array( Report::class, 'status_changed' ), 10, 4 );
 	}
 
 	/**

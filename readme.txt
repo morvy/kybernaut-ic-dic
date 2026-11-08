@@ -6,7 +6,7 @@ Tested up to: 7.1
 Stable tag: 2.0.0
 Requires PHP: 8.1
 WC requires at least: 10.0
-WC tested up to: 11.0
+WC tested up to: 11.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://www.paypal.me/KarolinaVyskocilova
@@ -48,7 +48,7 @@ Requires WooCommerce 10.0, WordPress 6.7 and PHP 8.1. For older stacks use the 1
 * WooCommerce PDF Invoices and Packing Slips for WooCommerce PRO by Acowebs
 * [WooCommerce Sequential Order Numbers](https://cs.wordpress.org/plugins/woocommerce-sequential-order-numbers/) by SkyVerge
 * [Woo Checkout Field Editor Pro](https://cs.wordpress.org/plugins/woo-checkout-field-editor-pro/) by ThemeHigh
-* [Fluid Checkout for WooCommerce - Lite](https://wordpress.org/plugins/fluid-checkout/) by Fluid Checkout - only partial support
+* [Fluid Checkout for WooCommerce - Lite](https://wordpress.org/plugins/fluid-checkout/) by Fluid Checkout
 * Woo iDoklad, Woo Doprava, Woo GoPay etc. by [Toret](https://toret.cz/obchod/ref/106/) (affiliate link)
 
 === Requirements ===
@@ -233,6 +233,18 @@ add_filter( 'woolab_icdic_services', function ( array $map ) {
 
 The Business ID field shows for every country unless Validation → "Business ID only where companies have one" is on; then add the country with the `woolab_icdic_ic_countries` filter. Assigning your own service to every feature of SK replaces Finančná správa, and its daily import (190 MB) stops.
 
+= How do I turn on the EC Sales List (experimental)? =
+
+The EC Sales List export (souhrnný výkaz / súhrnné hlásenie, WooCommerce → EC Sales List) is off and hidden until it is ready for every shop. Turn it on with WP-CLI:
+
+`wp option patch insert woolab_icdic_settings feature_ec_sales_list yes`
+
+(`update` instead of `insert` once the key is stored), or in code:
+
+`add_filter( 'woolab_icdic_feature_enabled', fn( $on, $feature ) => 'ec_sales_list' === $feature || $on, 10, 2 );`
+
+The menu item and the settings section (Settings → IČO DIČ → EC Sales List) then appear. Orders get their period date while it is off too, so turning it on later lists earlier orders correctly. Shops keeping orders as posts (without HPOS) are supported.
+
 = How can I report security bugs? =
 
 You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/woolab-ic-dic)
@@ -253,6 +265,11 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 1. Checkout validation of IČO.
 
 
+== Upgrade Notice ==
+
+= 2.0.0 =
+Requires WooCommerce 10.0, WordPress 6.7 and PHP 8.1 (on an older WooCommerce it stays inactive). Hook callbacks are class methods now: check custom code that removes this plugin's hooks.
+
 == Changelog ==
 
 = 2.0.0 (2026-09-01) =
@@ -265,6 +282,7 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 * Fix: `{billing_ic}`, `{billing_dic}` and `{billing_dic_dph}` no longer print literally in the block checkout's address preview. The Checkout block hands the address formats to JavaScript, which substitutes from a fixed token table, so the tokens are dropped from that one payload and kept everywhere PHP renders an address.
 * Removed: the WooCommerce 2.7 fallbacks (`woocommerce_found_customer_details` and direct `$order->billing_*` property access).
 * Removed: `woolab_icdic_add_after_company()`. Field order comes from the `priority` key WooCommerce has honoured since 3.5.1.
+* Removed: `woolab_icdic_vat_number_exempt()`. Use `\KybernautIcDic\Checkout\VatExempt::vat_number_exempt( $vat, $ignore_check_fail )`.
 * Removed: the "this plugin has settings now" admin notice and its `woolab_icdic_notice_settings` option. The option is left in the database; delete it if you want to be tidy.
 * Removed: the self-deactivation guard for a missing WooCommerce. The `Requires Plugins` header lets WordPress enforce that.
 * Feature: **Slovak validation and autofill without an API key.** New options "SK: Validate in Finančná správa" and "SK: Validate and autofill based on Finančná správa". The Finančná správa lists of subjects registered for income tax (DIČ) and VAT (IČ DPH) are downloaded nightly by WP-Cron (or `wp woolab-icdic sk-import`) into a SQLite file in uploads (about 190 MB, outside the database); IČO lookup, autofill and the DIČ / IČ DPH checks run locally, so the checkout no longer depends on VIES being up. IČ DPH that is not "SK" + DIČ (VAT groups) is accepted when both belong to the same IČO. An IČO not in the lists yet (new, or not registered for tax) is accepted without autofill. Requires the zip, xmlreader and pdo_sqlite (with FTS5) PHP extensions.
@@ -275,7 +293,7 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 * Feature: a Polish NIP or Hungarian adószám entered without its country code (526-025-09-95, 12892312-2-41) is a taxpayer's, not a VAT payer's: checked by its checksum, not in VIES, and the order is placed with VAT.
 * Feature: a VAT exempt order says so in both checkouts: "Reverse charge: the order is without VAT, the buyer accounts for it."
 * Feature: **proof of the VAT ID check** on every EU B2B order: the VIES answer (result, consultation number when "Your VAT ID" is set, name, address, date), the reason the order is with or without VAT and the countries, in a "VAT ID check" box on the order screen with the earlier checks; "Validate again in VIES" checks the VAT ID once more and sets or removes the VAT. The orders list marks reverse-charge orders with an icon.
-* Feature: **EC Sales List** (beta, WooCommerce → EC Sales List): the reverse-charge sales of a month or quarter per customer VAT number, goods and services (virtual products) apart, net of discounts and refunds, an order in the month it was first processed (paid or sent for delivery), orders whose VAT ID VIES did not confirm flagged; download as CSV (every currency), the Slovak súhrnný výkaz XML (SVDPHv20, EUR, for the Finančná správa eForm) or the Czech souhrnné hlášení XML (DPHSHV, CZK, for EPO). Regular statements only; the shop's details are in Settings → IČO DIČ → EC Sales List.
+* Feature (experimental, off by default and hidden, see FAQ): **EC Sales List** (beta, WooCommerce → EC Sales List): the reverse-charge sales of a month or quarter per customer VAT number, goods and services (virtual products) apart, net of discounts and refunds, an order in the month it was first processed (paid or sent for delivery), orders whose VAT ID VIES did not confirm flagged; download as CSV (every currency), the Slovak súhrnný výkaz XML (SVDPHv20, EUR, for the Finančná správa eForm) or the Czech souhrnné hlášení XML (DPHSHV, CZK, for EPO). Regular statements only; the shop's details are in Settings → IČO DIČ → EC Sales List.
 * Feature: the company fields' validation errors show under their field in both checkouts, as WooCommerce shows its own.
 * Fix: in the block checkout, an address typed just before the VAT ID is no longer replaced by the one the server still had.
 * Feature: a setting that a 1.x filter in the theme or a plugin decides over (`woolab_icdic_toggle`, `woolab_icdic_ares_check`, `woolab_icdic_sk_required_ic_and_dic`, …) shows the value in effect, cannot be changed, and names the filter; saving the page keeps the stored value.
@@ -284,6 +302,7 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 * Tweak: VAT error messages name the field as the form labels it ("Enter a valid VAT ID.", "Enter a valid Tax ID.").
 * Performance: the VAT exemption from the customer's saved details is set on cart and checkout page loads only, instead of on `init` of every request (a VIES call each time the result was not cached).
 * Fix: block checkout VAT exemption. Since WooCommerce 10.9 no draft order exists while the form is filled, so the exemption was never recalculated live, and on placing the order it was set after the totals. It is now recalculated through `extensionCartUpdate()` as the VAT number, the country or the toggle changes, and set before the totals on placing the order.
+* Fix: block checkout, a logged-in customer: the saved IČO and DIČ are filled in again. WooCommerce's form emptied them as it loaded, before it knew the billing country, so the order was charged VAT until the VAT ID was typed again.
 * Fix: block checkout with "use same address for billing" (the default): the billing country stayed what it was until the order was placed, so the country-dependent fields and the VAT exemption followed the wrong country. It now follows the shipping country.
 * Fix: an exemption the plugin set was kept when the shopper switched to the store's own country or a non-EU one (classic and block checkout). Exemptions set by other plugins are left alone.
 * Fix: the VAT exemption on page load never applied, and "Buying as a company" was not pre-ticked for a customer with a stored company: the billing country and company were read with `get_meta()`, which returns nothing for core customer properties.
@@ -310,7 +329,7 @@ Either post it on [GitHub](https://github.com/vyskoczilova/kybernaut-ic-dic) or�
 * Tweak: the scripts are built with @wordpress/scripts from `resources/` (`npm run build`); the `.min` copies are gone and the company name suggestions are bundled into the checkout scripts instead of a separate `suggest.js`. Handles are unchanged.
 * Fix: the classic checkout sends the billing country to the IČO lookup, not "SK" or "CZ".
 * **Breaking:** hook callbacks are class methods now, so `remove_action()` / `remove_filter()` with the old function names no longer match. Use the class, e.g. `remove_action( 'woocommerce_checkout_process', array( 'KybernautIcDic\Checkout\Classic', 'checkout_field_process' ) )` (the class name without a leading backslash, as the plugin registers it); others: `Checkout\Classic::billing_fields` and `checkout_fields`, `Checkout\VatExempt::validate_vat_exempt_for_company` and `set_vat_exempt_for_customer`, `Order\Meta::save_order_metadata`, `Order\AdminScreen::admin_billing_fields` and `process_shop_order`, `Order\Display::localisation_address_formats` and `formatted_address_replacements`, `Assets::enqueue_classic`.
-* **Breaking:** the Fluid Checkout compatibility is not a file to include any more: call `\KybernautIcDic\Compat\FluidCheckout::register();` where you included `includes/compatibility/fluidcheckout.php`.
+* Fix: Fluid Checkout for WooCommerce - Lite. The compatibility is on whenever Fluid Checkout is active (nothing to include any more; a leftover `\KybernautIcDic\Compat\FluidCheckout::register();` call does no harm). "Buying as a company" now shows the company fields: they are no longer hidden behind its "+ Add …" links, and they come back after it re-renders the billing step, with their values. The VAT exemption is kept on placing the order (it was lost there). With its "Same as shipping address" ticked, a lookup fills in the company's identifiers and leaves the address as it is.
 
 = 1.11.2 (2026-08-07) =
 

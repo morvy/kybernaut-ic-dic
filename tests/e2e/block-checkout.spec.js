@@ -60,6 +60,26 @@ test( 'a guest\'s company fields survive a reload', async ( { page } ) => {
 	await expect( field( page, 'dic-sk' ) ).toHaveValue( '2020317057' );
 } );
 
+// WooCommerce's form mounts before the cart has the billing country and empties the
+// fields a country rule hides; the saved IČO and DIČ come back (blocks.js), from the
+// customer rather than the draft order (Blocks::stored_value()).
+test( 'a logged-in customer\'s saved IČO and DIČ are filled in, VAT exempt', async ( { browser, baseURL } ) => {
+	const context = await browser.newContext( { baseURL, ignoreHTTPSErrors: true } );
+	const page = await context.newPage();
+	await page.goto( '/wp-login.php' );
+	await page.locator( '#user_login' ).fill( 'e2e-customer' );
+	await page.locator( '#user_pass' ).fill( 'password' );
+	await page.locator( '#wp-submit' ).click();
+	await page.waitForURL( /my-account|wp-admin/ );
+	await openCheckout( page );
+
+	await expect( field( page, 'iscomp' ) ).toBeChecked();
+	await expect( field( page, 'ic' ) ).toHaveValue( COMPANY.ico );
+	await expect( field( page, 'dic-cz' ) ).toHaveValue( COMPANY.dic );
+	await expect.poll( () => taxTotal( page ), { timeout: 30000 } ).toBe( '0' );
+	await context.close();
+} );
+
 test( 'company fields stay hidden until "Buying as a company" is ticked', async ( { page } ) => {
 	await setCountry( page, 'SK' );
 	await expect( field( page, 'company' ) ).toBeHidden();

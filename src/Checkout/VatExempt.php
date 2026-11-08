@@ -146,7 +146,11 @@ final class VatExempt {
 	 * cached.
 	 */
 	public static function set_vat_exempt_for_customer(): void {
-		if ( ! is_cart() && ! is_checkout() ) {
+		// Not WooCommerce's own AJAX (wc-ajax), which reaches `wp` too: the checkout set
+		// the exemption while the shopper typed (validate_vat_exempt_for_company()), and
+		// the saved details would undo it on placing the order where is_checkout() is
+		// true for wc-ajax (Fluid Checkout).
+		if ( ! empty( $_GET['wc-ajax'] ) || ( ! is_cart() && ! is_checkout() ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only whether it is set.
 			return;
 		}
 

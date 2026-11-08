@@ -5,6 +5,17 @@
  * so one site tests both checkouts.
  */
 
+// Fluid Checkout takes over both checkout pages: on only with the cookie
+// woolab_e2e_fc=1 (fluid-checkout.spec.js).
+if ( empty( $_COOKIE['woolab_e2e_fc'] ) ) {
+	add_filter(
+		'option_active_plugins',
+		function ( $plugins ) {
+			return array_values( array_diff( (array) $plugins, array( 'fluid-checkout/fluid-checkout.php' ) ) );
+		}
+	);
+}
+
 add_filter(
 	'woocommerce_get_checkout_page_id',
 	function ( $id ) {

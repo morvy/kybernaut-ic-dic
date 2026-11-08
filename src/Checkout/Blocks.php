@@ -413,13 +413,7 @@ final class Blocks {
 			add_filter(
 				"woocommerce_get_default_value_for_{$id}",
 				function ( $value, $group, $wc_object ) use ( $legacy ) {
-					$stored = $wc_object->get_meta( '_' . $legacy, true );
-
-					if ( ! $stored ) {
-						$stored = $wc_object->get_meta( $legacy, true );
-					}
-
-					return $stored ?: $value; // phpcs:ignore Universal.Operators.DisallowShortTernary.Found -- the stored value, else the default.
+					return self::stored_value( $legacy, $wc_object ) ?: $value; // phpcs:ignore Universal.Operators.DisallowShortTernary.Found -- the stored value, else the default.
 				},
 				10,
 				3
@@ -429,6 +423,25 @@ final class Blocks {
 		if ( $toggle ) {
 			add_filter( 'woocommerce_get_default_value_for_kybernaut/iscomp', array( self::class, 'default_iscomp' ), 10, 3 );
 		}
+	}
+
+	/**
+	 * A field's stored value: the order meta (`_billing_ic`) or the customer meta
+	 * (`billing_ic`). The checkout reads an order field from its draft order first and
+	 * the customer only for a key the order lacks, which it never does, so a draft or
+	 * unsaved order falls back to the customer here; a placed order keeps its own.
+	 *
+	 * @param string   $legacy    The classic field, e.g. 'billing_ic'.
+	 * @param \WC_Data $wc_object Order or customer.
+	 */
+	public static function stored_value( string $legacy, $wc_object ): string {
+		$stored = (string) ( $wc_object->get_meta( '_' . $legacy, true ) ?: $wc_object->get_meta( $legacy, true ) ); // phpcs:ignore Universal.Operators.DisallowShortTernary.Found -- the order meta, else the customer meta.
+
+		if ( '' === $stored && $wc_object instanceof \WC_Order && WC()->customer && ( ! $wc_object->get_id() || $wc_object->has_status( 'checkout-draft' ) ) ) {
+			$stored = (string) WC()->customer->get_meta( $legacy, true );
+		}
+
+		return $stored;
 	}
 
 	/**

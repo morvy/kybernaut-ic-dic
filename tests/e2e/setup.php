@@ -57,6 +57,34 @@ if ( ! get_page_by_path( 'test-product', OBJECT, 'product' ) ) {
 	$product->save();
 }
 
+// A returning company customer (block-checkout.spec.js): its saved IČO and DIČ.
+$woolab_e2e_customer = get_user_by( 'login', 'e2e-customer' );
+$woolab_e2e_customer = $woolab_e2e_customer ? $woolab_e2e_customer->ID : wp_insert_user(
+	array(
+		'user_login' => 'e2e-customer',
+		'user_pass'  => 'password',
+		'user_email' => 'e2e-customer@woolab-test.local',
+		'role'       => 'customer',
+	)
+);
+foreach (
+	array(
+		'billing_first_name' => 'Jana',
+		'billing_last_name'  => 'Testová',
+		'billing_company'    => 'Alza.cz a.s.',
+		'billing_address_1'  => 'Jankovcova 1522/53',
+		'billing_city'       => 'Praha 7',
+		'billing_postcode'   => '170 00',
+		'billing_country'    => 'CZ',
+		'billing_email'      => 'e2e-customer@woolab-test.local',
+		'billing_ic'         => '27082440',
+		'billing_dic'        => 'CZ27082440',
+		'shipping_country'   => 'CZ',
+	) as $woolab_e2e_key => $woolab_e2e_value
+) {
+	update_user_meta( $woolab_e2e_customer, $woolab_e2e_key, $woolab_e2e_value );
+}
+
 $classic = get_page_by_path( 'classic-checkout' );
 update_option(
 	'woolab_icdic_e2e_classic_checkout',
@@ -81,5 +109,8 @@ update_option(
 		'vies_check' => 'yes',
 		'vat_exempt' => 'yes',
 		'toggle'     => 'yes',
+		// The hidden EC Sales List (KybernautIcDic\Features), for ec-sales-list.spec.js
+		// and the settings section test.
+		'feature_ec_sales_list' => 'yes',
 	)
 );

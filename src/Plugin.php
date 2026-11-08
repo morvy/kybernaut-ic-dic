@@ -2,8 +2,10 @@
 /**
  * Boots the plugin on plugins_loaded.
  *
- * WooCommerce is guaranteed by then: the `Requires Plugins` header lets WordPress
- * refuse activation without it, and plugins_loaded runs after it is loaded.
+ * WooCommerce is loaded by then (`Requires Plugins`: WordPress refuses activation
+ * without it). WordPress offers updates by the WordPress and PHP requirements only,
+ * so a shop on an older WooCommerce can get this version: it stays inactive there,
+ * with a notice, instead of breaking the checkout.
  *
  * @package KybernautIcDic
  */
@@ -18,6 +20,12 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 final class Plugin {
 
 	/**
+	 * The oldest WooCommerce it runs on; the header's "WC requires at least" (a unit
+	 * test keeps them equal).
+	 */
+	public const MIN_WC = '10.0';
+
+	/**
 	 * The parts that hook themselves (each has a static register()).
 	 *
 	 * @var array<int,class-string>
@@ -28,6 +36,7 @@ final class Plugin {
 		Settings\FilterOverrides::class,
 		Compat\SuperFaktura::class,
 		Compat\PdfInvoices::class,
+		Compat\FluidCheckout::class,
 		Assets::class,
 		Services\FinancnaSprava\Importer::class,
 		Checkout\Classic::class,
@@ -63,9 +72,42 @@ final class Plugin {
 		// behind new strings; load the bundled one too, it fills in what the pack lacks.
 		load_textdomain( 'woolab-ic-dic', WOOLAB_IC_DIC_ABSPATH . 'languages/woolab-ic-dic-' . determine_locale() . '.mo' );
 
+		if ( ! self::woocommerce_supported() ) {
+			add_action( 'admin_notices', array( self::class, 'unsupported_notice' ) );
+			return;
+		}
+
 		foreach ( self::PARTS as $part ) {
 			$part::register();
 		}
+	}
+
+	/**
+	 * Whether WooCommerce is loaded and at least MIN_WC.
+	 */
+	public static function woocommerce_supported(): bool {
+		return defined( 'WC_VERSION' ) && version_compare( WC_VERSION, self::MIN_WC, '>=' );
+	}
+
+	/**
+	 * Why the plugin does nothing, to whoever can update plugins.
+	 */
+	public static function unsupported_notice(): void {
+		if ( ! current_user_can( 'update_plugins' ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-error"><p>%s</p></div>',
+			esc_html(
+				sprintf(
+					/* translators: 1: required WooCommerce version, 2: installed WooCommerce version */
+					__( 'Kybernaut IČO DIČ needs WooCommerce %1$s or newer (this site has %2$s), so it is inactive: the checkout has no company fields and no VAT exemption. Update WooCommerce, or install Kybernaut IČO DIČ 1.11.', 'woolab-ic-dic' ),
+					self::MIN_WC,
+					defined( 'WC_VERSION' ) ? WC_VERSION : __( 'none', 'woolab-ic-dic' )
+				)
+			)
+		);
 	}
 
 	/**

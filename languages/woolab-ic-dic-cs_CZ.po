@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-25T18:01:39+00:00\n"
-"PO-Revision-Date: 2026-10-27T22:57:13+00:00\n"
+"PO-Revision-Date: 2026-11-07T23:24:39+00:00\n"
 "Language: cs_CZ\n"
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n >= 2 && n <= 4) ? 1 : 2);\n"
 "X-Generator: GlotPress/4.1.0\n"
@@ -156,170 +156,170 @@ msgstr "DIČ"
 msgid "VAT reg. no."
 msgstr "IČ DPH"
 
-#: src/EcSalesList/ExportPage.php:47
-#: src/EcSalesList/ExportPage.php:203
+#: src/EcSalesList/ExportPage.php:56
+#: src/EcSalesList/ExportPage.php:212
 #: src/Settings/Fields.php:404
 #: src/Settings/Fields.php:409
-#: src/Settings/SettingsPage.php:40
+#: src/Settings/SettingsPage.php:44
 msgid "EC Sales List"
 msgstr "Souhrnné hlášení"
 
-#: src/EcSalesList/ExportPage.php:47
-#: src/EcSalesList/ExportPage.php:203
+#: src/EcSalesList/ExportPage.php:56
+#: src/EcSalesList/ExportPage.php:212
 #: src/Settings/Fields.php:404
 msgid "(beta)"
 msgstr "(beta)"
 
-#: src/EcSalesList/ExportPage.php:100
+#: src/EcSalesList/ExportPage.php:109
 msgid "Sorry, you are not allowed to export the EC Sales List."
 msgstr "Litujeme, nemáte oprávnění exportovat souhrnné hlášení."
 
-#: src/EcSalesList/ExportPage.php:106
+#: src/EcSalesList/ExportPage.php:115
 msgid "Unknown file format."
 msgstr "Neznámý formát souboru."
 
 #. translators: %s: list of settings
-#: src/EcSalesList/ExportPage.php:121
+#: src/EcSalesList/ExportPage.php:130
 #, php-format
 msgid "Fill in the shop's details first: %s."
 msgstr "Nejprve vyplňte údaje obchodu: %s."
 
-#: src/EcSalesList/ExportPage.php:143
-#: src/EcSalesList/ExportPage.php:230
+#: src/EcSalesList/ExportPage.php:152
+#: src/EcSalesList/ExportPage.php:239
 msgid "Country"
 msgstr "Země"
 
-#: src/EcSalesList/ExportPage.php:144
-#: src/EcSalesList/ExportPage.php:231
+#: src/EcSalesList/ExportPage.php:153
+#: src/EcSalesList/ExportPage.php:240
 msgid "VAT number"
 msgstr "DIČ"
 
-#: src/EcSalesList/ExportPage.php:145
-#: src/EcSalesList/ExportPage.php:232
+#: src/EcSalesList/ExportPage.php:154
+#: src/EcSalesList/ExportPage.php:241
 msgid "Supply"
 msgstr "Plnění"
 
-#: src/EcSalesList/ExportPage.php:146
+#: src/EcSalesList/ExportPage.php:155
 msgid "SK code"
 msgstr "Kód SK"
 
-#: src/EcSalesList/ExportPage.php:147
+#: src/EcSalesList/ExportPage.php:156
 msgid "CZ code"
 msgstr "Kód CZ"
 
-#: src/EcSalesList/ExportPage.php:148
-#: src/EcSalesList/ExportPage.php:234
+#: src/EcSalesList/ExportPage.php:157
+#: src/EcSalesList/ExportPage.php:243
 msgid "Value"
 msgstr "Hodnota"
 
-#: src/EcSalesList/ExportPage.php:149
-#: src/EcSalesList/ExportPage.php:235
+#: src/EcSalesList/ExportPage.php:158
+#: src/EcSalesList/ExportPage.php:244
 msgid "Currency"
 msgstr "Měna"
 
-#: src/EcSalesList/ExportPage.php:150
-#: src/EcSalesList/ExportPage.php:236
+#: src/EcSalesList/ExportPage.php:159
+#: src/EcSalesList/ExportPage.php:245
 msgid "Orders"
 msgstr "Objednávky"
 
-#: src/EcSalesList/ExportPage.php:151
+#: src/EcSalesList/ExportPage.php:160
 msgid "VAT ID not verified"
 msgstr "DIČ neověřeno"
 
-#: src/EcSalesList/ExportPage.php:196
+#: src/EcSalesList/ExportPage.php:205
 msgid "Goods"
 msgstr "Zboží"
 
-#: src/EcSalesList/ExportPage.php:197
+#: src/EcSalesList/ExportPage.php:206
 msgid "Services"
 msgstr "Služby"
 
-#: src/EcSalesList/ExportPage.php:204
+#: src/EcSalesList/ExportPage.php:213
 msgid "The reverse-charge sales to companies in other EU countries: the orders whose VAT ID was valid in VIES, net of discounts and refunds, per customer VAT number, goods (shipping included) and services (virtual products). An order counts in the month it was first processed (paid or sent for delivery), a refund in the month it was made."
 msgstr "Plnění v režimu přenesení daňové povinnosti firmám v jiných zemích EU: objednávky, jejichž DIČ bylo platné ve VIES, po slevách a vratkách, podle DIČ zákazníka, zboží (včetně dopravy) a služby (virtuální produkty). Objednávka se počítá v měsíci, kdy byla poprvé zpracována (zaplacena nebo odeslána na dobírku), vratka v měsíci, kdy byla provedena."
 
-#: src/EcSalesList/ExportPage.php:208
+#: src/EcSalesList/ExportPage.php:217
 msgid "Period"
 msgstr "Období"
 
-#: src/EcSalesList/ExportPage.php:210
+#: src/EcSalesList/ExportPage.php:219
 msgid "Month"
 msgstr "Měsíc"
 
-#: src/EcSalesList/ExportPage.php:215
+#: src/EcSalesList/ExportPage.php:224
 msgid "Quarter"
 msgstr "Čtvrtletí"
 
 #. translators: %d: quarter, 1 to 4
-#: src/EcSalesList/ExportPage.php:218
+#: src/EcSalesList/ExportPage.php:227
 #, php-format
 msgid "Quarter %d"
 msgstr "%d. čtvrtletí"
 
-#: src/EcSalesList/ExportPage.php:222
+#: src/EcSalesList/ExportPage.php:231
 msgid "Year"
 msgstr "Rok"
 
-#: src/EcSalesList/ExportPage.php:224
+#: src/EcSalesList/ExportPage.php:233
 msgid "Show"
 msgstr "Zobrazit"
 
-#: src/EcSalesList/ExportPage.php:233
+#: src/EcSalesList/ExportPage.php:242
 msgid "Code SK / CZ"
 msgstr "Kód SK / CZ"
 
-#: src/EcSalesList/ExportPage.php:241
+#: src/EcSalesList/ExportPage.php:250
 msgid "No reverse-charge sales in this period."
 msgstr "V tomto období nejsou žádná plnění v režimu přenesení daňové povinnosti."
 
-#: src/EcSalesList/ExportPage.php:249
+#: src/EcSalesList/ExportPage.php:258
 msgid "Not confirmed in VIES for an order: check the VAT ID"
 msgstr "U objednávky VIES nepotvrdil: zkontrolujte DIČ"
 
-#: src/EcSalesList/ExportPage.php:264
+#: src/EcSalesList/ExportPage.php:273
 msgid "Sold without VAT, but VIES did not confirm the VAT ID (e.g. it did not answer, \"Ignore when a check fails\"): check these VAT IDs before filing."
 msgstr "Prodáno bez DPH, ale VIES DIČ nepotvrdil (např. neodpověděl, „ignorovat, když ověření selže“): před podáním tato DIČ zkontrolujte."
 
-#: src/EcSalesList/ExportPage.php:265
+#: src/EcSalesList/ExportPage.php:274
 msgid "Sold without VAT with no VIES record (created in the admin, or before version 2.0): check these VAT IDs before filing."
 msgstr "Prodáno bez DPH bez záznamu z VIES (vytvořeno v administraci nebo před verzí 2.0): před podáním tato DIČ zkontrolujte."
 
-#: src/EcSalesList/ExportPage.php:276
+#: src/EcSalesList/ExportPage.php:285
 msgid "Download CSV"
 msgstr "Stáhnout CSV"
 
-#: src/EcSalesList/ExportPage.php:279
+#: src/EcSalesList/ExportPage.php:288
 msgid "Download SK XML (eDane)"
 msgstr "Stáhnout SK XML (eDane)"
 
-#: src/EcSalesList/ExportPage.php:280
+#: src/EcSalesList/ExportPage.php:289
 msgid "Download CZ XML (EPO)"
 msgstr "Stáhnout CZ XML (EPO)"
 
 #. translators: %s: currency code
-#: src/EcSalesList/ExportPage.php:293
+#: src/EcSalesList/ExportPage.php:302
 #, php-format
 msgid "SK XML (in %s only)"
 msgstr "SK XML (jen v %s)"
 
 #. translators: %s: currency code
-#: src/EcSalesList/ExportPage.php:295
+#: src/EcSalesList/ExportPage.php:304
 #, php-format
 msgid "CZ XML (in %s only)"
 msgstr "CZ XML (jen v %s)"
 
 #. translators: 1: file, e.g. "SK XML (in EUR only)", 2: list of settings, 3: link to the settings
-#: src/EcSalesList/ExportPage.php:307
+#: src/EcSalesList/ExportPage.php:316
 #, php-format
 msgid "%1$s: fill in %2$s in %3$s."
 msgstr "%1$s: vyplňte %2$s v %3$s."
 
-#: src/EcSalesList/ExportPage.php:310
+#: src/EcSalesList/ExportPage.php:319
 msgid "Settings → IČO DIČ"
 msgstr "Nastavení → IČO DIČ"
 
 #. translators: 1: file, e.g. "SK XML (in EUR only)", 2: number of orders, 3: list of order links
-#: src/EcSalesList/ExportPage.php:315
+#: src/EcSalesList/ExportPage.php:324
 #, php-format
 msgid "%1$s leaves out %2$d order in another currency: %3$s"
 msgid_plural "%1$s leaves out %2$d orders in another currency: %3$s"
@@ -327,11 +327,11 @@ msgstr[0] "%1$s vynechává %2$d objednávku v jiné měně: %3$s"
 msgstr[1] "%1$s vynechává %2$d objednávky v jiné měně: %3$s"
 msgstr[2] "%1$s vynechává %2$d objednávek v jiné měně: %3$s"
 
-#: src/EcSalesList/ExportPage.php:324
+#: src/EcSalesList/ExportPage.php:333
 msgid "CZ XML: the phone has more than 14 characters without spaces, it is left out."
 msgstr "CZ XML: telefon má bez mezer víc než 14 znaků, vynechává se."
 
-#: src/EcSalesList/ExportPage.php:326
+#: src/EcSalesList/ExportPage.php:335
 msgid "The XML files are regular statements (no corrections, no call-off stock) to load into the Finančná správa eForm or EPO, check and sign there. Values are not converted between currencies."
 msgstr "Soubory XML jsou řádná hlášení (bez následných, bez skladu v režimu call-off stock) k načtení do eFormuláře Finančnej správy nebo do EPO, kde je zkontrolujete a podepíšete. Hodnoty se nepřepočítávají mezi měnami."
 
@@ -619,6 +619,16 @@ msgstr "Číslo objednávky"
 msgid "The VAT ID check of order %s has been retained: it is part of the VAT records the shop must keep (Directive 2006/112/EC, Art. 242–249)."
 msgstr "Ověření DIČ objednávky %s bylo zachováno: je součástí záznamů o DPH, které musí obchod uchovávat (směrnice 2006/112/ES, čl. 242–249)."
 
+#. translators: 1: required WooCommerce version, 2: installed WooCommerce version
+#: src/Plugin.php:105
+#, php-format
+msgid "Kybernaut IČO DIČ needs WooCommerce %1$s or newer (this site has %2$s), so it is inactive: the checkout has no company fields and no VAT exemption. Update WooCommerce, or install Kybernaut IČO DIČ 1.11."
+msgstr "Kybernaut IČO DIČ potřebuje WooCommerce %1$s nebo novější (tento web má %2$s), proto je neaktivní: pokladna nemá firemní pole ani osvobození od DPH. Aktualizujte WooCommerce, nebo nainstalujte Kybernaut IČO DIČ 1.11."
+
+#: src/Plugin.php:107
+msgid "none"
+msgstr "žádný"
+
 #: src/Services/Ares/Ares.php:43
 #: src/Services/FinancnaSprava/FinancnaSprava.php:98
 msgid "Business ID not set."
@@ -630,7 +640,7 @@ msgid "Business ID must be a number and 8 digits long."
 msgstr "IČO musí být osmimístné číslo."
 
 #: src/Services/Ares/Ares.php:65
-msgid "An error occured while connecting to ARES, try it again later."
+msgid "An error occurred while connecting to ARES, try it again later."
 msgstr "Při připojování k ARESu došlo k chybě, zkuste to prosím později."
 
 #: src/Services/Ares/Ares.php:131
@@ -932,7 +942,7 @@ msgstr "Obchod ve slovenském a českém XML souboru %1$s. DIČ je „Vaše DIČ
 
 #: src/Settings/Fields.php:410
 #: src/Settings/Fields.php:504
-#: src/Settings/SettingsPage.php:37
+#: src/Settings/SettingsPage.php:38
 msgid "Validation"
 msgstr "Ověřování"
 
@@ -1078,15 +1088,15 @@ msgstr "WooCommerce → Stav → Protokoly"
 msgid "Set by the %s filter in the theme or a plugin."
 msgstr "Nastaveno filtrem %s v šabloně nebo v pluginu."
 
-#: src/Settings/SettingsPage.php:25
+#: src/Settings/SettingsPage.php:26
 msgid "IČO DIČ"
 msgstr "IČO DIČ"
 
-#: src/Settings/SettingsPage.php:38
+#: src/Settings/SettingsPage.php:39
 msgid "Appearance"
 msgstr "Vzhled"
 
-#: src/Settings/SettingsPage.php:39
+#: src/Settings/SettingsPage.php:40
 msgid "Finančná správa"
 msgstr "Finanční správa SR"
 

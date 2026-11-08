@@ -401,6 +401,41 @@ import suggest from '../shared/suggest';
 	wp.data.subscribe( syncBillingCountry, CHECKOUT );
 	syncBillingCountry();
 
+	/**
+	 * The page opens with the saved IČO and DIČ (a logged-in customer's, a reload's:
+	 * checkoutData). WooCommerce's form mounts before the cart has the billing
+	 * country, so every country rule (src/Checkout/Blocks.php) reads as hidden and
+	 * the form empties those fields. Note what it emptied while the country was
+	 * unknown, and once it is known put back what that country shows; what the
+	 * shopper empties later stays empty.
+	 */
+	var prefilled = ( wc.wcSettings.getSetting( 'checkoutData', {} ) || {} ).additional_fields || {};
+	var wiped = {};
+	var stopRestoring = wp.data.subscribe( function () {
+		var fields = wp.data.select( CHECKOUT ).getAdditionalFields() || {};
+		var country = billingCountry();
+
+		if ( ! country ) {
+			Object.keys( prefilled ).forEach( function ( key ) {
+				if ( prefilled[ key ] && ! fields[ key ] ) {
+					wiped[ key ] = prefilled[ key ];
+				}
+			} );
+			return;
+		}
+
+		stopRestoring();
+		var back = {};
+		[ icField( country ), dicField( country ), 'SK' === country ? DIC_DPH : null ].forEach( function ( key ) {
+			if ( key && wiped[ key ] && ! fields[ key ] ) {
+				back[ key ] = wiped[ key ];
+			}
+		} );
+		if ( Object.keys( back ).length ) {
+			wp.data.dispatch( CHECKOUT ).setAdditionalFields( back );
+		}
+	} );
+
 	// Not scoped to one store: the IČO is in the checkout store, the billing
 	// country that decides whether it is checked in the cart store.
 	wp.data.subscribe( function () {

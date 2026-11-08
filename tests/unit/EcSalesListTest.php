@@ -463,6 +463,34 @@ class EcSalesListTest extends TestCase {
 		};
 	}
 
+	public function testPostsStorageGetsTheMetaQueryThroughWpQuery() {
+		$this->shop_context();
+		$seen = array();
+		Functions\when( 'wc_get_orders' )->alias(
+			function ( $args ) use ( &$seen ) {
+				$seen[] = $args;
+				return array();
+			}
+		);
+		\Automattic\WooCommerce\Utilities\OrderUtil::$hpos = false;
+		try {
+			Report::entries( 0, 100 );
+		} finally {
+			\Automattic\WooCommerce\Utilities\OrderUtil::$hpos = true;
+		}
+
+		// Not as meta_query, which the posts storage ignores, but as the plugin's own var.
+		foreach ( array_filter( $seen, static fn ( $a ) => 'shop_order' === $a['type'] ) as $args ) {
+			$this->assertArrayNotHasKey( 'meta_query', $args );
+			$this->assertArrayHasKey( 'woolab_icdic_meta_query', $args );
+		}
+
+		$query = Report::cpt_meta_query( array( 'meta_query' => array( array( 'key' => 'a' ) ), 'woolab_icdic_meta_query' => 'x' ), array( 'woolab_icdic_meta_query' => array( 'key' => 'b' ) ) );
+		$this->assertSame( array( array( 'key' => 'a' ), array( 'key' => 'b' ) ), $query['meta_query'] );
+		$this->assertArrayNotHasKey( 'woolab_icdic_meta_query', $query );
+		$this->assertSame( array( 'post_type' => 'x' ), Report::cpt_meta_query( array( 'post_type' => 'x' ), array() ) );
+	}
+
 	public function testEntriesOfAPeriod() {
 		$this->shop_context();
 		list( $start, $end ) = Report::period( 'month', 10, 2026 );

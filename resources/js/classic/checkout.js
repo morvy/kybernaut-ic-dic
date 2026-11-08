@@ -13,8 +13,10 @@ import suggest from '../shared/suggest';
     // Whether the company fields hold what the last lookup filled in.
     var filled = false;
     var filled_fields = '#billing_ic, #billing_dic, #billing_dic_dph, #billing_postcode, #billing_city, #billing_address_1';
-    // Whether the company fields are emptied, their values stashed in data-value.
+    // Whether the company fields are emptied, their values kept in stash (not on the
+    // inputs: Fluid Checkout re-renders them).
     var company_cleared = false;
+    var stash = {};
 
     $(document).ready(function() {
 
@@ -72,7 +74,18 @@ import suggest from '../shared/suggest';
             }
         }, 750); // 750ms debounce delay
 
-        $('#billing_dic, #billing_dic_dph').on('input', validateFields);
+        // Delegated: Fluid Checkout re-renders the fields.
+        $(document.body).on('input', '#billing_dic, #billing_dic_dph', validateFields);
+
+        // Fluid Checkout re-renders the billing fields after each refresh, hidden again
+        // by style.css: show the company fields again when the toggle is on. On a
+        // plain checkout nothing changes.
+        $(document.body).on('updated_checkout', function () {
+            var $toggle = $('#billing_iscomp');
+            if ( ! $toggle.length || $toggle.prop('checked') ) {
+                show_company_fields( false );
+            }
+        });
 
         // The company name stays editable after a lookup. Changing it means another
         // company: drop the IČO and what the lookup filled in, so the shopper can
@@ -122,26 +135,36 @@ import suggest from '../shared/suggest';
         var country = $("#billing_country").val();
         relabel( country );
 
-        // Limited to the countries that have one (woolab_icdic_ic_countries()):
-        // hidden elsewhere, and emptied so a hidden value is not submitted.
-        if ( ! woolab.ic_countries || woolab.ic_countries.indexOf( country ) !== -1 ) {
-            $("#billing_ic_field").slideDown();
-        } else {
-            $("#billing_ic_field").slideUp();
-            $("#billing_ic").val('');
-        }
-        $("#billing_dic_field").slideDown();
-        if (country === 'SK') {
-            $("#billing_dic_dph_field").slideDown();
-        } else {
-            $("#billing_dic_dph_field").slideUp();
-        }
+        show_company_fields( true );
         if ( anywhere( woolab, 'lookup' ) ) {
             // The country decides the register, so look the same IČO up again.
             last_ico_value = '';
             enable_ares_check();
         }
-        $("#billing_company_field").slideDown();
+    }
+
+    /** The company fields the billing country has, sliding or at once */
+    function show_company_fields( slide ) {
+        var country = $("#billing_country").val();
+        var show = function ( selector, on ) {
+            var $row = $( selector );
+            if ( slide ) {
+                $row[ on ? 'slideDown' : 'slideUp' ]();
+            } else {
+                $row.toggle( on );
+            }
+        };
+
+        // Limited to the countries that have one (woolab_icdic_ic_countries()):
+        // hidden elsewhere, and emptied so a hidden value is not submitted.
+        var has_ic = ! woolab.ic_countries || woolab.ic_countries.indexOf( country ) !== -1;
+        show( "#billing_ic_field", has_ic );
+        if ( ! has_ic ) {
+            $("#billing_ic").val('');
+        }
+        show( "#billing_dic_field", true );
+        show( "#billing_dic_dph_field", country === 'SK' );
+        show( "#billing_company_field", true );
     }
 
     /**
@@ -178,7 +201,7 @@ import suggest from '../shared/suggest';
         var country   = $("#billing_country").val();
         var vat_field = country == 'SK' ? 'billing_dic_dph' : 'billing_dic';
         $("#billing_company, #billing_ic, #billing_dic, #billing_dic_dph").each(function(index,el) {
-            el.setAttribute('data-value', el.value);
+            stash[ el.id ] = el.value;
             if (el.id == vat_field && el.value.length) {
                 $(document.body).trigger("update_checkout");
             }
@@ -191,8 +214,8 @@ import suggest from '../shared/suggest';
         var country   = $("#billing_country").val();
         var vat_field = country == 'SK' ? 'billing_dic_dph' : 'billing_dic';
         $("#billing_company, #billing_ic, #billing_dic, #billing_dic_dph").each(function(index,el) {
-            if (el.getAttribute('data-value')) {
-                el.value = el.getAttribute('data-value');
+            if ( stash[ el.id ] ) {
+                el.value = stash[ el.id ];
                 if (el.id == vat_field && el.value.length) {
                     $(document.body).trigger("update_checkout");
                 }
@@ -336,42 +359,11 @@ import suggest from '../shared/suggest';
 
                                 if ( registry_fill() ) {
 
-                                    // Compatibility with Fluid Checkout for WooCommerce – Lite
-                                    // https://wordpress.org/support/topic/compatibility-with-kybernaut-ico-dic-plugin/
-                                    if ($('#billing_same_as_shipping') && $('#billing_same_as_shipping').is(':checked')) {
-
-                                        // Check whether the CollapsibleBlock library is available
-                                        if ( window.CollapsibleBlock ) {
-
-                                            // Set billing address as different from shipping address
-                                            var fc_billing_same_as_shipping_field = document.querySelector( '#billing_same_as_shipping' );
-                                            fc_billing_same_as_shipping_field.checked = false;
-
-                                            // Expand the billing address fields
-                                            var fc_billing_address_fields_wrapper = document.querySelector( '#woocommerce-billing-fields__field-wrapper' );
-                                            if ( fc_billing_address_fields_wrapper ) {
-                                                CollapsibleBlock.expand( fc_billing_address_fields_wrapper );
-                                            }
-
-                                            // Get company field toggle and content elements
-                                            var fc_billing_company_toggle = document.querySelector( '#fc-expansible-form-section__toggle-plus--billing_company' );
-                                            var fc_billing_company_content = document.querySelector( '#fc-expansible-form-section__content--billing_company' );
-
-                                            // Expand the billing company field
-                                            if ( fc_billing_company_toggle ) { CollapsibleBlock.collapse( fc_billing_company_toggle ); }
-                                            if ( fc_billing_company_content ) { CollapsibleBlock.expand( fc_billing_company_content ); }
-
-                                            // Get dic field toggle and content elements
-                                            var fc_billing_dic_toggle = document.querySelector( '#fc-expansible-form-section__toggle-plus--billing_dic' );
-                                            var fc_billing_dic_content = document.querySelector( '#fc-expansible-form-section__content--billing_dic' );
-
-                                            // Expand the billing dic field
-                                            if ( fc_billing_dic_toggle ) { CollapsibleBlock.collapse( fc_billing_dic_toggle ); }
-                                            if ( fc_billing_dic_content ) { CollapsibleBlock.expand( fc_billing_dic_content ); }
-
-                                        }
-
-                                    }
+                                    // Fluid Checkout for WooCommerce – Lite with "Same as shipping
+                                    // address": its billing address is the shipping one, re-rendered from
+                                    // what it saved, so only the company's identifiers are filled in
+                                    // (src/Compat/FluidCheckout.php); unticking it bills another address.
+                                    var keep_address = !! window.CollapsibleBlock && $('#billing_same_as_shipping').is(':checked');
 
                                     // Update values
                                     filled = true;
@@ -383,9 +375,11 @@ import suggest from '../shared/suggest';
                                     if ( sk && data.dic_dph ) {
                                         $('#billing_dic_dph').val(data.dic_dph).attr('readonly', true);
                                     }
-                                    $('#billing_address_1').val(data.adresa).attr('readonly', true);
-                                    $('#billing_postcode').val(data.psc).attr('readonly', true);
-                                    $('#billing_city').val(data.mesto).attr('readonly', true);
+                                    if ( ! keep_address ) {
+                                        $('#billing_address_1').val(data.adresa).attr('readonly', true);
+                                        $('#billing_postcode').val(data.psc).attr('readonly', true);
+                                        $('#billing_city').val(data.mesto).attr('readonly', true);
+                                    }
                                     ico_class.append( '<span role="info" class="woolab-ic-dic-tip woolab-ic-dic-message woolab-ic-dic-message--success">'+texts.ok+'</span>' );
 
                                     mark_filled();

@@ -44,7 +44,7 @@ class AresTest extends TestCase {
 		Functions\expect( 'is_wp_error' )->once()->andReturn( true );
 
 		$this->assertSame(
-			array( 'error' => 'An error occured while connecting to ARES, try it again later.', 'internal_error' => true ),
+			array( 'error' => 'An error occurred while connecting to ARES, try it again later.', 'internal_error' => true ),
 			woolab_icdic_ares( 88922961 )
 		);
 	}

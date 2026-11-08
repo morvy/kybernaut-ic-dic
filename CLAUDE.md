@@ -45,7 +45,8 @@ stacks that `tests/e2e/stack.js` resolves into `tests/e2e/.blueprint.json`
 - `min`: the plugin header's minimums (WC requires at least → its newest patch,
   Requires at least, Requires PHP);
 - `latest`: the newest WordPress and WooCommerce from the WordPress.org APIs, on the
-  newest PHP Playground supports. CI also runs it weekly.
+  newest PHP Playground supports. CI runs it weekly; publishing a GitHub release (`deploy.yml`)
+  runs both before deploying, pushes to master and PRs only the unit tests and lint.
 ```bash
 npx playwright install chromium   # once
 npm run test:e2e                  # both; or test:e2e:min / test:e2e:latest (port 9411)
@@ -62,7 +63,9 @@ E2E_BASE_URL=https://woolab-test.local npm run test:e2e:site
 ```
 Specs: `block-checkout`, `classic-checkout` (fields, labels, ARES fill, VIES exemption,
 placed order), `rest` (arguments, rate limit), `settings` (every section saves, settings
-reach the checkout), `ec-sales-list` (an exempt order in the CSV and the SK XML). Not covered: the Finančná správa import (190 MB download).
+reach the checkout), `ec-sales-list` (an exempt order in the CSV and the SK XML),
+`fluid-checkout` (its steps over the classic checkout; Fluid Checkout must be installed,
+the stacks' blueprint does it, `mu-plugin.php` keeps it off without the cookie `woolab_e2e_fc`). Not covered: the Finančná správa import (190 MB download).
 
 ### Static analysis
 ```bash
@@ -90,11 +93,12 @@ the tool's config with the reason (rector.php skips three, see there).
 - `src/Numbers/Checksum.php` - mathematical IČO / DIČ / RČ / NIP / adószám checks
 - `src/Checkout/` - `Classic` (shortcode checkout fields, `checkout_field_process`), `Blocks` (Additional Checkout Fields API, Store API validation), `BlocksIntegration`, `CartExtension`, `VatExempt`
 - `src/Order/` - `Meta` (order meta), `AdminScreen` (admin billing fields, check-failed notices), `Evidence` (the VAT ID check kept with the order, "Validate VAT ID" order action), `EvidenceBox` (its "VAT ID check" box with an AJAX re-check, the reverse-charge icon after the billing address on the orders list), `Privacy` (personal data export / erasure), `Display` (addresses, order details, e-mails), `Customer` (user meta)
-- `src/EcSalesList/` - `Report` (the period's exempt orders with a VAT ID and their refunds → rows per country, VAT number, goods / services; SK half-up, CZ ceil rounding; an order's period is `_woolab_icdic_ec_date`, kept the first time it reaches a paid status; orders not verified in VIES are flagged), `Xml` (SK SVDPHv20 and CZ DPHSHV, validated against `tests/fixtures/*.xsd`), `ExportPage` (WooCommerce → EC Sales List, CSV / XML downloads via admin-post.php); the shop's details are the `ec_*` settings (Settings → IČO DIČ → EC Sales List)
+- `src/EcSalesList/` - `Report` (the period's exempt orders with a VAT ID and their refunds → rows per country, VAT number, goods / services; SK half-up, CZ ceil rounding; an order's period is `_woolab_icdic_ec_date`, kept the first time it reaches a paid status; orders not verified in VIES are flagged), `Xml` (SK SVDPHv20 and CZ DPHSHV, validated against `tests/fixtures/*.xsd`), `ExportPage` (WooCommerce → EC Sales List, CSV / XML downloads via admin-post.php); the shop's details are the `ec_*` settings (Settings → IČO DIČ → EC Sales List). Hidden, off by default: `Features` (`ec_sales_list`), the page and the settings section only when on; the period date is kept regardless
+- `src/Features.php` - hidden features, WooCommerce-style: off by default and not in the UI; a `feature_{id}` key of the settings array without a field (`Options::schema()`), `yes` or the `woolab_icdic_feature_enabled` filter turns it on (`tests/e2e/setup.php` turns `ec_sales_list` on)
 - `src/Rest/Routes.php` - `woolab-ic-dic/v1/lookup` and `/search`
 - `src/Assets.php` - enqueues, script data (per-country `services`), colour CSS variables
 - `src/Admin/PluginLinks.php`, `src/Logger.php`
-- `src/Compat/` - `SuperFaktura`, `PdfInvoices`, `FluidCheckout` (not registered by Plugin)
+- `src/Compat/` - `SuperFaktura`, `PdfInvoices`, `FluidCheckout` (only when Fluid Checkout is active: the company fields out of its "+ Add …" sections; `checkout.js` shows them again after its re-render)
 - `uninstall.php` - removes the settings and the Slovak lists
 
 **Frontend Assets:**
@@ -188,13 +192,13 @@ the tool's config with the reason (rector.php skips three, see there).
 - `woolab_icdic_labels` - field labels by country
 - `woolab_icdic_sk_required_ic_and_dic` - Require the DIC for a Slovak shop (default: the "Require DIČ" setting, off)
 - `woolab_icdic_rest_rate_limit` - rate limit of the REST routes
+- `woolab_icdic_feature_enabled` - turn a hidden feature (`Features`) on or off
 - `woolab_icdic_update_user_meta` - Update user profile when editing orders
 
 A filter that decides over a setting is shown on the settings page (`Settings\FilterOverrides`).
 
 ### Known Limitations
 
-- Fluid Checkout compatibility exists but is not registered: call `\KybernautIcDic\Compat\FluidCheckout::register()` from the theme or a plugin
 - Hook callbacks are class methods: `remove_action()` needs `array( 'KybernautIcDic\…\Class', 'method' )`, the 1.x function names no longer match
 
 ## Common Development Patterns
